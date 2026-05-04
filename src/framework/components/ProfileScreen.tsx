@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Container, Flex, Heading, Text, VStack, chakra } from '@chakra-ui/react';
+import { Box, Container, Flex, Heading, SimpleGrid, Text, VStack, chakra } from '@chakra-ui/react';
 import { useProfile } from '../hooks/useProfile';
 import { TabBar } from './TabBar';
 import { R } from './Ruby';
@@ -13,7 +13,6 @@ export const ProfileScreen: React.FC = () => {
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(profile.name);
   const [editingAge, setEditingAge] = useState(false);
-  const [ageValue, setAgeValue] = useState(profile.age?.toString() ?? '');
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -29,9 +28,8 @@ export const ProfileScreen: React.FC = () => {
     setEditingName(false);
   };
 
-  const handleAgeSave = () => {
-    const parsed = parseInt(ageValue, 10);
-    updateAge(isNaN(parsed) ? null : Math.max(0, Math.min(12, parsed)));
+  const handleAgeSelect = (age: number) => {
+    updateAge(age);
     setEditingAge(false);
   };
 
@@ -205,7 +203,7 @@ export const ProfileScreen: React.FC = () => {
           ) : (
             <Flex align="center" justify="space-between">
               <Text fontSize="lg" fontWeight="700" color="gray.800">
-                {profile.name || <>まだ<R rt="せってい">設定</R>されていません</>}
+                {profile.name || <>せっていしてね</>}
               </Text>
               <chakra.button
                 type="button"
@@ -241,57 +239,60 @@ export const ProfileScreen: React.FC = () => {
             <R rt="ねんれい">年齢</R>
           </Text>
           {editingAge ? (
-            <Flex gap={2} align="center">
-              <chakra.input
-                type="number"
-                value={ageValue}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAgeValue(e.target.value)}
-                placeholder="5"
-                w="80px"
-                px={4}
-                py={2.5}
-                fontSize="md"
-                fontWeight="600"
-                color="gray.800"
-                bg="gray.50"
-                border="2px solid"
-                borderColor="purple.300"
-                borderRadius="xl"
-                outline="none"
-                _focus={{ borderColor: 'purple.500' }}
-                autoFocus
-                min={0}
-                max={12}
-              />
-              <Text fontSize="md" color="gray.600" fontWeight="600"><R rt="さい">歳</R></Text>
+            <VStack gap={4} align="stretch">
+              <Text fontSize="sm" color="gray.600" fontWeight="600" textAlign="center">
+                <R rt="ねんれい">年齢</R>をえらんでね
+              </Text>
+              <SimpleGrid columns={3} gap={3}>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((age) => (
+                  <chakra.button
+                    key={age}
+                    type="button"
+                    onClick={() => handleAgeSelect(age)}
+                    display="flex"
+                    flexDirection="column"
+                    alignItems="center"
+                    justifyContent="center"
+                    py={4}
+                    bg={profile.age === age ? 'purple.50' : 'gray.50'}
+                    border="2.5px solid"
+                    borderColor={profile.age === age ? 'purple.400' : '#e5e7eb'}
+                    borderRadius="2xl"
+                    cursor="pointer"
+                    transition="all 0.2s ease"
+                    _hover={{ borderColor: 'purple.300', bg: 'purple.50', transform: 'translateY(-2px)' }}
+                    _active={{ transform: 'scale(0.95)' }}
+                    minH="64px"
+                  >
+                    <Text fontSize="xl" fontWeight="800" color="gray.800">
+                      {age}
+                    </Text>
+                    <Text fontSize="xs" color="gray.500" fontWeight="600">
+                      さい
+                    </Text>
+                  </chakra.button>
+                ))}
+              </SimpleGrid>
               <chakra.button
                 type="button"
-                onClick={handleAgeSave}
-                px={5}
-                py={2.5}
+                onClick={() => setEditingAge(false)}
                 fontSize="sm"
-                fontWeight="700"
-                color="white"
-                bg="linear-gradient(135deg, #7c6cf0, #9b8afb)"
-                borderRadius="xl"
-                _hover={{ opacity: 0.9 }}
-                _active={{ transform: 'scale(0.97)' }}
+                fontWeight="600"
+                color="gray.400"
+                _hover={{ color: 'gray.600' }}
                 minH="44px"
               >
-                <R rt="ほぞん">保存</R>
+                キャンセル
               </chakra.button>
-            </Flex>
+            </VStack>
           ) : (
             <Flex align="center" justify="space-between">
               <Text fontSize="lg" fontWeight="700" color="gray.800">
-                {profile.age !== null ? <>{profile.age}<R rt="さい">歳</R></> : <>まだ<R rt="せってい">設定</R>されていません</>}
+                {profile.age !== null ? <>{profile.age}<R rt="さい">歳</R></> : <>せっていしてね</>}
               </Text>
               <chakra.button
                 type="button"
-                onClick={() => {
-                  setAgeValue(profile.age?.toString() ?? '');
-                  setEditingAge(true);
-                }}
+                onClick={() => setEditingAge(true)}
                 px={4}
                 py={2}
                 fontSize="sm"

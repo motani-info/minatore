@@ -1,10 +1,11 @@
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, useLocation, Navigate } from 'react-router-dom';
 import { Box, Container, Flex, SimpleGrid, Text, VStack, chakra } from '@chakra-ui/react';
 import { registry } from '../../registry/questionTypeRegistry';
 import { useQuestionFlow } from '../hooks/useQuestionFlow';
 import { useProgress } from '../hooks/useProgress';
 import { NavigationBar } from './NavigationBar';
 import { FeedbackOverlay } from './FeedbackOverlay';
+import type { Question } from '../../types/question';
 
 /** 問題タイプごとのテーマカラー */
 const TYPE_THEMES: Record<string, { gradient: string; accent: string }> = {
@@ -17,21 +18,33 @@ const TYPE_THEMES: Record<string, { gradient: string; accent: string }> = {
   'syllable-count': { gradient: 'linear-gradient(135deg, #7c3aed 0%, #c4b5fd 100%)', accent: '#7c3aed' },
   'one-to-one': { gradient: 'linear-gradient(135deg, #0284c7 0%, #7dd3fc 100%)', accent: '#0284c7' },
   'odd-one-out': { gradient: 'linear-gradient(135deg, #dc2626 0%, #fca5a5 100%)', accent: '#dc2626' },
+  'symbol-rotation': { gradient: 'linear-gradient(135deg, #9333ea 0%, #c084fc 100%)', accent: '#9333ea' },
+  'overlay-advanced': { gradient: 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)', accent: '#1d4ed8' },
+  'overlay-shape': { gradient: 'linear-gradient(135deg, #1e40af 0%, #2563eb 100%)', accent: '#1e40af' },
+  'line-overlay': { gradient: 'linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)', accent: '#1e3a5f' },
+  'water-volume': { gradient: 'linear-gradient(135deg, #2563eb 0%, #60a5fa 100%)', accent: '#2563eb' },
+  'compare-length': { gradient: 'linear-gradient(135deg, #0d9488 0%, #5eead4 100%)', accent: '#0d9488' },
+  'compare-spring': { gradient: 'linear-gradient(135deg, #047857 0%, #6ee7b7 100%)', accent: '#047857' },
+  'area-compare': { gradient: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', accent: '#7c3aed' },
 };
 const DEFAULT_THEME = { gradient: 'linear-gradient(135deg, #6366f1 0%, #818cf8 100%)', accent: '#6366f1' };
 
 export const QuestionScreen: React.FC = () => {
   const { typeId } = useParams<{ typeId: string }>();
+  const location = useLocation();
   const questionType = typeId ? registry.get(typeId) : undefined;
 
   if (!questionType) {
     return <Navigate to="/" replace />;
   }
 
-  return <QuestionScreenInner questionType={questionType} />;
+  // 一覧画面から選択された問題があれば初期問題として渡す
+  const selectedQuestion = (location.state as { selectedQuestion?: Question } | null)?.selectedQuestion;
+
+  return <QuestionScreenInner questionType={questionType} initialQuestion={selectedQuestion} />;
 };
 
-function QuestionScreenInner({ questionType }: { questionType: NonNullable<ReturnType<typeof registry.get>> }) {
+function QuestionScreenInner({ questionType, initialQuestion }: { questionType: NonNullable<ReturnType<typeof registry.get>>; initialQuestion?: Question }) {
   const {
     currentQuestion,
     selectedIndex,
@@ -41,7 +54,7 @@ function QuestionScreenInner({ questionType }: { questionType: NonNullable<Retur
     selectChoice,
     nextQuestion,
     retryQuestion,
-  } = useQuestionFlow(questionType);
+  } = useQuestionFlow(questionType, initialQuestion);
 
   const { progress } = useProgress();
   const typeProgress = progress?.byType[questionType.id];
@@ -77,8 +90,8 @@ function QuestionScreenInner({ questionType }: { questionType: NonNullable<Retur
               justify="center"
               bg="white"
               borderRadius="3xl"
-              p={{ base: 8, sm: 10 }}
-              minH="200px"
+              p={{ base: 6, sm: 8 }}
+              minH="220px"
               boxShadow="0 2px 12px rgba(0,0,0,0.06)"
             >
               <QuestionDisplay data={currentQuestion.questionData} />
@@ -114,7 +127,7 @@ function QuestionScreenInner({ questionType }: { questionType: NonNullable<Retur
             </Box>
 
             {/* 選択肢エリア */}
-            <SimpleGrid columns={2} gap={3}>
+            <SimpleGrid columns={2} gap={4}>
               {currentQuestion.choices.map((choice, index) => {
                 const isSelected = selectedIndex === index;
                 const isChoiceCorrect = index === currentQuestion.correctIndex;
@@ -159,7 +172,7 @@ function QuestionScreenInner({ questionType }: { questionType: NonNullable<Retur
                     justifyContent="center"
                     gap={2}
                     aspectRatio="1"
-                    p={4}
+                    p={5}
                     bg={bgColor}
                     border="2.5px solid"
                     borderColor={borderColor}

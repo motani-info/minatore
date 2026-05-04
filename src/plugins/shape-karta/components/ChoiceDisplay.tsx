@@ -66,7 +66,7 @@ export const ShapeKartaChoiceDisplay: React.FC<Props> = ({ data }) => {
               key={i}
               shape={group.shape}
               color={COLOR_MAP[group.color]}
-              size={16}
+              size={22}
             />
           ))}
         </Flex>

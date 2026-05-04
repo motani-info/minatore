@@ -20,8 +20,8 @@ const MiniGrid: React.FC<{ grid: PuzzleGrid }> = ({ grid }) => {
       {grid.map((filled, index) => (
         <GridItem
           key={index}
-          w="22px"
-          h="22px"
+          w="30px"
+          h="30px"
           bg={filled ? '#6b7280' : '#ffffff'}
           border="0.5px solid"
           borderColor="#1a1a1a"

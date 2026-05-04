@@ -3,11 +3,13 @@ import type { SeesawQuestionData, SeesawChoiceData, SeesawItem, SeesawState } fr
 
 /** 固定問題セット */
 const QUESTION_POOL: Array<{
-  items: [SeesawItem, SeesawItem, SeesawItem];
-  seesaws: [SeesawState, SeesawState];
+  items: SeesawItem[];
+  seesaws: SeesawState[];
   heaviestIndex: number;
   lightestIndex: number;
 }> = [
+  // ─── 既存問題（絵文字ベース） ───
+
   // 問題(1): 魚 > なす > きゅうり
   {
     items: [
@@ -90,6 +92,116 @@ const QUESTION_POOL: Array<{
       {
         left: { emoji: '🦗', name: 'バッタ', weight: 1 },
         right: { emoji: '🐌', name: 'かたつむり', weight: 3 },
+        tilt: 'right',
+      },
+    ],
+    heaviestIndex: 0,
+    lightestIndex: 2,
+  },
+
+  // ─── 図形問題（SVGベース・天秤2つ） ───
+
+  // 問題(5): ★ > ● > ⬡（黒星 > 黒丸 > 六角形）
+  // 左上の問題: 天秤1: ★(左) > ●(右)、天秤2: ●(左) > ⬡(右)
+  {
+    items: [
+      { emoji: '★', name: 'ほし', weight: 3, shape: 'star-black' },
+      { emoji: '●', name: 'まる', weight: 2, shape: 'circle-black' },
+      { emoji: '⬡', name: 'ろっかく', weight: 1, shape: 'hexagon-black' },
+    ],
+    seesaws: [
+      {
+        left: { emoji: '★', name: 'ほし', weight: 3, shape: 'star-black' },
+        right: { emoji: '●', name: 'まる', weight: 2, shape: 'circle-black' },
+        tilt: 'left',
+      },
+      {
+        left: { emoji: '●', name: 'まる', weight: 2, shape: 'circle-black' },
+        right: { emoji: '⬡', name: 'ろっかく', weight: 1, shape: 'hexagon-black' },
+        tilt: 'left',
+      },
+    ],
+    heaviestIndex: 0,
+    lightestIndex: 2,
+  },
+
+  // 問題(6): ★ > ◇ > ○（黒星 > ダイヤ星 > 白丸）
+  // 右上の問題: 天秤1: ★(左) > ◇(右)、天秤2: ◇(左) > ○(右)
+  {
+    items: [
+      { emoji: '★', name: 'ほし', weight: 3, shape: 'star-black' },
+      { emoji: '◇', name: 'ダイヤ', weight: 2, shape: 'diamond-star' },
+      { emoji: '○', name: 'まる', weight: 1, shape: 'circle-ring' },
+    ],
+    seesaws: [
+      {
+        left: { emoji: '★', name: 'ほし', weight: 3, shape: 'star-black' },
+        right: { emoji: '◇', name: 'ダイヤ', weight: 2, shape: 'diamond-star' },
+        tilt: 'left',
+      },
+      {
+        left: { emoji: '◇', name: 'ダイヤ', weight: 2, shape: 'diamond-star' },
+        right: { emoji: '○', name: 'まる', weight: 1, shape: 'circle-ring' },
+        tilt: 'left',
+      },
+    ],
+    heaviestIndex: 0,
+    lightestIndex: 2,
+  },
+
+  // ─── 図形問題（SVGベース・天秤3つ） ───
+
+  // 問題(7): ✚ > ⬠ > ■（十字 > 五角形 > 四角）
+  // 左下の問題: 天秤1: ✚(左) > ■(右)、天秤2: ⬠(左) > ■(右)、天秤3: ✚(左) > ⬠(右)
+  {
+    items: [
+      { emoji: '✚', name: 'じゅうじ', weight: 3, shape: 'cross-black' },
+      { emoji: '⬠', name: 'ごかく', weight: 2, shape: 'pentagon-gray' },
+      { emoji: '■', name: 'しかく', weight: 1, shape: 'square-black' },
+    ],
+    seesaws: [
+      {
+        left: { emoji: '✚', name: 'じゅうじ', weight: 3, shape: 'cross-black' },
+        right: { emoji: '■', name: 'しかく', weight: 1, shape: 'square-black' },
+        tilt: 'left',
+      },
+      {
+        left: { emoji: '⬠', name: 'ごかく', weight: 2, shape: 'pentagon-gray' },
+        right: { emoji: '■', name: 'しかく', weight: 1, shape: 'square-black' },
+        tilt: 'left',
+      },
+      {
+        left: { emoji: '✚', name: 'じゅうじ', weight: 3, shape: 'cross-black' },
+        right: { emoji: '⬠', name: 'ごかく', weight: 2, shape: 'pentagon-gray' },
+        tilt: 'left',
+      },
+    ],
+    heaviestIndex: 0,
+    lightestIndex: 2,
+  },
+
+  // 問題(8): ★ > ⬠ > ○（黒星 > 五角形 > 白丸）
+  // 右下の問題: 天秤1: ★(左) > ⬠(右)、天秤2: ⬠(左) > ○(右)、天秤3: ◇(左) < ○(右) → ★ > ⬠ > ○
+  {
+    items: [
+      { emoji: '★', name: 'ほし', weight: 3, shape: 'star-black' },
+      { emoji: '⬠', name: 'ごかく', weight: 2, shape: 'pentagon-gray' },
+      { emoji: '○', name: 'まる', weight: 1, shape: 'circle-ring' },
+    ],
+    seesaws: [
+      {
+        left: { emoji: '★', name: 'ほし', weight: 3, shape: 'star-black' },
+        right: { emoji: '⬠', name: 'ごかく', weight: 2, shape: 'pentagon-gray' },
+        tilt: 'left',
+      },
+      {
+        left: { emoji: '⬠', name: 'ごかく', weight: 2, shape: 'pentagon-gray' },
+        right: { emoji: '○', name: 'まる', weight: 1, shape: 'circle-ring' },
+        tilt: 'left',
+      },
+      {
+        left: { emoji: '○', name: 'まる', weight: 1, shape: 'circle-ring' },
+        right: { emoji: '★', name: 'ほし', weight: 3, shape: 'star-black' },
         tilt: 'right',
       },
     ],

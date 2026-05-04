@@ -19,14 +19,14 @@ export const OddOneOutChoiceDisplay: React.FC<Props> = ({ data }) => {
 
   return (
     <Box>
-      <Flex direction="column" gap="1px" mx="auto" w="fit-content">
+      <Flex direction="column" gap="2px" mx="auto" w="fit-content">
         {Array.from({ length: gridSize }).map((_, r) => (
-          <Flex key={r} gap="1px">
+          <Flex key={r} gap="2px">
             {Array.from({ length: gridSize }).map((_, c) => (
               <Box
                 key={c}
-                w="14px"
-                h="14px"
+                w="18px"
+                h="18px"
                 bg={r === row && c === col ? '#7c6cf0' : '#e5e7eb'}
                 borderRadius="2px"
               />
@@ -34,7 +34,7 @@ export const OddOneOutChoiceDisplay: React.FC<Props> = ({ data }) => {
           </Flex>
         ))}
       </Flex>
-      <Text fontSize="10px" color="gray.500" mt={1} textAlign="center">
+      <Text fontSize="11px" color="gray.500" mt={1} textAlign="center">
         {row + 1}-{col + 1}
       </Text>
     </Box>

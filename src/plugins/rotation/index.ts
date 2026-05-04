@@ -11,7 +11,7 @@ import { registry } from '../../registry/questionTypeRegistry';
  */
 export const rotationQuestionType: QuestionType<RotationQuestionData, RotationChoiceData> = {
   id: 'rotation',
-  displayName: '回転図形',
+  displayName: '回転図形（基本）',
   icon: '🔄',
   generateQuestion: generateRotationQuestion,
   QuestionDisplay: RotationQuestionDisplay,

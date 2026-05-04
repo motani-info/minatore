@@ -38,5 +38,5 @@ const PuzzleGridDisplay: React.FC<{ grid: PuzzleGrid; cellSize: string }> = ({
  * 本番のペーパーテストに合わせて白黒で表示
  */
 export const PuzzleQuestionDisplay: React.FC<QuestionDisplayProps> = ({ data }) => {
-  return <PuzzleGridDisplay grid={data.targetGrid} cellSize="min(20vw, 80px)" />;
+  return <PuzzleGridDisplay grid={data.targetGrid} cellSize="min(24vw, 100px)" />;
 };

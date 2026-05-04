@@ -5,7 +5,7 @@ interface Props {
   data: OverlayCancelQuestionData;
 }
 
-const CellDisplay: React.FC<{ value: CellValue; size?: number }> = ({ value, size = 36 }) => (
+const CellDisplay: React.FC<{ value: CellValue; size?: number }> = ({ value, size = 48 }) => (
   <Flex
     w={`${size}px`}
     h={`${size}px`}
@@ -24,7 +24,7 @@ const CellDisplay: React.FC<{ value: CellValue; size?: number }> = ({ value, siz
   </Flex>
 );
 
-const GridDisplay: React.FC<{ grid: [CellValue, CellValue, CellValue, CellValue]; size?: number }> = ({ grid, size = 36 }) => (
+const GridDisplay: React.FC<{ grid: [CellValue, CellValue, CellValue, CellValue]; size?: number }> = ({ grid, size = 48 }) => (
   <SimpleGrid columns={2} gap={0} w="fit-content">
     {grid.map((cell, i) => (
       <CellDisplay key={i} value={cell} size={size} />
@@ -36,11 +36,11 @@ export const OverlayCancelQuestionDisplay: React.FC<Props> = ({ data }) => {
   return (
     <Flex align="center" justify="center" gap={4}>
       <Box>
-        <GridDisplay grid={data.leftGrid} size={40} />
+        <GridDisplay grid={data.leftGrid} size={52} />
       </Box>
       <Text fontSize="2xl" color="gray.400" fontWeight="700">→</Text>
       <Box>
-        <GridDisplay grid={data.rightGrid} size={40} />
+        <GridDisplay grid={data.rightGrid} size={52} />
       </Box>
     </Flex>
   );

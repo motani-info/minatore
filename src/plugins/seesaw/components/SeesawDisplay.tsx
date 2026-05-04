@@ -1,4 +1,5 @@
 import type { SeesawState } from '../types';
+import { ShapeIcon } from './ShapeIcon';
 
 interface SeesawDisplayProps {
   seesaw: SeesawState;
@@ -8,6 +9,7 @@ interface SeesawDisplayProps {
 /**
  * シーソー（天秤）をSVGで描画するコンポーネント
  * 傾きに応じてバーが傾く
+ * アイテムに shape が指定されている場合はSVG図形を表示する
  */
 export const SeesawDisplay: React.FC<SeesawDisplayProps> = ({ seesaw, size = 200 }) => {
   const { left, right, tilt } = seesaw;
@@ -37,8 +39,8 @@ export const SeesawDisplay: React.FC<SeesawDisplayProps> = ({ seesaw, size = 200
   const plateWidth = 50;
   const plateHeight = 8;
 
-  // 絵文字のサイズ
-  const emojiSize = 64;
+  // アイテムのサイズ
+  const itemSize = 48;
 
   return (
     <svg
@@ -94,12 +96,12 @@ export const SeesawDisplay: React.FC<SeesawDisplayProps> = ({ seesaw, size = 200
         rx={2}
       />
 
-      {/* 左のアイテム（絵文字 - foreignObjectで大きく表示） */}
+      {/* 左のアイテム */}
       <foreignObject
-        x={leftX - emojiSize / 2}
-        y={leftY - plateHeight - emojiSize - 4}
-        width={emojiSize}
-        height={emojiSize}
+        x={leftX - itemSize / 2}
+        y={leftY - plateHeight - itemSize - 4}
+        width={itemSize}
+        height={itemSize}
       >
         <div
           style={{
@@ -108,20 +110,24 @@ export const SeesawDisplay: React.FC<SeesawDisplayProps> = ({ seesaw, size = 200
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: `${emojiSize * 0.75}px`,
-            lineHeight: 1,
           }}
         >
-          {left.emoji}
+          {left.shape ? (
+            <ShapeIcon shape={left.shape} size={itemSize * 0.85} />
+          ) : (
+            <span style={{ fontSize: `${itemSize * 0.75}px`, lineHeight: 1 }}>
+              {left.emoji}
+            </span>
+          )}
         </div>
       </foreignObject>
 
-      {/* 右のアイテム（絵文字 - foreignObjectで大きく表示） */}
+      {/* 右のアイテム */}
       <foreignObject
-        x={rightX - emojiSize / 2}
-        y={rightY - plateHeight - emojiSize - 4}
-        width={emojiSize}
-        height={emojiSize}
+        x={rightX - itemSize / 2}
+        y={rightY - plateHeight - itemSize - 4}
+        width={itemSize}
+        height={itemSize}
       >
         <div
           style={{
@@ -130,11 +136,15 @@ export const SeesawDisplay: React.FC<SeesawDisplayProps> = ({ seesaw, size = 200
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: `${emojiSize * 0.75}px`,
-            lineHeight: 1,
           }}
         >
-          {right.emoji}
+          {right.shape ? (
+            <ShapeIcon shape={right.shape} size={itemSize * 0.85} />
+          ) : (
+            <span style={{ fontSize: `${itemSize * 0.75}px`, lineHeight: 1 }}>
+              {right.emoji}
+            </span>
+          )}
         </div>
       </foreignObject>
     </svg>

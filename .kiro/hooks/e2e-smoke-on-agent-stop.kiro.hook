@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "E2E Smoke Test on Agent Stop",
+  "description": "エージェントの実行完了時に、画面に関係するファイル（.tsx）の変更が含まれていた場合のみ、ビルドしてPlaywrightのスモークテストを実行する。",
+  "version": "1",
+  "when": {
+    "type": "agentStop"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "エージェントの実行が完了しました。今回の実行で画面に関係するファイル（src/ 配下の .tsx ファイル、ただし .test.tsx は除く）を変更した場合のみ、以下を実行してください：\n1. `npm run build` でビルド\n2. `npm run test:e2e` でPlaywrightスモークテストを実行\n3. テストが失敗した場合は結果を報告\n\n画面に関係するファイルを変更していない場合（型定義、ロジック、テストファイルのみの変更など）はスキップしてください。"
+  }
+}

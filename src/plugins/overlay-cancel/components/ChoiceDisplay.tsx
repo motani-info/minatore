@@ -10,8 +10,8 @@ interface Props {
 
 const CellDisplay: React.FC<{ value: CellValue }> = ({ value }) => (
   <Flex
-    w="28px"
-    h="28px"
+    w="36px"
+    h="36px"
     align="center"
     justify="center"
     border="1px solid"
@@ -19,10 +19,10 @@ const CellDisplay: React.FC<{ value: CellValue }> = ({ value }) => (
     bg="white"
   >
     {value === 'circle' && (
-      <Text fontSize="16px" lineHeight="1" color="blue.500" fontWeight="800">○</Text>
+      <Text fontSize="20px" lineHeight="1" color="blue.500" fontWeight="800">○</Text>
     )}
     {value === 'cross' && (
-      <Text fontSize="16px" lineHeight="1" color="red.500" fontWeight="800">×</Text>
+      <Text fontSize="20px" lineHeight="1" color="red.500" fontWeight="800">×</Text>
     )}
   </Flex>
 );

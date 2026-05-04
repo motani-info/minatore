@@ -11,9 +11,9 @@ interface Props {
 export const SyllableCountChoiceDisplay: React.FC<Props> = ({ data }) => {
   return (
     <VStack gap={1}>
-      <Flex wrap="wrap" justify="center" gap={0.5}>
+      <Flex wrap="wrap" justify="center" gap={1}>
         {Array.from({ length: data.count }).map((_, i) => (
-          <Text key={i} fontSize="24px" lineHeight="1">
+          <Text key={i} fontSize="30px" lineHeight="1">
             {data.emoji}
           </Text>
         ))}

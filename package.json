@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest --run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "npx playwright test --config playwright.config.ts"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.35.0",

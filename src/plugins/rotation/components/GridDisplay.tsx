@@ -21,10 +21,10 @@ export const GridDisplay: React.FC<GridDisplayProps> = ({ grid, size }) => {
       borderColor="#1a1a1a"
       role="img"
       aria-label="ぐりっど"
-      w={isLarge ? 'min(44vw, 180px)' : '76px'}
-      h={isLarge ? 'min(44vw, 180px)' : '76px'}
-      minW={isLarge ? '140px' : '76px'}
-      minH={isLarge ? '140px' : '76px'}
+      w={isLarge ? 'min(52vw, 220px)' : 'min(28vw, 100px)'}
+      h={isLarge ? 'min(52vw, 220px)' : 'min(28vw, 100px)'}
+      minW={isLarge ? '160px' : '80px'}
+      minH={isLarge ? '160px' : '80px'}
     >
       {grid.map((filled, index) => (
         <GridItem

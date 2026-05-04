@@ -4,6 +4,7 @@ import type { SeesawQuestionData, SeesawChoiceData, MarkType } from '../types';
 import { validateMarks } from '../seesawQuestion';
 import { useProgress } from '../../../framework/hooks/useProgress';
 import { FeedbackOverlay } from '../../../framework/components/FeedbackOverlay';
+import { ShapeIcon } from './ShapeIcon';
 
 interface SeesawAnswerUIProps {
   questionData: SeesawQuestionData;
@@ -29,7 +30,7 @@ export const SeesawAnswerUI: React.FC<SeesawAnswerUIProps> = ({
   const { heaviestIndex, lightestIndex } = choiceData;
   const { recordAnswer } = useProgress();
 
-  const [marks, setMarks] = useState<[MarkType, MarkType, MarkType]>([null, null, null]);
+  const [marks, setMarks] = useState<MarkType[]>(() => items.map(() => null));
   const [isAnswered, setIsAnswered] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -39,7 +40,7 @@ export const SeesawAnswerUI: React.FC<SeesawAnswerUIProps> = ({
     if (isAnswered) return;
 
     setMarks((prev) => {
-      const newMarks = [...prev] as [MarkType, MarkType, MarkType];
+      const newMarks = [...prev];
       const current = newMarks[index];
       if (current === null) {
         newMarks[index] = 'circle';
@@ -77,20 +78,20 @@ export const SeesawAnswerUI: React.FC<SeesawAnswerUIProps> = ({
   /** 次の問題へ */
   const handleNext = useCallback(() => {
     setShowFeedback(false);
-    setMarks([null, null, null]);
+    setMarks(items.map(() => null));
     setIsAnswered(false);
     setIsCorrect(null);
     onNext();
-  }, [onNext]);
+  }, [onNext, items]);
 
   /** やり直し */
   const handleRetry = useCallback(() => {
     setShowFeedback(false);
-    setMarks([null, null, null]);
+    setMarks(items.map(() => null));
     setIsAnswered(false);
     setIsCorrect(null);
     onRetry();
-  }, [onRetry]);
+  }, [onRetry, items]);
 
   // ○と×が1つずつあるか（提出可能か）
   const canSubmit = marks.includes('circle') && marks.includes('cross');
@@ -154,10 +155,14 @@ export const SeesawAnswerUI: React.FC<SeesawAnswerUIProps> = ({
                   _active={isAnswered ? {} : { transform: 'scale(0.95)' }}
                   position="relative"
                 >
-                  {/* 絵文字 */}
-                  <Text fontSize="36px" lineHeight="1">
-                    {item.emoji}
-                  </Text>
+                  {/* 絵文字またはSVG図形 */}
+                  {item.shape ? (
+                    <ShapeIcon shape={item.shape} size={36} />
+                  ) : (
+                    <Text fontSize="36px" lineHeight="1">
+                      {item.emoji}
+                    </Text>
+                  )}
 
                   {/* マーク表示 */}
                   {mark && (

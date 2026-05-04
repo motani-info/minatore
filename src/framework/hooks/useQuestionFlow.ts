@@ -23,11 +23,11 @@ export interface QuestionFlowState {
  * 問題出題フロー管理フック
  * 問題生成、選択肢選択、回答判定、フィードバック表示、次の問題への遷移を管理する
  */
-export function useQuestionFlow(questionType: QuestionType) {
+export function useQuestionFlow(questionType: QuestionType, initialQuestion?: Question) {
   const { recordAnswer } = useProgress();
 
   const [state, setState] = useState<QuestionFlowState>(() => ({
-    currentQuestion: questionType.generateQuestion(),
+    currentQuestion: initialQuestion ?? questionType.generateQuestion(),
     selectedIndex: null,
     isAnswered: false,
     isCorrect: null,

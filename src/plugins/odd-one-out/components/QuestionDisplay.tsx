@@ -75,7 +75,7 @@ const FigureCell: React.FC<{ figure: FigureDefinition; size: number }> = ({ figu
 
 export const OddOneOutQuestionDisplay: React.FC<Props> = ({ data }) => {
   const { baseFigure, mutatedFigure, gridSize, oddIndex } = data;
-  const cellSize = gridSize === 3 ? 60 : 48;
+  const cellSize = gridSize === 3 ? 72 : 56;
 
   return (
     <SimpleGrid columns={gridSize} gap={1} w="fit-content" mx="auto">

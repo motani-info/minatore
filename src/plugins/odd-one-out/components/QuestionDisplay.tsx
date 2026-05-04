@@ -6,8 +6,8 @@ interface Props {
 }
 
 /** 図形パーツを描画 */
-const PartRenderer: React.FC<{ part: FigurePart; cellSize: number }> = ({ part, cellSize }) => {
-  const scale = cellSize / 100;
+const PartRenderer: React.FC<{ part: FigurePart; cellSize: number }> = ({ part, cellSize: _cellSize }) => {
+  
 
   if (part.type === 'rect') {
     return (

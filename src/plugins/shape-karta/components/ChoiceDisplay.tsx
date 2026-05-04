@@ -1,4 +1,4 @@
-import { Box, Flex, SimpleGrid } from '@chakra-ui/react';
+import { Box, Flex } from '@chakra-ui/react';
 import type { ShapeKartaChoiceData, ShapeType, ShapeColor } from '../types';
 
 interface Props {

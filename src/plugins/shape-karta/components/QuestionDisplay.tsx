@@ -9,7 +9,7 @@ interface Props {
  * 図形と数カルタの問題表示
  * 指示条件をアイコン付きで表示する
  */
-export const ShapeKartaQuestionDisplay: React.FC<Props> = ({ data }) => {
+export const ShapeKartaQuestionDisplay: React.FC<Props> = ({ data: _data }) => {
   return (
     <Box textAlign="center">
       <Text fontSize="3xl" mb={2}>🎴</Text>

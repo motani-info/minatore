@@ -2,24 +2,16 @@ import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Container, Flex, Heading, Text, VStack, chakra } from '@chakra-ui/react';
 import { useProfile } from '../hooks/useProfile';
-import { useProgress } from '../hooks/useProgress';
 import { TabBar } from './TabBar';
 import { R } from './Ruby';
+import { ProfileIcon } from '../../assets/icons';
 
 export const ProfileScreen: React.FC = () => {
   const navigate = useNavigate();
   const { profile, updateName, updateAvatar, removeAvatar } = useProfile();
-  const { progress } = useProgress();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(profile.name);
-
-  const totalQuestions = progress
-    ? Object.values(progress.byType).reduce((s, t) => s + t.totalQuestions, 0)
-    : 0;
-  const totalCorrect = progress
-    ? Object.values(progress.byType).reduce((s, t) => s + t.correctAnswers, 0)
-    : 0;
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -110,10 +102,9 @@ export const ProfileScreen: React.FC = () => {
                 justify="center"
                 w="100%"
                 h="100%"
-                fontSize="40px"
                 color="gray.300"
               >
-                👤
+                <ProfileIcon size={48} color="#d1d5db" />
               </Flex>
             )}
             {/* カメラオーバーレイ */}
@@ -229,46 +220,6 @@ export const ProfileScreen: React.FC = () => {
               </chakra.button>
             </Flex>
           )}
-        </Box>
-
-        {/* 学習スタッツ */}
-        <Box
-          bg="white"
-          borderRadius="2xl"
-          p={5}
-          boxShadow="0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)"
-        >
-          <Text fontSize="xs" color="gray.400" fontWeight="600" mb={4}>
-            <R rt="がくしゅう">学習</R><R rt="きろく">記録</R>
-          </Text>
-          <Flex gap={4}>
-            <Box flex={1} textAlign="center">
-              <Text fontSize="2xl" fontWeight="800" color="gray.800">
-                {totalQuestions}
-              </Text>
-              <Text fontSize="xs" color="gray.400" fontWeight="500">
-                といた数
-              </Text>
-            </Box>
-            <Box w="1px" bg="gray.100" />
-            <Box flex={1} textAlign="center">
-              <Text fontSize="2xl" fontWeight="800" color="green.500">
-                {totalCorrect}
-              </Text>
-              <Text fontSize="xs" color="gray.400" fontWeight="500">
-                <R rt="せいかい">正解</R>
-              </Text>
-            </Box>
-            <Box w="1px" bg="gray.100" />
-            <Box flex={1} textAlign="center">
-              <Text fontSize="2xl" fontWeight="800" color="purple.500">
-                {totalQuestions > 0 ? `${Math.round((totalCorrect / totalQuestions) * 100)}%` : '—'}
-              </Text>
-              <Text fontSize="xs" color="gray.400" fontWeight="500">
-                <R rt="せいかい">正解</R>りつ
-              </Text>
-            </Box>
-          </Flex>
         </Box>
 
           </VStack>

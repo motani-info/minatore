@@ -144,6 +144,37 @@ describe('StorageService', () => {
       expect(progress.byType.counting.totalQuestions).toBe(1);
       expect(progress.byType.counting.correctAnswers).toBe(0);
     });
+
+    it('records startedAt only on the first answer', () => {
+      service.recordAnswer('rotation', true);
+      const first = service.loadProgress();
+      expect(first.startedAt).toBeDefined();
+      const firstStartedAt = first.startedAt;
+
+      // Second answer should not overwrite startedAt
+      service.recordAnswer('rotation', false);
+      const second = service.loadProgress();
+      expect(second.startedAt).toBe(firstStartedAt);
+    });
+
+    it('updates dailyRecords for the current day', () => {
+      service.recordAnswer('rotation', true);
+      const progress1 = service.loadProgress();
+      expect(progress1.dailyRecords).toBeDefined();
+      expect(progress1.dailyRecords!.length).toBe(1);
+
+      const today = new Date().toISOString().slice(0, 10);
+      expect(progress1.dailyRecords![0].date).toBe(today);
+      expect(progress1.dailyRecords![0].totalQuestions).toBe(1);
+      expect(progress1.dailyRecords![0].correctAnswers).toBe(1);
+
+      // Second answer on the same day should accumulate
+      service.recordAnswer('rotation', false);
+      const progress2 = service.loadProgress();
+      expect(progress2.dailyRecords!.length).toBe(1);
+      expect(progress2.dailyRecords![0].totalQuestions).toBe(2);
+      expect(progress2.dailyRecords![0].correctAnswers).toBe(1);
+    });
   });
 
   describe('getTotalProgress', () => {
@@ -184,6 +215,18 @@ describe('StorageService', () => {
 
     it('returns true on success', () => {
       expect(service.resetProgress()).toBe(true);
+    });
+
+    it('clears startedAt and dailyRecords after reset', () => {
+      service.recordAnswer('rotation', true);
+      const before = service.loadProgress();
+      expect(before.startedAt).toBeDefined();
+      expect(before.dailyRecords).toBeDefined();
+
+      service.resetProgress();
+      const after = service.loadProgress();
+      expect(after.startedAt).toBeUndefined();
+      expect(after.dailyRecords).toBeUndefined();
     });
   });
 

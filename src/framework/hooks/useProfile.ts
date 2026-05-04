@@ -24,9 +24,15 @@ export function useProfile() {
     setProfile(updated);
   }, []);
 
+  const updateAge = useCallback((age: number | null) => {
+    const updated = { ...loadProfile(), age };
+    saveProfile(updated);
+    setProfile(updated);
+  }, []);
+
   const reload = useCallback(() => {
     setProfile(loadProfile());
   }, []);
 
-  return { profile, updateName, updateAvatar, removeAvatar, reload };
+  return { profile, updateName, updateAvatar, removeAvatar, updateAge, reload };
 }

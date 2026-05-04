@@ -12,10 +12,11 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ current, total }) 
 
   return (
     <Flex as="nav" align="center" gap={3}>
+      {/* 左: ✕ボタン */}
       <chakra.button
         type="button"
         onClick={() => navigate('/')}
-        aria-label="ほーむにもどる"
+        aria-label="ホームにもどる"
         display="flex"
         alignItems="center"
         justifyContent="center"
@@ -33,6 +34,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ current, total }) 
         ✕
       </chakra.button>
 
+      {/* 中央: プログレスバー */}
       {showProgress && (
         <>
           <Box flex={1} h="6px" bg="whiteAlpha.300" borderRadius="full" overflow="hidden">
@@ -49,6 +51,30 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ current, total }) 
           </Text>
         </>
       )}
+
+      {/* 右: やめるボタン */}
+      <chakra.button
+        type="button"
+        onClick={() => navigate('/')}
+        aria-label="やめてホームにもどる"
+        display="flex"
+        alignItems="center"
+        gap={1}
+        minH="40px"
+        px={4}
+        py={2}
+        fontSize="sm"
+        fontWeight="700"
+        color="white"
+        bg="rgba(239, 68, 68, 0.7)"
+        borderRadius="full"
+        transition="all 0.15s"
+        _hover={{ bg: 'rgba(239, 68, 68, 0.85)' }}
+        _active={{ transform: 'scale(0.95)' }}
+        flexShrink={0}
+      >
+        やめる
+      </chakra.button>
     </Flex>
   );
 };

@@ -184,7 +184,7 @@ export const RandomQuizScreen: React.FC = () => {
                   </Text>
                 </Flex>
                 <Text fontSize="sm" color="gray.400" mt={1}>
-                  <R rt="せいかい">正解</R>りつ {percent}%
+                  <R rt="せいかい">正解</R><R rt="りつ">率</R> {percent}%
                 </Text>
               </Box>
 
@@ -261,7 +261,7 @@ export const RandomQuizScreen: React.FC = () => {
               <chakra.button
                 type="button"
                 onClick={() => navigate('/')}
-                aria-label="ほーむにもどる"
+                aria-label="ホームにもどる"
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
@@ -291,6 +291,29 @@ export const RandomQuizScreen: React.FC = () => {
               <Text fontSize="xs" fontWeight="700" color="whiteAlpha.800" flexShrink={0}>
                 {currentIndex + 1}/{TOTAL_QUESTIONS}
               </Text>
+
+              <chakra.button
+                type="button"
+                onClick={() => navigate('/')}
+                aria-label="やめてホームにもどる"
+                display="flex"
+                alignItems="center"
+                gap={1}
+                minH="40px"
+                px={4}
+                py={2}
+                fontSize="sm"
+                fontWeight="700"
+                color="white"
+                bg="rgba(239, 68, 68, 0.7)"
+                borderRadius="full"
+                transition="all 0.15s"
+                _hover={{ bg: 'rgba(239, 68, 68, 0.85)' }}
+                _active={{ transform: 'scale(0.95)' }}
+                flexShrink={0}
+              >
+                やめる
+              </chakra.button>
             </Flex>
 
             {/* 問題表示エリア */}

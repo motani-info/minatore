@@ -157,7 +157,7 @@ export function generatePuzzleQuestion(): Question<PuzzleQuestionData, PuzzleCho
     questionData: { targetGrid },
     choices,
     correctIndex,
-    instructionText: '2つのぴーすをあわせると\nおてほんになるのはどれ？',
+    instructionText: '2つのピースを合わせると\nお手本になるのはどれ？',
   };
 }
 

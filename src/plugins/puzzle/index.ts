@@ -11,7 +11,7 @@ import { registry } from '../../registry/questionTypeRegistry';
  */
 export const puzzleQuestionType: QuestionType<PuzzleQuestionData, PuzzleChoiceData> = {
   id: 'puzzle',
-  displayName: 'ずけいこうせい',
+  displayName: '図形パズル',
   icon: '🧩',
   generateQuestion: generatePuzzleQuestion,
   QuestionDisplay: PuzzleQuestionDisplay,

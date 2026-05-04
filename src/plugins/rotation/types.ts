@@ -5,8 +5,8 @@
 /** 2×2グリッドの型（[上左, 上右, 下左, 下右]） */
 export type Grid = [boolean, boolean, boolean, boolean];
 
-/** 回転方向 */
-export type RotationDirection = 'right90' | 'left90' | 'rotate180';
+/** 回転方向（右/左 × 1回/2回） */
+export type RotationDirection = 'right1' | 'left1' | 'right2' | 'left2';
 
 /** 回転図形問題の問題データ */
 export interface RotationQuestionData {

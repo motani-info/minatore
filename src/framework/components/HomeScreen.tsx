@@ -5,6 +5,14 @@ import { useProgress } from '../hooks/useProgress';
 import { useProfile } from '../hooks/useProfile';
 import { TabBar } from './TabBar';
 import { R } from './Ruby';
+import { RotationIcon, OverlayIcon, PuzzleIcon, DiceIcon, ProfileIcon } from '../../assets/icons';
+
+/** SVGアイコンのマッピング（実装済み単元用） */
+const UNIT_ICONS: Record<string, React.FC<{ size?: number; color?: string }>> = {
+  rotation: RotationIcon,
+  overlay: OverlayIcon,
+  puzzle: PuzzleIcon,
+};
 
 /** 単元カテゴリ定義 */
 interface UnitDef {
@@ -35,6 +43,8 @@ const CATEGORIES: CategoryDef[] = [
       rotation: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)',
       overlay: 'linear-gradient(135deg, #2563eb 0%, #60a5fa 100%)',
       puzzle: 'linear-gradient(135deg, #ec4899 0%, #f9a8d4 100%)',
+      'overlay-cancel': 'linear-gradient(135deg, #0891b2 0%, #67e8f9 100%)',
+      'odd-one-out': 'linear-gradient(135deg, #dc2626 0%, #fca5a5 100%)',
     },
     unimplementedGradient: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)',
     unimplementedTextColor: '#7c3aed',
@@ -42,6 +52,8 @@ const CATEGORIES: CategoryDef[] = [
       { id: 'rotation', name: '回転図形', icon: '🔄', implemented: true },
       { id: 'overlay', name: '重ね図形', icon: '🔲', implemented: true },
       { id: 'puzzle', name: '図形パズル', icon: '🧩', implemented: true },
+      { id: 'overlay-cancel', name: '折り重ね（相殺）', icon: '🔲', implemented: true },
+      { id: 'odd-one-out', name: '異図形発見', icon: '🔍', implemented: true },
       { id: 'position', name: '位置の移動', icon: '➡️', implemented: false },
       { id: 'perspective', name: '四方観察', icon: '👀', implemented: false },
       { id: 'copy', name: '模写', icon: '✏️', implemented: false },
@@ -63,13 +75,22 @@ const CATEGORIES: CategoryDef[] = [
   {
     title: '数量・推理',
     color: '#059669',
-    implementedGradients: {},
+    implementedGradients: {
+      seesaw: 'linear-gradient(135deg, #059669 0%, #34d399 100%)',
+      'shape-karta': 'linear-gradient(135deg, #d97706 0%, #fbbf24 100%)',
+      'syllable-count': 'linear-gradient(135deg, #7c3aed 0%, #c4b5fd 100%)',
+      'one-to-one': 'linear-gradient(135deg, #0284c7 0%, #7dd3fc 100%)',
+    },
     unimplementedGradient: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
     unimplementedTextColor: '#059669',
     units: [
+      { id: 'seesaw', name: '比較（重さ）', icon: '⚖️', implemented: true },
+      { id: 'shape-karta', name: '図形と数カルタ', icon: '🎴', implemented: true },
+      { id: 'syllable-count', name: '文字数あつまり', icon: '🔤', implemented: true },
+      { id: 'one-to-one', name: '1対1対応', icon: '🐤', implemented: true },
       { id: 'counting', name: '数', icon: '🔢', implemented: false },
       { id: 'science', name: '理科的常識', icon: '🔬', implemented: false },
-      { id: 'reasoning', name: '推理', icon: '⚖️', implemented: false },
+      { id: 'reasoning', name: '推理', icon: '🧠', implemented: false },
       { id: 'elimination', name: '選択抹消', icon: '✂️', implemented: false },
     ],
   },
@@ -89,14 +110,6 @@ export const HomeScreen: React.FC = () => {
   const navigate = useNavigate();
   const { progress } = useProgress();
   const { profile } = useProfile();
-
-  const totalQuestions = progress
-    ? Object.values(progress.byType).reduce((s, t) => s + t.totalQuestions, 0)
-    : 0;
-  const totalCorrect = progress
-    ? Object.values(progress.byType).reduce((s, t) => s + t.correctAnswers, 0)
-    : 0;
-  const progressPercent = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
 
   const handleUnitTap = (unit: UnitDef) => {
     if (unit.implemented && registry.has(unit.id)) {
@@ -158,28 +171,10 @@ export const HomeScreen: React.FC = () => {
                     objectFit="cover"
                   />
                 ) : (
-                  <Text fontSize="20px" color="gray.400">👤</Text>
+                  <ProfileIcon size={24} color="#9ca3af" />
                 )}
               </chakra.button>
             </Flex>
-
-            {/* プログレスバー */}
-            <Box>
-              <Box h="6px" bg="gray.200" borderRadius="full" overflow="hidden">
-                <Box
-                  h="100%"
-                  w={`${progressPercent}%`}
-                  bg="linear-gradient(90deg, #34d399, #10b981)"
-                  borderRadius="full"
-                  transition="width 0.4s ease"
-                />
-              </Box>
-              <Text fontSize="xs" color="gray.400" mt={2}>
-                {totalQuestions > 0
-                  ? <>{progressPercent}% — {totalCorrect}問<R rt="せいかい">正解</R> / {totalQuestions}問中</>
-                  : <>まだ<R rt="もんだい">問題</R>をといていません</>}
-              </Text>
-            </Box>
 
             {/* ランダム10問カード */}
             <chakra.button
@@ -236,7 +231,7 @@ export const HomeScreen: React.FC = () => {
                 position="relative"
                 zIndex={1}
               >
-                <Text fontSize="28px" lineHeight="1">🎲</Text>
+                <Text fontSize="28px" lineHeight="1"><DiceIcon size={32} color="white" /></Text>
               </Flex>
               <Box position="relative" zIndex={1}>
                 <Text fontSize="lg" fontWeight="800" color="white">
@@ -312,11 +307,12 @@ export const HomeScreen: React.FC = () => {
                               position="absolute"
                               right="12px"
                               bottom="12px"
-                              fontSize="36px"
                               opacity={0.25}
                               lineHeight="1"
                             >
-                              {unit.icon}
+                              {UNIT_ICONS[unit.id]
+                                ? (() => { const Icon = UNIT_ICONS[unit.id]; return <Icon size={36} color="white" />; })()
+                                : <Text fontSize="36px">{unit.icon}</Text>}
                             </Box>
                           </>
                         )}
@@ -340,14 +336,14 @@ export const HomeScreen: React.FC = () => {
 
                         {/* テキスト */}
                         <Box position="relative" zIndex={1}>
-                          <Text
-                            fontSize="xs"
+                          <Box
                             color={unit.implemented ? 'whiteAlpha.800' : cat.unimplementedTextColor}
-                            fontWeight="500"
                             opacity={unit.implemented ? 1 : 0.7}
                           >
-                            {unit.icon}
-                          </Text>
+                            {UNIT_ICONS[unit.id]
+                              ? (() => { const Icon = UNIT_ICONS[unit.id]; return <Icon size={16} color="currentColor" />; })()
+                              : <Text fontSize="xs" fontWeight="500">{unit.icon}</Text>}
+                          </Box>
                           <Text
                             fontSize="sm"
                             fontWeight="700"

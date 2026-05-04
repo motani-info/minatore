@@ -4,6 +4,8 @@ export interface ProfileData {
   name: string;
   /** アバター画像（Base64 Data URL） */
   avatarUrl: string | null;
+  /** 年齢（歳） */
+  age: number | null;
 }
 
 const STORAGE_KEY = 'exam-app-profile';
@@ -11,6 +13,7 @@ const STORAGE_KEY = 'exam-app-profile';
 const DEFAULT_PROFILE: ProfileData = {
   name: '',
   avatarUrl: null,
+  age: null,
 };
 
 /** プロフィールを読み込む */
@@ -23,6 +26,7 @@ export function loadProfile(): ProfileData {
       return {
         name: typeof parsed.name === 'string' ? parsed.name : '',
         avatarUrl: typeof parsed.avatarUrl === 'string' ? parsed.avatarUrl : null,
+        age: typeof parsed.age === 'number' ? parsed.age : null,
       };
     }
     return { ...DEFAULT_PROFILE };

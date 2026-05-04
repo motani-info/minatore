@@ -111,7 +111,7 @@ export function generateOverlayQuestion(): Question<OverlayQuestionData, Overlay
     questionData: { grid },
     choices,
     correctIndex,
-    instructionText: 'パタンとみぎにおると\nどうなりますか？',
+    instructionText: 'パタンと右におると\nどうなりますか？',
   };
 }
 

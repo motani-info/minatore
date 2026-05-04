@@ -8,12 +8,26 @@ export interface TypeProgress {
   correctAnswers: number;
 }
 
+/** 日別の学習記録 */
+export interface DailyRecord {
+  /** 日付 (YYYY-MM-DD) */
+  date: string;
+  /** その日の問題数 */
+  totalQuestions: number;
+  /** その日の正解数 */
+  correctAnswers: number;
+}
+
 /** 進捗データ全体 */
 export interface ProgressData {
   /** 問題タイプごとの進捗 */
   byType: Record<QuestionTypeId, TypeProgress>;
   /** 最終更新日時 */
   lastUpdated: string;
+  /** 学習開始日時 (ISO string) — 初回回答時に自動記録 */
+  startedAt?: string;
+  /** 日別の学習記録 */
+  dailyRecords?: DailyRecord[];
 }
 
 /**
@@ -91,6 +105,7 @@ export class StorageService {
   /**
    * 回答結果を記録する。
    * 指定された問題タイプの累計問題数を +1 し、正解なら累計正答数も +1 する。
+   * 初回回答時に startedAt を記録し、dailyRecords に当日のレコードを更新する。
    */
   recordAnswer(typeId: QuestionTypeId, isCorrect: boolean): boolean {
     try {
@@ -103,6 +118,30 @@ export class StorageService {
       data.byType[typeId].totalQuestions += 1;
       if (isCorrect) {
         data.byType[typeId].correctAnswers += 1;
+      }
+
+      // 初回回答時に startedAt を記録（既に存在する場合は上書きしない）
+      if (!data.startedAt) {
+        data.startedAt = new Date().toISOString();
+      }
+
+      // dailyRecords に当日のレコードを更新
+      const today = new Date().toISOString().slice(0, 10);
+      if (!data.dailyRecords) {
+        data.dailyRecords = [];
+      }
+      const todayRecord = data.dailyRecords.find((r) => r.date === today);
+      if (todayRecord) {
+        todayRecord.totalQuestions += 1;
+        if (isCorrect) {
+          todayRecord.correctAnswers += 1;
+        }
+      } else {
+        data.dailyRecords.push({
+          date: today,
+          totalQuestions: 1,
+          correctAnswers: isCorrect ? 1 : 0,
+        });
       }
 
       data.lastUpdated = new Date().toISOString();

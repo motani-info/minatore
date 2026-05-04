@@ -22,16 +22,64 @@ body {
   min-height: 100dvh;
 }
 
+/* ============================================================
+   ルビ（ふりがな）— 教育的配慮のあるデザイン
+   
+   方針:
+   - 漢字に自然に触れさせる教育装置として機能する
+   - デザインの美しさを損なわない（さりげなく添える）
+   - ルビの有無で行間やレイアウトが変わらない
+   ============================================================ */
+
+/* ルビを含む可能性のある全要素に、ルビ分のスペースを常に確保 */
+/* これにより、ルビの有無で行の高さが変わらない */
+ruby {
+  ruby-align: center;
+  /* ルビの上下位置を微調整 */
+  ruby-position: over;
+}
+
+/* ルビテキスト: 小さく、控えめに */
+rt {
+  font-size: 0.5em;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: inherit;
+  opacity: 0.55;
+  /* ルビと親文字の間隔を自然に */
+  line-height: 1;
+}
+
+/* ルビのある行とない行の高さを統一するため、
+   テキスト要素にルビ分の余白を常に確保 */
+p, h1, h2, h3, h4, span, a, label {
+  /* ルビ分（約0.5em）を含めた行間 */
+  padding-top: 0.3em;
+  line-height: 1.8;
+}
+
+/* ボタン内のルビは更に控えめに */
+button rt, [role="button"] rt {
+  font-size: 0.45em;
+  opacity: 0.45;
+}
+
+/* ボタンのline-heightはデフォルトに近く */
+button, [role="button"] {
+  line-height: 1.6;
+  padding-top: 0;
+}
+
 #root {
-  max-width: 460px;
+  width: 100%;
+  max-width: 920px;
   min-height: 100dvh;
   margin: 0 auto;
   background: #f5f5fa;
   position: relative;
 }
 
-/* PC表示時のスマホフレーム風 */
-@media (min-width: 500px) {
+@media (min-width: 960px) {
   body {
     background: #e5e7eb;
     display: flex;
@@ -39,7 +87,6 @@ body {
   }
   #root {
     box-shadow: 0 0 40px rgba(0,0,0,0.1);
-    border-radius: 0;
   }
 }
 

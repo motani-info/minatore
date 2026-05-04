@@ -45,11 +45,18 @@ export function useProgress() {
     setProgress(storageService.loadProgress());
   }, []);
 
+  /** 全進捗データをリセットする */
+  const resetAll = useCallback(() => {
+    storageService.resetProgress();
+    setProgress(storageService.loadProgress());
+  }, []);
+
   return {
     progress,
     totalProgress,
     formattedTotal,
     recordAnswer,
     reload,
+    resetAll,
   };
 }

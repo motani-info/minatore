@@ -11,7 +11,7 @@ import { registry } from '../../registry/questionTypeRegistry';
  */
 export const overlayQuestionType: QuestionType<OverlayQuestionData, OverlayChoiceData> = {
   id: 'overlay',
-  displayName: 'かさねずけい',
+  displayName: '重ね図形',
   icon: '🔲',
   generateQuestion: generateOverlayQuestion,
   QuestionDisplay: OverlayQuestionDisplay,

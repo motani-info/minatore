@@ -1,15 +1,17 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Flex, Text, VStack, chakra } from '@chakra-ui/react';
+import { HomeIcon, ChartIcon, ProfileIcon } from '../../assets/icons';
 
 interface TabItem {
   path: string;
   label: string;
-  icon: string;
+  Icon: React.FC<{ size?: number; color?: string }>;
 }
 
 const TABS: TabItem[] = [
-  { path: '/', label: 'ホーム', icon: '🏠' },
-  { path: '/profile', label: 'プロフィール', icon: '👤' },
+  { path: '/', label: 'ホーム', Icon: HomeIcon },
+  { path: '/history', label: 'きろく', Icon: ChartIcon },
+  { path: '/profile', label: 'プロフィール', Icon: ProfileIcon },
 ];
 
 export const TabBar: React.FC = () => {
@@ -52,9 +54,10 @@ export const TabBar: React.FC = () => {
             _active={{ transform: 'scale(0.95)' }}
           >
             <VStack gap={0.5}>
-              <Text fontSize="20px" lineHeight="1" opacity={isActive ? 1 : 0.5}>
-                {tab.icon}
-              </Text>
+              <tab.Icon
+                size={22}
+                color={isActive ? '#7c3aed' : '#9ca3af'}
+              />
               <Text
                 fontSize="2xs"
                 fontWeight="700"

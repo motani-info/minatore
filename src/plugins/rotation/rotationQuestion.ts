@@ -2,7 +2,7 @@ import type { Question } from '../../types/question';
 import type { Grid, RotationDirection, RotationQuestionData, RotationChoiceData } from './types';
 
 /**
- * グリッドを右90度回転する
+ * グリッドを右に1回まわす（時計回り90度）
  * [0][1]    [2][0]
  * [2][3] -> [3][1]
  */
@@ -11,7 +11,7 @@ export function rotateRight90(grid: Grid): Grid {
 }
 
 /**
- * グリッドを左90度回転する
+ * グリッドを左に1回まわす（反時計回り90度）
  * [0][1]    [1][3]
  * [2][3] -> [0][2]
  */
@@ -20,7 +20,7 @@ export function rotateLeft90(grid: Grid): Grid {
 }
 
 /**
- * グリッドを180度回転する
+ * グリッドを180度回転する（右に2回 = 左に2回）
  * [0][1]    [3][2]
  * [2][3] -> [1][0]
  */
@@ -31,11 +31,13 @@ export function rotate180(grid: Grid): Grid {
 /** 指定方向にグリッドを回転する */
 export function rotateGrid(grid: Grid, direction: RotationDirection): Grid {
   switch (direction) {
-    case 'right90':
+    case 'right1':
       return rotateRight90(grid);
-    case 'left90':
+    case 'left1':
       return rotateLeft90(grid);
-    case 'rotate180':
+    case 'right2':
+      return rotate180(grid);
+    case 'left2':
       return rotate180(grid);
   }
 }
@@ -45,7 +47,6 @@ export function rotateGrid(grid: Grid, direction: RotationDirection): Grid {
  * 少なくとも1つのtrue、1つのfalseを保証する
  */
 export function generateRandomGrid(): Grid {
-  // 全true(1111)と全false(0000)を除外した14パターンからランダムに選択
   let grid: Grid;
   do {
     grid = [
@@ -97,15 +98,17 @@ export function generateDistractors(correctGrid: Grid, count: number): Grid[] {
   return distractors;
 }
 
-/** 回転方向に対応するひらがな指示テキストを生成する */
+/** 回転方向に対応する指示テキストを生成する */
 function getInstructionText(direction: RotationDirection): string {
   switch (direction) {
-    case 'right90':
-      return 'みぎに90どかいてんさせると\nどれになりますか？';
-    case 'left90':
-      return 'ひだりに90どかいてんさせると\nどれになりますか？';
-    case 'rotate180':
-      return '180どかいてんさせると\nどれになりますか？';
+    case 'right1':
+      return '右に1かいまわすと\nどれになりますか？';
+    case 'left1':
+      return '左に1かいまわすと\nどれになりますか？';
+    case 'right2':
+      return '右に2かいまわすと\nどれになりますか？';
+    case 'left2':
+      return '左に2かいまわすと\nどれになりますか？';
   }
 }
 
@@ -114,7 +117,7 @@ export function generateRotationQuestion(): Question<RotationQuestionData, Rotat
   const originalGrid = generateRandomGrid();
 
   // 回転方向のランダム選択
-  const directions: RotationDirection[] = ['right90', 'left90', 'rotate180'];
+  const directions: RotationDirection[] = ['right1', 'left1', 'right2', 'left2'];
   const direction = directions[Math.floor(Math.random() * directions.length)];
 
   // 正解のグリッドを計算

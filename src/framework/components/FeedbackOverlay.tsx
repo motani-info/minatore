@@ -1,4 +1,5 @@
 import { Box, Flex, Text, VStack, chakra } from '@chakra-ui/react';
+import { R } from './Ruby';
 
 interface FeedbackOverlayProps {
   isCorrect: boolean;
@@ -41,7 +42,6 @@ export const FeedbackOverlay: React.FC<FeedbackOverlayProps> = ({
         maxW="320px"
         overflow="hidden"
       >
-        {/* 上部カラーエリア */}
         <Box bg={bgGradient} py={10} textAlign="center">
           <Flex
             align="center"
@@ -65,12 +65,11 @@ export const FeedbackOverlay: React.FC<FeedbackOverlayProps> = ({
           </Flex>
         </Box>
 
-        {/* 下部テキスト＋ボタン */}
         <VStack gap={4} p={7} align="center">
-          <Text fontSize="xl" fontWeight="800" color="gray.800">
-            {isCorrect ? 'せいかい！' : 'ざんねん…'}
+          <Text fontSize="xl" fontWeight="800" color="gray.800" lineHeight="1.4" pt={0}>
+            {isCorrect ? <><R rt="せいかい">正解</R>！</> : 'ざんねん…'}
           </Text>
-          <Text fontSize="sm" color="gray.400" mt={-2}>
+          <Text fontSize="sm" color="gray.400" mt={-2} pt={0}>
             {isCorrect ? 'よくできました' : 'つぎはがんばろう'}
           </Text>
 
@@ -92,7 +91,7 @@ export const FeedbackOverlay: React.FC<FeedbackOverlayProps> = ({
               cursor="pointer"
               boxShadow="0 4px 12px rgba(16, 185, 129, 0.3)"
             >
-              つぎのもんだいへ
+              つぎの<R rt="もんだい">問題</R>へ
             </chakra.button>
           ) : (
             <VStack gap={3} w="100%">
@@ -114,7 +113,7 @@ export const FeedbackOverlay: React.FC<FeedbackOverlayProps> = ({
                   cursor="pointer"
                   boxShadow="0 4px 12px rgba(245, 158, 11, 0.3)"
                 >
-                  もういちどやる
+                  もう一回やる
                 </chakra.button>
               )}
               <chakra.button
@@ -134,7 +133,7 @@ export const FeedbackOverlay: React.FC<FeedbackOverlayProps> = ({
                 cursor="pointer"
                 boxShadow="0 4px 12px rgba(124, 108, 240, 0.3)"
               >
-                つぎのもんだいへ
+                つぎの<R rt="もんだい">問題</R>へ
               </chakra.button>
             </VStack>
           )}

@@ -108,7 +108,7 @@ export const RandomQuizScreen: React.FC = () => {
     }
 
     return (
-      <Container maxW="640px" minH="100dvh" py={0} px={0}>
+      <Container maxW="920px" minH="100dvh" py={0} px={0}>
         <VStack gap={0} align="stretch" minH="100dvh">
           {/* ヘッダー */}
           <Box
@@ -241,7 +241,7 @@ export const RandomQuizScreen: React.FC = () => {
   const isAnswered = selectedIndex !== null;
 
   return (
-    <Container maxW="640px" minH="100dvh" py={0} px={0}>
+    <Container maxW="920px" minH="100dvh" py={0} px={0}>
       <VStack gap={0} align="stretch" minH="100dvh">
         {/* 上部: グラデーション背景エリア */}
         <Box

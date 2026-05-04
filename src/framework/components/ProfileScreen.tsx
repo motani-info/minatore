@@ -38,7 +38,7 @@ export const ProfileScreen: React.FC = () => {
   return (
     <Flex direction="column" minH="100dvh">
       <Box flex={1}>
-        <Container maxW="640px" py={{ base: 6, sm: 8 }} px={{ base: 5, sm: 6 }}>
+        <Container maxW="920px" py={{ base: 6, sm: 8 }} px={{ base: 5, sm: 6 }}>
           <VStack gap={8} align="stretch">
 
             {/* ヘッダー */}

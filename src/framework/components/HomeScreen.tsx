@@ -107,7 +107,7 @@ export const HomeScreen: React.FC = () => {
   return (
     <Flex direction="column" minH="100dvh">
       <Box flex={1}>
-        <Container maxW="640px" py={{ base: 6, sm: 8 }} px={{ base: 5, sm: 6 }}>
+        <Container maxW="920px" py={{ base: 6, sm: 8 }} px={{ base: 5, sm: 6 }}>
           <VStack gap={7} align="stretch">
 
             {/* ヘッダー */}
@@ -120,12 +120,12 @@ export const HomeScreen: React.FC = () => {
                   color="gray.800"
                   lineHeight="1.2"
                 >
-                  <R rt="もんだい">問題</R><R rt="れんしゅう">練習</R>
+                  みなトレ
                 </Heading>
                 <Text fontSize="sm" color="gray.400" mt={1}>
                   {profile.name
                     ? <>{profile.name}さんの <R rt="れんしゅう">練習</R></>
-                    : <>国立小学校<R rt="じゅけん">受験</R></>}
+                    : <>国立小学校<R rt="じゅけん">受験</R> <R rt="もんだい">問題</R><R rt="れんしゅう">練習</R></>}
                 </Text>
               </Box>
               <chakra.button

@@ -8,8 +8,8 @@ interface TabItem {
 }
 
 const TABS: TabItem[] = [
-  { path: '/', label: 'ほーむ', icon: '🏠' },
-  { path: '/profile', label: 'ぷろふぃーる', icon: '👤' },
+  { path: '/', label: 'ホーム', icon: '🏠' },
+  { path: '/profile', label: 'プロフィール', icon: '👤' },
 ];
 
 export const TabBar: React.FC = () => {

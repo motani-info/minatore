@@ -7,7 +7,8 @@
 }
 
 html {
-  font-size: 100%;
+  /* 子供向け: 全体のテキスト・図形サイズを1.5倍に拡大 */
+  font-size: 150%;
   -webkit-text-size-adjust: 100%;
 }
 

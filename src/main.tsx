@@ -20,10 +20,12 @@ import { registerOverlayShapePlugin } from './plugins/overlay-shape';
 import { registerLineOverlayPlugin } from './plugins/line-overlay';
 import { registerWaterVolumePlugin } from './plugins/water-volume';
 import { registerAreaComparePlugin } from './plugins/area-compare';
+import { registerRotationSequencePlugin } from './plugins/rotation-sequence';
 
 // プラグイン登録
 registerRotationPlugin();
 registerSymbolRotationPlugin();
+registerRotationSequencePlugin();
 registerOverlayPlugin();
 registerOverlayAdvancedPlugin();
 registerOverlayShapePlugin();

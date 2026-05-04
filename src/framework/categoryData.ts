@@ -50,6 +50,7 @@ export const CATEGORIES: CategoryDef[] = [
     implementedGradients: {
       rotation: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)',
       'symbol-rotation': 'linear-gradient(135deg, #9333ea 0%, #c084fc 100%)',
+      'rotation-sequence': 'linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%)',
       overlay: 'linear-gradient(135deg, #2563eb 0%, #60a5fa 100%)',
       'overlay-advanced': 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)',
       'overlay-shape': 'linear-gradient(135deg, #1e40af 0%, #2563eb 100%)',
@@ -63,6 +64,7 @@ export const CATEGORIES: CategoryDef[] = [
     units: [
       { id: 'rotation', name: '回転図形', icon: '🔄', implemented: true, group: '回転図形', subLabel: '基本' },
       { id: 'symbol-rotation', name: '回転図形', icon: '🎯', implemented: true, group: '回転図形', subLabel: '応用' },
+      { id: 'rotation-sequence', name: '回転図形', icon: '🔄', implemented: true, group: '回転図形', subLabel: '連続' },
       { id: 'overlay', name: '重ね図形', icon: '🔲', implemented: true, group: '重ね図形', subLabel: '基本' },
       { id: 'overlay-advanced', name: '重ね図形', icon: '🔲', implemented: true, group: '重ね図形', subLabel: '応用' },
       { id: 'overlay-shape', name: '重ね図形', icon: '🔲', implemented: true, group: '重ね図形', subLabel: '図形' },
@@ -75,18 +77,6 @@ export const CATEGORIES: CategoryDef[] = [
       { id: 'copy', name: '模写', icon: '✏️', implemented: false },
       { id: 'mirror', name: '鏡図形', icon: '🪞', implemented: false },
       { id: 'sequence', name: '系列完成', icon: '🔢', implemented: false },
-    ],
-  },
-  {
-    id: 'memory',
-    title: '記憶',
-    color: '#2563eb',
-    implementedGradients: {},
-    unimplementedGradient: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
-    unimplementedTextColor: '#2563eb',
-    units: [
-      { id: 'story-memory', name: 'お話の記憶', icon: '📖', implemented: false },
-      { id: 'visual-memory', name: '視覚記憶', icon: '🖼️', implemented: false },
     ],
   },
   {
@@ -118,17 +108,6 @@ export const CATEGORIES: CategoryDef[] = [
       { id: 'science', name: '理科的常識', icon: '🔬', implemented: false },
       { id: 'reasoning', name: '推理', icon: '🧠', implemented: false },
       { id: 'elimination', name: '選択抹消', icon: '✂️', implemented: false },
-    ],
-  },
-  {
-    id: 'writing',
-    title: '運筆',
-    color: '#d97706',
-    implementedGradients: {},
-    unimplementedGradient: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
-    unimplementedTextColor: '#d97706',
-    units: [
-      { id: 'line-drawing', name: '線引き', icon: '〰️', implemented: false },
     ],
   },
 ];

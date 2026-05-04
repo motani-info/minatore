@@ -1,10 +1,7 @@
-import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Container, Flex, Heading, Text, VStack, chakra } from '@chakra-ui/react';
-import { useProgress } from '../hooks/useProgress';
+import { Box, Container, Flex, Heading, Text, VStack, SimpleGrid, chakra } from '@chakra-ui/react';
 import { useProfile } from '../hooks/useProfile';
 import { CATEGORIES, buildTabsForCategory } from '../categoryData';
-import type { CategoryDef, TabDef } from '../categoryData';
 import { registry } from '../../registry/questionTypeRegistry';
 import { TabBar } from './TabBar';
 import { R } from './Ruby';
@@ -22,6 +19,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 const TYPE_THEMES: Record<string, { gradient: string; accent: string }> = {
   rotation: { gradient: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', accent: '#7c3aed' },
   'symbol-rotation': { gradient: 'linear-gradient(135deg, #9333ea 0%, #c084fc 100%)', accent: '#9333ea' },
+  'rotation-sequence': { gradient: 'linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%)', accent: '#6d28d9' },
   overlay: { gradient: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)', accent: '#3b82f6' },
   'overlay-advanced': { gradient: 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)', accent: '#1d4ed8' },
   'overlay-shape': { gradient: 'linear-gradient(135deg, #1e40af 0%, #2563eb 100%)', accent: '#1e40af' },
@@ -41,7 +39,6 @@ const TYPE_THEMES: Record<string, { gradient: string; accent: string }> = {
 
 export const HomeScreen: React.FC = () => {
   const navigate = useNavigate();
-  const { progress } = useProgress();
   const { profile } = useProfile();
 
   return (
@@ -192,26 +189,90 @@ export const HomeScreen: React.FC = () => {
                   </Flex>
 
                   {hasImplemented ? (
-                    <VStack gap={3} align="stretch">
-                      {tabs.map((tab) => (
-                        <UnitPanel
-                          key={tab.label}
-                          tab={tab}
-                          category={cat}
-                          progress={progress}
-                        />
-                      ))}
-                    </VStack>
+                    <SimpleGrid columns={{ base: 2, sm: 3, md: 4 }} gap={3}>
+                      {tabs.map((tab) => {
+                        const firstUnit = tab.units[0];
+                        const theme = TYPE_THEMES[firstUnit.id]
+                          ?? { gradient: `linear-gradient(135deg, ${cat.color} 0%, ${cat.color}88 100%)`, accent: cat.color };
+                        const subCount = tab.units.length;
+
+                        // 例題プレビュー用: 最初のユニットのQuestionDisplayを取得
+                        const previewQt = registry.get(firstUnit.id);
+                        const PreviewDisplay = previewQt?.QuestionDisplay;
+                        const previewQuestion = previewQt?.generateQuestion();
+
+                        return (
+                          <chakra.button
+                            key={tab.label}
+                            type="button"
+                            onClick={() => navigate(`/theme/${cat.id}`, { state: { initialTab: tab.label } })}
+                            aria-label={tab.label}
+                            display="flex"
+                            flexDirection="column"
+                            alignItems="center"
+                            justifyContent="space-between"
+                            p={2.5}
+                            aspectRatio="1"
+                            bg={theme.gradient}
+                            borderRadius="xl"
+                            boxShadow="0 2px 10px rgba(0,0,0,0.1)"
+                            cursor="pointer"
+                            transition="all 0.2s ease"
+                            _hover={{ transform: 'translateY(-2px)', boxShadow: '0 6px 20px rgba(0,0,0,0.15)' }}
+                            _active={{ transform: 'scale(0.97)' }}
+                            textAlign="center"
+                            position="relative"
+                            overflow="hidden"
+                          >
+                            {/* 背景装飾 */}
+                            <Box position="absolute" right="-6px" top="-6px" w="32px" h="32px" bg="whiteAlpha.200" borderRadius="full" />
+
+                            {/* 例題プレビュー */}
+                            <Flex
+                              flex={1}
+                              align="center"
+                              justify="center"
+                              w="100%"
+                              overflow="hidden"
+                              pointerEvents="none"
+                              transform="scale(0.45)"
+                              transformOrigin="center center"
+                              bg="whiteAlpha.300"
+                              borderRadius="lg"
+                              p={1}
+                            >
+                              {PreviewDisplay && previewQuestion ? (
+                                <PreviewDisplay data={previewQuestion.questionData} />
+                              ) : (
+                                <Text fontSize="28px" lineHeight="1">{firstUnit.icon}</Text>
+                              )}
+                            </Flex>
+
+                            {/* ラベル */}
+                            <Box w="100%" mt={1}>
+                              <Text fontSize="2xs" fontWeight="800" color="white" lineHeight="1.2">
+                                {tab.label}
+                              </Text>
+                              {subCount > 1 && (
+                                <Text fontSize="2xs" fontWeight="500" color="whiteAlpha.700" lineHeight="1.2">
+                                  {tab.units.map(u => u.subLabel ?? u.name).join('・')}
+                                </Text>
+                              )}
+                            </Box>
+                          </chakra.button>
+                        );
+                      })}
+                    </SimpleGrid>
                   ) : (
                     <Box
                       bg={cat.unimplementedGradient}
                       border="1px solid"
                       borderColor={`${cat.unimplementedTextColor}22`}
-                      borderRadius="2xl"
-                      p={4}
+                      borderRadius="xl"
+                      p={3}
                       opacity={0.85}
                     >
-                      <Text fontSize="sm" fontWeight="600" color={cat.unimplementedTextColor} opacity={0.6}>
+                      <Text fontSize="xs" fontWeight="600" color={cat.unimplementedTextColor} opacity={0.6}>
                         <R rt="じゅんび">準備</R>中です
                       </Text>
                     </Box>
@@ -230,197 +291,3 @@ export const HomeScreen: React.FC = () => {
   );
 };
 
-// ─── 単元パネルコンポーネント ───
-
-interface UnitPanelProps {
-  tab: TabDef;
-  category: CategoryDef;
-  progress: ReturnType<typeof useProgress>['progress'];
-}
-
-function UnitPanel({ tab, category, progress }: UnitPanelProps) {
-  const navigate = useNavigate();
-  const [activeSubIndex, setActiveSubIndex] = useState(0);
-  const activeUnit = tab.units[Math.min(activeSubIndex, tab.units.length - 1)];
-
-  const theme = TYPE_THEMES[activeUnit.id]
-    ?? { gradient: `linear-gradient(135deg, ${category.color} 0%, ${category.color}88 100%)`, accent: category.color };
-
-  const questionType = registry.get(activeUnit.id);
-
-  const questionCount = useMemo(() => {
-    if (!questionType) return 0;
-    if (questionType.getAllQuestions) return questionType.getAllQuestions().length;
-    return 20;
-  }, [questionType]);
-
-  const totalDone = tab.units.reduce(
-    (sum, u) => sum + (progress?.byType[u.id]?.totalQuestions ?? 0),
-    0,
-  );
-
-  const handleStart = () => {
-    if (!questionType) return;
-    navigate(`/theme/${category.id}`, { state: { initialTab: tab.label, initialSubIndex: activeSubIndex } });
-  };
-
-  return (
-    <Box
-      bg="white"
-      borderRadius="2xl"
-      border="1px solid"
-      borderColor="#e5e7eb"
-      boxShadow="0 2px 8px rgba(0,0,0,0.04)"
-      overflow="hidden"
-    >
-      {/* パネルヘッダー */}
-      <Box
-        bg={theme.gradient}
-        px={4}
-        py={3}
-        position="relative"
-        overflow="hidden"
-      >
-        <Box position="absolute" right="-20px" top="-20px" w="80px" h="80px" bg="whiteAlpha.100" borderRadius="full" />
-        <Flex align="center" justify="space-between" position="relative" zIndex={1}>
-          <Flex align="center" gap={2}>
-            <Text fontSize="md" fontWeight="800" color="white">
-              {tab.label}
-            </Text>
-            <Box bg="whiteAlpha.300" borderRadius="full" px={2} py={0.5}>
-              <Text fontSize="2xs" fontWeight="700" color="white">
-                {questionCount}もん
-              </Text>
-            </Box>
-          </Flex>
-          {totalDone > 0 && (
-            <Box bg="whiteAlpha.300" borderRadius="full" px={2} py={0.5}>
-              <Text fontSize="2xs" fontWeight="700" color="white">
-                {totalDone}問クリア
-              </Text>
-            </Box>
-          )}
-        </Flex>
-      </Box>
-
-      {/* サブタブ（難易度・サブ分類） */}
-      <Box px={4} pt={3} pb={3}>
-        <Flex gap={2} overflowX="auto" pb={1}>
-          {tab.units.map((unit, i) => {
-            const isActive = i === activeSubIndex;
-            const unitTheme = TYPE_THEMES[unit.id]
-              ?? { gradient: `linear-gradient(135deg, ${category.color} 0%, ${category.color}88 100%)`, accent: category.color };
-            return (
-              <chakra.button
-                key={unit.id}
-                type="button"
-                onClick={() => setActiveSubIndex(i)}
-                px={3}
-                py={1.5}
-                fontSize="xs"
-                fontWeight="700"
-                borderRadius="full"
-                bg={isActive ? unitTheme.gradient : 'gray.100'}
-                color={isActive ? 'white' : 'gray.500'}
-                transition="all 0.2s"
-                _hover={isActive ? {} : { bg: 'gray.200' }}
-                _active={{ transform: 'scale(0.95)' }}
-                cursor="pointer"
-                flexShrink={0}
-                minH="32px"
-                boxShadow={isActive ? `0 2px 8px ${unitTheme.accent}33` : 'none'}
-              >
-                {unit.subLabel ?? unit.name}
-              </chakra.button>
-            );
-          })}
-        </Flex>
-      </Box>
-
-      {/* プレビュー＆開始ボタン */}
-      <Box px={4} pb={4}>
-        {questionType && (
-          <QuestionPreview
-            questionType={questionType}
-            theme={theme}
-            onStart={handleStart}
-          />
-        )}
-      </Box>
-    </Box>
-  );
-}
-
-// ─── 問題プレビューコンポーネント ───
-
-interface QuestionPreviewProps {
-  questionType: ReturnType<typeof registry.get> & {};
-  theme: { gradient: string; accent: string };
-  onStart: () => void;
-}
-
-function QuestionPreview({ questionType, theme, onStart }: QuestionPreviewProps) {
-  const previewQuestions = useMemo(() => {
-    if (questionType.getAllQuestions) {
-      return questionType.getAllQuestions().slice(0, 3);
-    }
-    return Array.from({ length: 3 }, () => questionType.generateQuestion());
-  }, [questionType]);
-
-  return (
-    <VStack gap={3} align="stretch">
-      {/* プレビューサムネイル */}
-      <Flex gap={2} justify="center">
-        {previewQuestions.map((q, i) => {
-          const { QuestionDisplay } = questionType;
-          return (
-            <Box
-              key={i}
-              flex={1}
-              maxW="100px"
-              bg="#fafafa"
-              border="1.5px solid"
-              borderColor="#e5e7eb"
-              borderRadius="xl"
-              p={2}
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              overflow="hidden"
-            >
-              <Box
-                pointerEvents="none"
-                transform="scale(0.4)"
-                transformOrigin="center center"
-                minH="60px"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-              >
-                <QuestionDisplay data={q.questionData} />
-              </Box>
-            </Box>
-          );
-        })}
-      </Flex>
-
-      {/* 開始ボタン */}
-      <chakra.button
-        type="button"
-        onClick={onStart}
-        w="100%"
-        bg={theme.gradient}
-        borderRadius="xl"
-        py={2.5}
-        cursor="pointer"
-        transition="all 0.2s"
-        _hover={{ transform: 'translateY(-1px)', boxShadow: `0 4px 12px ${theme.accent}33` }}
-        _active={{ transform: 'scale(0.98)' }}
-      >
-        <Text fontSize="sm" fontWeight="700" color="white" textAlign="center">
-          <R rt="もんだい">問題</R>をえらぶ
-        </Text>
-      </chakra.button>
-    </VStack>
-  );
-}

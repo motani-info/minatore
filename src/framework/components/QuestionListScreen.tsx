@@ -199,18 +199,18 @@ function QuestionListInner({ questionType }: { questionType: QuestionType }) {
                   </Flex>
 
                   {/* 問題プレビュー */}
-                  <Box
+                  <Flex
                     w="100%"
-                    minH="100px"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
+                    minH="80px"
+                    align="center"
+                    justify="center"
                     pointerEvents="none"
-                    transform="scale(0.65)"
+                    overflow="hidden"
+                    transform="scale(0.55)"
                     transformOrigin="center center"
                   >
                     <QuestionDisplay data={question.questionData} />
-                  </Box>
+                  </Flex>
 
                   {/* ラベル */}
                   <Box

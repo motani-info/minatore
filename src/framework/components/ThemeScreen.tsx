@@ -22,6 +22,7 @@ const TYPE_THEMES: Record<string, { gradient: string; accent: string }> = {
   puzzle: { gradient: 'linear-gradient(135deg, #ec4899 0%, #f9a8d4 100%)', accent: '#ec4899' },
   'overlay-cancel': { gradient: 'linear-gradient(135deg, #0891b2 0%, #67e8f9 100%)', accent: '#0891b2' },
   'odd-one-out': { gradient: 'linear-gradient(135deg, #dc2626 0%, #fca5a5 100%)', accent: '#dc2626' },
+  'shape-composition': { gradient: 'linear-gradient(135deg, #7c2d12 0%, #ea580c 100%)', accent: '#ea580c' },
   seesaw: { gradient: 'linear-gradient(135deg, #059669 0%, #34d399 100%)', accent: '#059669' },
   'water-volume': { gradient: 'linear-gradient(135deg, #2563eb 0%, #60a5fa 100%)', accent: '#2563eb' },
   'compare-length': { gradient: 'linear-gradient(135deg, #0d9488 0%, #5eead4 100%)', accent: '#0d9488' },
@@ -144,7 +145,7 @@ function ThemeScreenInner({
           bg={theme.gradient}
           px={{ base: 5, sm: 6 }}
           pt={{ base: 4, sm: 6 }}
-          pb={2}
+          pb={6}
           position="relative"
           overflow="hidden"
         >
@@ -180,15 +181,12 @@ function ThemeScreenInner({
               <Text fontSize="2xl" fontWeight="800" color="white" lineHeight="1.3">
                 {category.title}
               </Text>
-              <Text fontSize="sm" fontWeight="500" color="whiteAlpha.800" mt={0.5}>
-                ぜんぶで {allQuestions.length} もん
-              </Text>
             </Box>
           </VStack>
         </Box>
 
         {/* 手帳風タブ */}
-        <Box position="relative" zIndex={3}>
+        <Box position="relative" zIndex={1} bg="white">
           <NotebookTabs
             tabs={tabs}
             activeIndex={activeTabIndex}
@@ -307,18 +305,18 @@ function ThemeScreenInner({
                         </Text>
                       </Flex>
 
-                      <Box
+                      <Flex
                         w="100%"
-                        minH="100px"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
+                        minH="80px"
+                        align="center"
+                        justify="center"
                         pointerEvents="none"
-                        transform="scale(0.65)"
+                        overflow="hidden"
+                        transform="scale(0.55)"
                         transformOrigin="center center"
                       >
                         <QuestionDisplay data={question.questionData} />
-                      </Box>
+                      </Flex>
 
                       <Box
                         w="100%"
@@ -449,6 +447,8 @@ function NotebookTabs({ tabs, activeIndex, onTabChange }: NotebookTabsProps) {
       h="44px"
       align="flex-end"
       px={{ base: 3, sm: 4 }}
+      overflowX="auto"
+      css={{ '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none' }}
     >
       {tabs.map((tab, index) => {
         const isActive = index === activeIndex;
@@ -494,6 +494,7 @@ function NotebookTabs({ tabs, activeIndex, onTabChange }: NotebookTabsProps) {
             marginRight="-6px"
             minH="36px"
             flexShrink={0}
+            minW={0}
           >
             <Text lineHeight="1" whiteSpace="nowrap">
               {tab.label}

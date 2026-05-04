@@ -21,6 +21,7 @@ import { registerLineOverlayPlugin } from './plugins/line-overlay';
 import { registerWaterVolumePlugin } from './plugins/water-volume';
 import { registerAreaComparePlugin } from './plugins/area-compare';
 import { registerRotationSequencePlugin } from './plugins/rotation-sequence';
+import { registerShapeCompositionPlugin } from './plugins/shape-composition';
 
 // プラグイン登録
 registerRotationPlugin();
@@ -41,6 +42,7 @@ registerCompareLengthPlugin();
 registerCompareSpringPlugin();
 registerWaterVolumePlugin();
 registerAreaComparePlugin();
+registerShapeCompositionPlugin();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

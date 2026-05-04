@@ -1,4 +1,5 @@
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import { HomeScreen } from './framework/components/HomeScreen';
 import { QuestionScreen } from './framework/components/QuestionScreen';
 import { QuestionListScreen } from './framework/components/QuestionListScreen';
@@ -12,9 +13,19 @@ import { CompareLengthScreen } from './plugins/compare-length/components/Compare
 import { CompareSpringScreen } from './plugins/compare-spring/components/CompareSpringScreen';
 import { AreaCompareScreen } from './plugins/area-compare/components/AreaCompareScreen';
 
+/** ページ遷移時にスクロール位置をトップに戻す */
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
 function App() {
   return (
     <HashRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<HomeScreen />} />
         <Route path="/theme/:themeId" element={<ThemeScreen />} />

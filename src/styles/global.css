@@ -19,6 +19,7 @@ body {
   -webkit-user-select: none;
   user-select: none;
   overscroll-behavior: none;
+  overflow-x: hidden;
   background: #f5f5fa;
   min-height: 100dvh;
 }

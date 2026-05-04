@@ -1,12 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { Box, Container, Flex, SimpleGrid, Text, VStack, chakra } from '@chakra-ui/react';
 import { registry } from '../../registry/questionTypeRegistry';
 import type { Question, QuestionType } from '../../types/question';
 import { R } from './Ruby';
-
-/** 一覧に表示する問題数 */
-const LIST_SIZE = 10;
 
 /** 問題タイプごとのテーマカラー */
 const TYPE_THEMES: Record<string, { gradient: string; accent: string }> = {
@@ -45,30 +42,21 @@ function QuestionListInner({ questionType }: { questionType: QuestionType }) {
   const navigate = useNavigate();
   const theme = TYPE_THEMES[questionType.id] ?? DEFAULT_THEME;
 
-  // 問題を LIST_SIZE 個生成（再生成ボタンで更新可能）
-  const [seed, setSeed] = useState(0);
+  // getAllQuestions があれば全問表示、なければ generateQuestion で生成
   const questions: Question[] = useMemo(() => {
-    // seed を依存に入れることで再生成できる
-    void seed;
-    return Array.from({ length: LIST_SIZE }, () => questionType.generateQuestion());
-  }, [questionType, seed]);
+    if (questionType.getAllQuestions) {
+      return questionType.getAllQuestions();
+    }
+    // フォールバック: ランダム生成（従来互換）
+    return Array.from({ length: 10 }, () => questionType.generateQuestion());
+  }, [questionType]);
 
   const { QuestionDisplay } = questionType;
 
   const handleSelect = (index: number) => {
-    // 選んだ問題のデータを state 経由で渡して問題画面へ遷移
     navigate(`/question/${questionType.id}`, {
       state: { selectedQuestion: questions[index] },
     });
-  };
-
-  const handleShuffle = () => {
-    setSeed((s) => s + 1);
-  };
-
-  const handleStartRandom = () => {
-    // state なしで遷移 → 通常通りランダム生成
-    navigate(`/question/${questionType.id}`);
   };
 
   return (
@@ -142,54 +130,11 @@ function QuestionListInner({ questionType }: { questionType: QuestionType }) {
         >
           <VStack gap={5} align="stretch">
 
-            {/* アクションボタン */}
-            <Flex gap={3}>
-              <chakra.button
-                type="button"
-                onClick={handleStartRandom}
-                flex={1}
-                py={3}
-                bg={theme.gradient}
-                color="white"
-                fontWeight="700"
-                fontSize="sm"
-                borderRadius="xl"
-                transition="all 0.15s"
-                _hover={{ opacity: 0.9 }}
-                _active={{ transform: 'scale(0.97)' }}
-                minH="44px"
-                cursor="pointer"
-                boxShadow={`0 4px 12px ${theme.accent}33`}
-                textAlign="center"
-              >
-                ▶ すぐにはじめる
-              </chakra.button>
-              <chakra.button
-                type="button"
-                onClick={handleShuffle}
-                px={4}
-                py={3}
-                bg="gray.100"
-                color="gray.600"
-                fontWeight="700"
-                fontSize="sm"
-                borderRadius="xl"
-                transition="all 0.15s"
-                _hover={{ bg: 'gray.200' }}
-                _active={{ transform: 'scale(0.97)' }}
-                minH="44px"
-                cursor="pointer"
-                textAlign="center"
-              >
-                🔄 べつのもんだい
-              </chakra.button>
-            </Flex>
-
             {/* 問題一覧 */}
             <SimpleGrid columns={2} gap={3}>
               {questions.map((question, index) => (
                 <chakra.button
-                  key={`${index}-${seed}`}
+                  key={index}
                   type="button"
                   onClick={() => handleSelect(index)}
                   aria-label={`もんだい ${index + 1}`}

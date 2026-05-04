@@ -28,6 +28,8 @@ export interface QuestionType<TQuestionData = unknown, TChoiceData = unknown> {
   icon: string | React.ComponentType;
   /** 問題を生成する関数 */
   generateQuestion: () => Question<TQuestionData, TChoiceData>;
+  /** 登録済みの全問題を返す関数（固定問題プールがある場合） */
+  getAllQuestions?: () => Question<TQuestionData, TChoiceData>[];
   /** 問題表示コンポーネント */
   QuestionDisplay: React.ComponentType<{ data: TQuestionData }>;
   /** 選択肢表示コンポーネント */

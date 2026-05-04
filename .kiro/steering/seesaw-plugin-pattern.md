@@ -153,3 +153,34 @@ const { chromium } = require('playwright');
 })();
 "
 ```
+
+## 比較グループの一般化パターン
+
+シーソー（重さ）と同じ「専用画面 + ○×マーク付け」パターンは、比較グループ全体で共通して使われる。
+
+### 比較グループの問題タイプ一覧
+
+| ID | サブテーマ | 表示内容 | 凡例 |
+|---|---|---|---|
+| `seesaw` | 重さ | シーソーSVG | いちばんおもい / いちばんかるい |
+| `water-volume` | 水量 | コップ・水槽SVG | いちばんおおい / 2ばんめにおおい |
+| `compare-length` | 長さ | 線分SVG | いちばんながい / いちばんみじかい |
+| `compare-spring` | ばね | ばねSVG | ◎△×の3段階マーク |
+| `area-compare` | 広さ | 白黒グリッドSVG | いちばんひろい / いちばんせまい |
+
+### 共通構造
+
+すべての比較問題は以下の構造を共有する：
+
+1. **固定問題プール** — `QUESTION_POOL` 配列 + `usedIndices` で重複なし巡回
+2. **専用画面** — `XxxScreen.tsx`（NavigationBar + 問題表示 + 回答UI）
+3. **回答UI** — `AnswerUI.tsx`（マークサイクル + こたえあわせ + FeedbackOverlay）
+4. **ダミーChoiceDisplay** — 共通QuestionScreenでは使わないので `null` を返す
+5. **`validateXxxMarks()`** — マーク配列から正解判定する関数
+
+### 新しい比較サブテーマを追加する手順
+
+1. `src/plugins/{id}/` にプラグインを作成（上記の共通構造に従う）
+2. `categoryData.ts` で `group: '比較'` と `subLabel: 'サブテーマ名'` を指定
+3. `App.tsx` に `/question/{id}` ルートを `:typeId` より前に追加
+4. 凡例テキスト（○の意味、×の意味）を問題に合わせて変更

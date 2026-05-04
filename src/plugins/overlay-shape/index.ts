@@ -3,6 +3,7 @@ import type { OverlayShapeQuestionData, OverlayShapeChoiceData } from './types';
 import {
   generateOverlayShapeQuestion,
   checkOverlayShapeAnswer,
+  getAllOverlayShapeQuestions,
 } from './overlayShapeQuestion';
 import { OverlayShapeQuestionDisplay } from './components/QuestionDisplay';
 import { OverlayShapeChoiceDisplay } from './components/ChoiceDisplay';
@@ -19,6 +20,7 @@ export const overlayShapeQuestionType: QuestionType<
   displayName: '重ね図形（図形）',
   icon: '🔲',
   generateQuestion: generateOverlayShapeQuestion,
+  getAllQuestions: getAllOverlayShapeQuestions,
   QuestionDisplay: OverlayShapeQuestionDisplay,
   ChoiceDisplay: OverlayShapeChoiceDisplay,
   checkAnswer: checkOverlayShapeAnswer,

@@ -107,6 +107,27 @@ export function generateCompareSpringQuestion(): Question<
   };
 }
 
+/** 固定問題プールの全問題を返す */
+export function getAllCompareSpringQuestions(): Question<
+  CompareSpringQuestionData,
+  CompareSpringChoiceData
+>[] {
+  return FIXED_QUESTIONS.map((fixedQ) => {
+    return {
+      questionData: {
+        springs: fixedQ.springs,
+      },
+      choices: [{
+        heaviestIndex: fixedQ.heaviestIndex,
+        secondIndex: fixedQ.secondIndex,
+        lightestIndex: fixedQ.lightestIndex,
+      }],
+      correctIndex: 0,
+      instructionText: INSTRUCTION_TEXT,
+    };
+  });
+}
+
 /** マークの正解判定 */
 export function validateSpringMarks(
   marks: SpringMarkType[],

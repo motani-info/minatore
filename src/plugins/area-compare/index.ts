@@ -1,6 +1,6 @@
 import type { QuestionType } from '../../types/question';
 import type { AreaCompareQuestionData, AreaCompareChoiceData } from './types';
-import { generateAreaCompareQuestion, checkAreaCompareAnswer } from './areaCompareQuestion';
+import { generateAreaCompareQuestion, checkAreaCompareAnswer, getAllAreaCompareQuestions } from './areaCompareQuestion';
 import { AreaCompareQuestionDisplay } from './components/QuestionDisplay';
 import { AreaCompareChoiceDisplay } from './components/ChoiceDisplay';
 import { registry } from '../../registry/questionTypeRegistry';
@@ -16,6 +16,7 @@ export const areaCompareQuestionType: QuestionType<AreaCompareQuestionData, Area
   displayName: '比較（広さ）',
   icon: '⬛',
   generateQuestion: generateAreaCompareQuestion,
+  getAllQuestions: getAllAreaCompareQuestions,
   QuestionDisplay: AreaCompareQuestionDisplay,
   ChoiceDisplay: AreaCompareChoiceDisplay,
   checkAnswer: checkAreaCompareAnswer,

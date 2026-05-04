@@ -3,6 +3,7 @@ import type { OverlayAdvancedQuestionData, OverlayAdvancedChoiceData } from './t
 import {
   generateOverlayAdvancedQuestion,
   checkOverlayAdvancedAnswer,
+  getAllOverlayAdvancedQuestions,
 } from './overlayAdvancedQuestion';
 import { OverlayAdvancedQuestionDisplay } from './components/QuestionDisplay';
 import { OverlayAdvancedChoiceDisplay } from './components/ChoiceDisplay';
@@ -19,6 +20,7 @@ export const overlayAdvancedQuestionType: QuestionType<
   displayName: '重ね図形（応用）',
   icon: '🔲',
   generateQuestion: generateOverlayAdvancedQuestion,
+  getAllQuestions: getAllOverlayAdvancedQuestions,
   QuestionDisplay: OverlayAdvancedQuestionDisplay,
   ChoiceDisplay: OverlayAdvancedChoiceDisplay,
   checkAnswer: checkOverlayAdvancedAnswer,

@@ -246,6 +246,26 @@ export function generateSeesawQuestion(): Question<SeesawQuestionData, SeesawCho
   };
 }
 
+/** 固定問題プールの全問題を返す */
+export function getAllSeesawQuestions(): Question<SeesawQuestionData, SeesawChoiceData>[] {
+  return QUESTION_POOL.map((problem) => {
+    return {
+      questionData: {
+        seesaws: problem.seesaws,
+        items: problem.items,
+      },
+      choices: [
+        {
+          heaviestIndex: problem.heaviestIndex,
+          lightestIndex: problem.lightestIndex,
+        },
+      ],
+      correctIndex: 0,
+      instructionText: 'いちばんおもいものには○、\nいちばんかるいものには×をつけましょう',
+    };
+  });
+}
+
 /** 正解判定関数（カスタムUI用: marks配列を受け取る） */
 export function checkSeesawAnswer(
   _question: Question<SeesawQuestionData, SeesawChoiceData>,

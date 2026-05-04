@@ -1,6 +1,6 @@
 import type { QuestionType } from '../../types/question';
 import type { SeesawQuestionData, SeesawChoiceData } from './types';
-import { generateSeesawQuestion, checkSeesawAnswer } from './seesawQuestion';
+import { generateSeesawQuestion, checkSeesawAnswer, getAllSeesawQuestions } from './seesawQuestion';
 import { SeesawQuestionDisplay } from './components/QuestionDisplay';
 import { SeesawChoiceDisplay } from './components/ChoiceDisplay';
 import { registry } from '../../registry/questionTypeRegistry';
@@ -18,6 +18,7 @@ export const seesawQuestionType: QuestionType<SeesawQuestionData, SeesawChoiceDa
   displayName: '比較（重さ）',
   icon: '⚖️',
   generateQuestion: generateSeesawQuestion,
+  getAllQuestions: getAllSeesawQuestions,
   QuestionDisplay: SeesawQuestionDisplay,
   ChoiceDisplay: SeesawChoiceDisplay,
   checkAnswer: checkSeesawAnswer,

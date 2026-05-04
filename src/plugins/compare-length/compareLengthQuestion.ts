@@ -95,6 +95,26 @@ export function generateCompareLengthQuestion(): Question<
   };
 }
 
+/** 固定問題プールの全問題を返す */
+export function getAllCompareLengthQuestions(): Question<
+  CompareLengthQuestionData,
+  CompareLengthChoiceData
+>[] {
+  return FIXED_QUESTIONS.map((fixedQ) => {
+    return {
+      questionData: {
+        lines: fixedQ.lines,
+      },
+      choices: [{
+        longestIndex: fixedQ.longestIndex,
+        shortestIndex: fixedQ.shortestIndex,
+      }],
+      correctIndex: 0,
+      instructionText: INSTRUCTION_TEXT,
+    };
+  });
+}
+
 /** マークの正解判定 */
 export function validateLengthMarks(
   marks: LengthMarkType[],

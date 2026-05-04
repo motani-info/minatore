@@ -172,6 +172,26 @@ export function generateAreaCompareQuestion(): Question<AreaCompareQuestionData,
   };
 }
 
+/** 固定問題プールの全問題を返す */
+export function getAllAreaCompareQuestions(): Question<AreaCompareQuestionData, AreaCompareChoiceData>[] {
+  return QUESTION_POOL.map((problem) => {
+    return {
+      questionData: {
+        items: problem.items,
+      },
+      choices: [
+        {
+          mostIndex: problem.mostIndex,
+          leastIndex: problem.leastIndex,
+        },
+      ],
+      correctIndex: 0,
+      instructionText:
+        'くろいぶぶんがいちばんひろいものには○、\nいちばんせまいものには×をつけましょう。',
+    };
+  });
+}
+
 /** 正解判定関数（共通フレームワーク用） */
 export function checkAreaCompareAnswer(
   _question: Question<AreaCompareQuestionData, AreaCompareChoiceData>,

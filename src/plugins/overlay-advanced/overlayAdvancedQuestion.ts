@@ -189,6 +189,29 @@ export function generateOverlayAdvancedQuestion(): Question<
   };
 }
 
+/** 固定問題プールの全問題を返す */
+export function getAllOverlayAdvancedQuestions(): Question<
+  OverlayAdvancedQuestionData,
+  OverlayAdvancedChoiceData
+>[] {
+  return FIXED_QUESTIONS.map((fixedQ) => {
+    const correct = computeOverlap(fixedQ.gridA, fixedQ.gridB);
+    const distractors = generateDistractors(correct, 3);
+    const correctIndex = Math.floor(Math.random() * 4);
+    const choices: OverlayAdvancedChoiceData[] = [...distractors];
+    choices.splice(correctIndex, 0, correct);
+    return {
+      questionData: {
+        gridA: fixedQ.gridA,
+        gridB: fixedQ.gridB,
+      },
+      choices,
+      correctIndex,
+      instructionText: INSTRUCTION_TEXT,
+    };
+  });
+}
+
 /** 正解判定関数 */
 export function checkOverlayAdvancedAnswer(
   question: Question<OverlayAdvancedQuestionData, OverlayAdvancedChoiceData>,

@@ -1,6 +1,6 @@
 import type { QuestionType } from '../../types/question';
 import type { CompareLengthQuestionData, CompareLengthChoiceData } from './types';
-import { generateCompareLengthQuestion, checkCompareLengthAnswer } from './compareLengthQuestion';
+import { generateCompareLengthQuestion, checkCompareLengthAnswer, getAllCompareLengthQuestions } from './compareLengthQuestion';
 import { CompareLengthQuestionDisplay } from './components/QuestionDisplay';
 import { CompareLengthChoiceDisplay } from './components/ChoiceDisplay';
 import { registry } from '../../registry/questionTypeRegistry';
@@ -16,6 +16,7 @@ export const compareLengthQuestionType: QuestionType<
   displayName: '比較（長さ）',
   icon: '📏',
   generateQuestion: generateCompareLengthQuestion,
+  getAllQuestions: getAllCompareLengthQuestions,
   QuestionDisplay: CompareLengthQuestionDisplay,
   ChoiceDisplay: CompareLengthChoiceDisplay,
   checkAnswer: checkCompareLengthAnswer,

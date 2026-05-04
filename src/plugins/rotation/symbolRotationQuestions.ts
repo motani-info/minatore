@@ -471,6 +471,29 @@ export function generateSymbolRotationQuestion(): Question<SymbolRotationQuestio
   };
 }
 
+/** 固定問題プールの全問題を返す */
+export function getAllSymbolRotationQuestions(): Question<SymbolRotationQuestionData, SymbolRotationChoiceData>[] {
+  return FIXED_QUESTIONS.map((fixedQ) => {
+    const correctGrid = rotateSymbolGrid(fixedQ.originalGrid, fixedQ.direction);
+    const correctIndex = Math.floor(Math.random() * 4);
+    const choices: SymbolRotationChoiceData[] = [...fixedQ.distractors];
+    choices.splice(correctIndex, 0, correctGrid);
+    while (choices.length < 4) choices.push(correctGrid);
+    if (choices.length > 4) {
+      choices.length = 4;
+      if (!choices.some((c) => symbolGridsEqual(c, correctGrid))) {
+        choices[correctIndex] = correctGrid;
+      }
+    }
+    return {
+      questionData: { originalGrid: fixedQ.originalGrid, direction: fixedQ.direction },
+      choices,
+      correctIndex,
+      instructionText: getInstructionText(fixedQ.direction),
+    };
+  });
+}
+
 /** 正解判定関数 */
 export function checkSymbolRotationAnswer(
   question: Question<SymbolRotationQuestionData, SymbolRotationChoiceData>,

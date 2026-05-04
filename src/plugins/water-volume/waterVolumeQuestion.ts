@@ -171,6 +171,38 @@ export function generateWaterVolumeQuestion(): Question<WaterVolumeQuestionData,
   };
 }
 
+/** 固定問題プールの全問題を返す */
+export function getAllWaterVolumeQuestions(): Question<WaterVolumeQuestionData, WaterVolumeChoiceData>[] {
+  return QUESTION_POOL.map((problem) => {
+    const hasOnlyCups = problem.items.every((item) => item.container === 'cup');
+    const hasOnlyTanks = problem.items.every((item) => item.container === 'tank');
+
+    let containerWord: string;
+    if (hasOnlyCups) {
+      containerWord = 'コップ';
+    } else if (hasOnlyTanks) {
+      containerWord = 'すいそう';
+    } else {
+      containerWord = 'いれもの';
+    }
+
+    return {
+      questionData: {
+        items: problem.items,
+      },
+      choices: [
+        {
+          mostIndex: problem.mostIndex,
+          secondIndex: problem.secondIndex,
+        },
+      ],
+      correctIndex: 0,
+      instructionText:
+        `${containerWord}にはいっているみずが\nいちばんおおいものには○、\n2ばんめにおおいものには×をつけましょう。`,
+    };
+  });
+}
+
 /** 正解判定関数（共通フレームワーク用） */
 export function checkWaterVolumeAnswer(
   _question: Question<WaterVolumeQuestionData, WaterVolumeChoiceData>,

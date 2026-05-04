@@ -166,6 +166,50 @@ import { XxxScreen } from './plugins/xxx/components/XxxScreen';
 - カード内にサブボタン（基本/応用/図形など）が表示される
 - 新しいサブタイプを追加する場合は同じ `group` 名を使う
 
+## Step 5b: ボタン内テキストの注意点
+
+`display: flex` のボタン内にルビ付きテキスト（`<R>` コンポーネント）を直接置くと、`<ruby>` タグがflex子要素として分断されてテキストが崩れる。
+
+**NG:**
+```tsx
+<chakra.button display="flex" ...>
+  ▶ すぐに<R rt="はじ">始</R>める   {/* 崩れる */}
+</chakra.button>
+```
+
+**OK — ひらがなに置き換える（ボタンラベルにルビは不要）:**
+```tsx
+<chakra.button textAlign="center" ...>
+  ▶ すぐにはじめる
+</chakra.button>
+```
+
+**OK — `<Text>` や `<Box>` で囲んで1つのflex子要素にする:**
+```tsx
+<chakra.button display="flex" ...>
+  <Box>▶ すぐに<R rt="はじ">始</R>める</Box>
+</chakra.button>
+```
+
+ボタンラベルは対象ユーザー（幼児〜小学校低学年）向けなので、ひらがなに置き換えるのが最もシンプル。
+
+## Step 5c: グリッド型問題データの定義パターン
+
+白黒グリッドの問題データは、ヘルパー関数で簡潔に定義できる：
+
+```typescript
+/** B=black, W=white の文字列からグリッドを生成 */
+function g(size: number, pattern: string): AreaGrid {
+  const cells = pattern.split('').map(c => c === 'B' ? 'black' : 'white');
+  return { size, cells };
+}
+
+// 使用例: 3×3グリッド（5黒）
+{ grid: g(3, 'BWBBWWBWB'), name: 'ひだり' }
+```
+
+パターン文字列は左上から右下へ行優先で並べる。`size × size` の長さになるよう注意。
+
 ## Step 6: 図形描画のパターン
 
 ### SVGで描画する場合（推奨）

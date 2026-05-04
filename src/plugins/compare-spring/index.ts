@@ -1,6 +1,6 @@
 import type { QuestionType } from '../../types/question';
 import type { CompareSpringQuestionData, CompareSpringChoiceData } from './types';
-import { generateCompareSpringQuestion, checkCompareSpringAnswer } from './compareSpringQuestion';
+import { generateCompareSpringQuestion, checkCompareSpringAnswer, getAllCompareSpringQuestions } from './compareSpringQuestion';
 import { CompareSpringQuestionDisplay } from './components/QuestionDisplay';
 import { CompareSpringChoiceDisplay } from './components/ChoiceDisplay';
 import { registry } from '../../registry/questionTypeRegistry';
@@ -16,6 +16,7 @@ export const compareSpringQuestionType: QuestionType<
   displayName: '比較（ばね）',
   icon: '🔩',
   generateQuestion: generateCompareSpringQuestion,
+  getAllQuestions: getAllCompareSpringQuestions,
   QuestionDisplay: CompareSpringQuestionDisplay,
   ChoiceDisplay: CompareSpringChoiceDisplay,
   checkAnswer: checkCompareSpringAnswer,

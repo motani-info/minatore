@@ -1,6 +1,6 @@
 import type { QuestionType } from '../../types/question';
 import type { WaterVolumeQuestionData, WaterVolumeChoiceData } from './types';
-import { generateWaterVolumeQuestion, checkWaterVolumeAnswer } from './waterVolumeQuestion';
+import { generateWaterVolumeQuestion, checkWaterVolumeAnswer, getAllWaterVolumeQuestions } from './waterVolumeQuestion';
 import { WaterVolumeQuestionDisplay } from './components/QuestionDisplay';
 import { WaterVolumeChoiceDisplay } from './components/ChoiceDisplay';
 import { registry } from '../../registry/questionTypeRegistry';
@@ -18,6 +18,7 @@ export const waterVolumeQuestionType: QuestionType<WaterVolumeQuestionData, Wate
   displayName: '比較（水量）',
   icon: '💧',
   generateQuestion: generateWaterVolumeQuestion,
+  getAllQuestions: getAllWaterVolumeQuestions,
   QuestionDisplay: WaterVolumeQuestionDisplay,
   ChoiceDisplay: WaterVolumeChoiceDisplay,
   checkAnswer: checkWaterVolumeAnswer,

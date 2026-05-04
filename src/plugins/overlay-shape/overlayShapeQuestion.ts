@@ -213,6 +213,27 @@ export function generateOverlayShapeQuestion(): Question<
   };
 }
 
+/** 固定問題プールの全問題を返す */
+export function getAllOverlayShapeQuestions(): Question<
+  OverlayShapeQuestionData,
+  OverlayShapeChoiceData
+>[] {
+  return FIXED_QUESTIONS.map((fixedQ) => {
+    const correctIndex = Math.floor(Math.random() * 4);
+    const choices: OverlayShapeChoiceData[] = fixedQ.distractors.map((d) => ({ pattern: d }));
+    choices.splice(correctIndex, 0, { pattern: fixedQ.answer });
+    return {
+      questionData: {
+        sheetA: fixedQ.sheetA,
+        sheetB: fixedQ.sheetB,
+      },
+      choices,
+      correctIndex,
+      instructionText: INSTRUCTION_TEXT,
+    };
+  });
+}
+
 /** 正解判定関数 */
 export function checkOverlayShapeAnswer(
   question: Question<OverlayShapeQuestionData, OverlayShapeChoiceData>,

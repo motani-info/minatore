@@ -5,6 +5,7 @@ import { registry } from '../../registry/questionTypeRegistry';
 import { useProgress } from '../hooks/useProgress';
 import type { Question, QuestionType } from '../../types/question';
 import { FeedbackOverlay } from './FeedbackOverlay';
+import { R } from './Ruby';
 
 const TOTAL_QUESTIONS = 10;
 
@@ -107,7 +108,7 @@ export const RandomQuizScreen: React.FC = () => {
     }
 
     return (
-      <Container maxW="460px" minH="100dvh" py={0} px={0}>
+      <Container maxW="640px" minH="100dvh" py={0} px={0}>
         <VStack gap={0} align="stretch" minH="100dvh">
           {/* ヘッダー */}
           <Box
@@ -141,7 +142,7 @@ export const RandomQuizScreen: React.FC = () => {
                 ✕
               </chakra.button>
               <Text fontSize="md" fontWeight="700" color="white">
-                けっか
+                <R rt="けっか">結果</R>
               </Text>
             </Flex>
           </Box>
@@ -172,7 +173,7 @@ export const RandomQuizScreen: React.FC = () => {
                 textAlign="center"
               >
                 <Text fontSize="sm" color="gray.500" fontWeight="600">
-                  せいかいすう
+                  <R rt="せいかい">正解</R>数
                 </Text>
                 <Flex align="baseline" justify="center" gap={1} mt={2}>
                   <Text fontSize="4xl" fontWeight="800" color="#f97316">
@@ -183,7 +184,7 @@ export const RandomQuizScreen: React.FC = () => {
                   </Text>
                 </Flex>
                 <Text fontSize="sm" color="gray.400" mt={1}>
-                  せいかいりつ {percent}%
+                  <R rt="せいかい">正解</R>りつ {percent}%
                 </Text>
               </Box>
 
@@ -205,7 +206,7 @@ export const RandomQuizScreen: React.FC = () => {
                   cursor="pointer"
                   boxShadow="0 4px 12px rgba(249, 115, 22, 0.3)"
                 >
-                  もういちど
+                  もう一回
                 </chakra.button>
                 <chakra.button
                   type="button"
@@ -240,7 +241,7 @@ export const RandomQuizScreen: React.FC = () => {
   const isAnswered = selectedIndex !== null;
 
   return (
-    <Container maxW="460px" minH="100dvh" py={0} px={0}>
+    <Container maxW="640px" minH="100dvh" py={0} px={0}>
       <VStack gap={0} align="stretch" minH="100dvh">
         {/* 上部: グラデーション背景エリア */}
         <Box

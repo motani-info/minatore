@@ -4,6 +4,7 @@ import { Box, Container, Flex, Heading, Text, VStack, chakra } from '@chakra-ui/
 import { useProfile } from '../hooks/useProfile';
 import { useProgress } from '../hooks/useProgress';
 import { TabBar } from './TabBar';
+import { R } from './Ruby';
 
 export const ProfileScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ export const ProfileScreen: React.FC = () => {
   return (
     <Flex direction="column" minH="100dvh">
       <Box flex={1}>
-        <Container maxW="460px" py={{ base: 6, sm: 8 }} px={{ base: 5, sm: 6 }}>
+        <Container maxW="640px" py={{ base: 6, sm: 8 }} px={{ base: 5, sm: 6 }}>
           <VStack gap={8} align="stretch">
 
             {/* ヘッダー */}
@@ -70,7 +71,7 @@ export const ProfileScreen: React.FC = () => {
                 color="gray.800"
                 ml={3}
               >
-                ぷろふぃーる
+                プロフィール
               </Heading>
             </Flex>
 
@@ -79,7 +80,7 @@ export const ProfileScreen: React.FC = () => {
           <chakra.button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            aria-label="しゃしんをえらぶ"
+            aria-label="写真をえらぶ"
             position="relative"
             w="100px"
             h="100px"
@@ -148,7 +149,7 @@ export const ProfileScreen: React.FC = () => {
               _hover={{ color: 'red.500' }}
               minH="44px"
             >
-              しゃしんをけす
+              <R rt="しゃしん">写真</R>をけす
             </chakra.button>
           )}
         </VStack>
@@ -161,7 +162,7 @@ export const ProfileScreen: React.FC = () => {
           boxShadow="0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)"
         >
           <Text fontSize="xs" color="gray.400" fontWeight="600" mb={3}>
-            なまえ
+            名前
           </Text>
           {editingName ? (
             <Flex gap={2}>
@@ -169,7 +170,7 @@ export const ProfileScreen: React.FC = () => {
                 type="text"
                 value={nameValue}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNameValue(e.target.value)}
-                placeholder="なまえをいれてね"
+                placeholder="名前を入れてね"
                 flex={1}
                 px={4}
                 py={2.5}
@@ -199,13 +200,13 @@ export const ProfileScreen: React.FC = () => {
                 _active={{ transform: 'scale(0.97)' }}
                 minH="44px"
               >
-                ほぞん
+                <R rt="ほぞん">保存</R>
               </chakra.button>
             </Flex>
           ) : (
             <Flex align="center" justify="space-between">
               <Text fontSize="lg" fontWeight="700" color="gray.800">
-                {profile.name || 'まだせっていされていません'}
+                {profile.name || <>まだ<R rt="せってい">設定</R>されていません</>}
               </Text>
               <chakra.button
                 type="button"
@@ -224,7 +225,7 @@ export const ProfileScreen: React.FC = () => {
                 _active={{ transform: 'scale(0.97)' }}
                 minH="44px"
               >
-                へんこう
+                <R rt="へんこう">変更</R>
               </chakra.button>
             </Flex>
           )}
@@ -238,7 +239,7 @@ export const ProfileScreen: React.FC = () => {
           boxShadow="0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)"
         >
           <Text fontSize="xs" color="gray.400" fontWeight="600" mb={4}>
-            がくしゅうきろく
+            <R rt="がくしゅう">学習</R><R rt="きろく">記録</R>
           </Text>
           <Flex gap={4}>
             <Box flex={1} textAlign="center">
@@ -246,7 +247,7 @@ export const ProfileScreen: React.FC = () => {
                 {totalQuestions}
               </Text>
               <Text fontSize="xs" color="gray.400" fontWeight="500">
-                といたかず
+                といた数
               </Text>
             </Box>
             <Box w="1px" bg="gray.100" />
@@ -255,7 +256,7 @@ export const ProfileScreen: React.FC = () => {
                 {totalCorrect}
               </Text>
               <Text fontSize="xs" color="gray.400" fontWeight="500">
-                せいかい
+                <R rt="せいかい">正解</R>
               </Text>
             </Box>
             <Box w="1px" bg="gray.100" />
@@ -264,7 +265,7 @@ export const ProfileScreen: React.FC = () => {
                 {totalQuestions > 0 ? `${Math.round((totalCorrect / totalQuestions) * 100)}%` : '—'}
               </Text>
               <Text fontSize="xs" color="gray.400" fontWeight="500">
-                せいかいりつ
+                <R rt="せいかい">正解</R>りつ
               </Text>
             </Box>
           </Flex>

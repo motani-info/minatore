@@ -4,6 +4,7 @@ import { registry } from '../../registry/questionTypeRegistry';
 import { useProgress } from '../hooks/useProgress';
 import { useProfile } from '../hooks/useProfile';
 import { TabBar } from './TabBar';
+import { R } from './Ruby';
 
 /** 単元カテゴリ定義 */
 interface UnitDef {
@@ -28,7 +29,7 @@ interface CategoryDef {
 
 const CATEGORIES: CategoryDef[] = [
   {
-    title: 'ずけい',
+    title: '図形',
     color: '#7c3aed',
     implementedGradients: {
       rotation: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)',
@@ -38,48 +39,48 @@ const CATEGORIES: CategoryDef[] = [
     unimplementedGradient: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)',
     unimplementedTextColor: '#7c3aed',
     units: [
-      { id: 'rotation', name: 'かいてんずけい', icon: '🔄', implemented: true },
-      { id: 'overlay', name: 'かさねずけい', icon: '🔲', implemented: true },
-      { id: 'puzzle', name: 'ずけいこうせい', icon: '🧩', implemented: true },
-      { id: 'position', name: 'いちのいどう', icon: '➡️', implemented: false },
-      { id: 'perspective', name: 'しほうかんさつ', icon: '👀', implemented: false },
-      { id: 'copy', name: 'もしゃ', icon: '✏️', implemented: false },
-      { id: 'mirror', name: 'かがみずけい', icon: '🪞', implemented: false },
-      { id: 'sequence', name: 'けいれつかんせい', icon: '🔢', implemented: false },
+      { id: 'rotation', name: '回転図形', icon: '🔄', implemented: true },
+      { id: 'overlay', name: '重ね図形', icon: '🔲', implemented: true },
+      { id: 'puzzle', name: '図形パズル', icon: '🧩', implemented: true },
+      { id: 'position', name: '位置の移動', icon: '➡️', implemented: false },
+      { id: 'perspective', name: '四方観察', icon: '👀', implemented: false },
+      { id: 'copy', name: '模写', icon: '✏️', implemented: false },
+      { id: 'mirror', name: '鏡図形', icon: '🪞', implemented: false },
+      { id: 'sequence', name: '系列完成', icon: '🔢', implemented: false },
     ],
   },
   {
-    title: 'きおく',
+    title: '記憶',
     color: '#2563eb',
     implementedGradients: {},
     unimplementedGradient: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
     unimplementedTextColor: '#2563eb',
     units: [
-      { id: 'story-memory', name: 'おはなしのきおく', icon: '📖', implemented: false },
-      { id: 'visual-memory', name: 'しかくきおく', icon: '🖼️', implemented: false },
+      { id: 'story-memory', name: 'お話の記憶', icon: '📖', implemented: false },
+      { id: 'visual-memory', name: '視覚記憶', icon: '🖼️', implemented: false },
     ],
   },
   {
-    title: 'すうりょう・すいり',
+    title: '数量・推理',
     color: '#059669',
     implementedGradients: {},
     unimplementedGradient: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
     unimplementedTextColor: '#059669',
     units: [
-      { id: 'counting', name: 'かず', icon: '🔢', implemented: false },
-      { id: 'science', name: 'りかてきじょうしき', icon: '🔬', implemented: false },
-      { id: 'reasoning', name: 'すいり', icon: '⚖️', implemented: false },
-      { id: 'elimination', name: 'せんたくまっしょう', icon: '✂️', implemented: false },
+      { id: 'counting', name: '数', icon: '🔢', implemented: false },
+      { id: 'science', name: '理科的常識', icon: '🔬', implemented: false },
+      { id: 'reasoning', name: '推理', icon: '⚖️', implemented: false },
+      { id: 'elimination', name: '選択抹消', icon: '✂️', implemented: false },
     ],
   },
   {
-    title: 'うんぴつ',
+    title: '運筆',
     color: '#d97706',
     implementedGradients: {},
     unimplementedGradient: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
     unimplementedTextColor: '#d97706',
     units: [
-      { id: 'line-drawing', name: 'せんひき', icon: '〰️', implemented: false },
+      { id: 'line-drawing', name: '線引き', icon: '〰️', implemented: false },
     ],
   },
 ];
@@ -106,7 +107,7 @@ export const HomeScreen: React.FC = () => {
   return (
     <Flex direction="column" minH="100dvh">
       <Box flex={1}>
-        <Container maxW="460px" py={{ base: 6, sm: 8 }} px={{ base: 5, sm: 6 }}>
+        <Container maxW="640px" py={{ base: 6, sm: 8 }} px={{ base: 5, sm: 6 }}>
           <VStack gap={7} align="stretch">
 
             {/* ヘッダー */}
@@ -119,18 +120,18 @@ export const HomeScreen: React.FC = () => {
                   color="gray.800"
                   lineHeight="1.2"
                 >
-                  もんだいれんしゅう
+                  <R rt="もんだい">問題</R><R rt="れんしゅう">練習</R>
                 </Heading>
                 <Text fontSize="sm" color="gray.400" mt={1}>
                   {profile.name
-                    ? `${profile.name}さんの れんしゅう`
-                    : 'こくりつしょうがっこうじゅけん'}
+                    ? <>{profile.name}さんの <R rt="れんしゅう">練習</R></>
+                    : <>国立小学校<R rt="じゅけん">受験</R></>}
                 </Text>
               </Box>
               <chakra.button
                 type="button"
                 onClick={() => navigate('/profile')}
-                aria-label="ぷろふぃーる"
+                aria-label="プロフィール"
                 w="44px"
                 h="44px"
                 borderRadius="full"
@@ -175,16 +176,16 @@ export const HomeScreen: React.FC = () => {
               </Box>
               <Text fontSize="xs" color="gray.400" mt={2}>
                 {totalQuestions > 0
-                  ? `${progressPercent}% — ${totalCorrect}もんせいかい / ${totalQuestions}もんちゅう`
-                  : 'まだもんだいをといていません'}
+                  ? <>{progressPercent}% — {totalCorrect}問<R rt="せいかい">正解</R> / {totalQuestions}問中</>
+                  : <>まだ<R rt="もんだい">問題</R>をといていません</>}
               </Text>
             </Box>
 
-            {/* ランダム10もんカード */}
+            {/* ランダム10問カード */}
             <chakra.button
               type="button"
               onClick={() => navigate('/random')}
-              aria-label="ランダム10もん"
+              aria-label="ランダム10問"
               display="flex"
               alignItems="center"
               gap={4}
@@ -239,10 +240,10 @@ export const HomeScreen: React.FC = () => {
               </Flex>
               <Box position="relative" zIndex={1}>
                 <Text fontSize="lg" fontWeight="800" color="white">
-                  ランダム10もん
+                  ランダム10問
                 </Text>
                 <Text fontSize="xs" fontWeight="500" color="whiteAlpha.800" mt={0.5}>
-                  いろいろなもんだいにちょうせん！
+                  いろいろな<R rt="もんだい">問題</R>に<R rt="ちょうせん">挑戦</R>！
                 </Text>
               </Box>
             </chakra.button>
@@ -325,13 +326,13 @@ export const HomeScreen: React.FC = () => {
                           {unit.implemented ? (
                             <Box bg="whiteAlpha.300" borderRadius="full" px={2.5} py={0.5}>
                               <Text fontSize="xs" fontWeight="700" color="white">
-                                {done > 0 ? `${done}もん` : 'はじめて'}
+                                {done > 0 ? `${done}問` : 'はじめて'}
                               </Text>
                             </Box>
                           ) : (
                             <Box bg={`${cat.unimplementedTextColor}15`} borderRadius="full" px={2.5} py={0.5}>
                               <Text fontSize="xs" fontWeight="600" color={cat.unimplementedTextColor} opacity={0.6}>
-                                じゅんびちゅう
+                                <R rt="じゅんび">準備</R>中
                               </Text>
                             </Box>
                           )}

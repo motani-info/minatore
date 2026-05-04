@@ -23,6 +23,9 @@ const TYPE_NAMES: Record<string, { name: string; icon: string; color: string }> 
   rotation: { name: '回転図形', icon: '🔄', color: '#7c3aed' },
   overlay: { name: '重ね図形', icon: '🔲', color: '#2563eb' },
   puzzle: { name: '図形パズル', icon: '🧩', color: '#ec4899' },
+  seesaw: { name: '重さくらべ', icon: '⚖️', color: '#059669' },
+  'one-to-one': { name: '一つずつ', icon: '🔢', color: '#0891b2' },
+  'overlay-cancel': { name: '打ちけし', icon: '🔲', color: '#6366f1' },
 };
 
 /** 正解率から★評価を返す（5段階） */
@@ -39,6 +42,8 @@ function getStars(rate: number): React.ReactNode {
   );
 }
 
+const PIE_COLORS = ['#34d399', '#fca5a5'];
+
 export const HistoryScreen: React.FC = () => {
   const { progress, resetAll } = useProgress();
   const [showConfirm, setShowConfirm] = useState(false);
@@ -51,7 +56,14 @@ export const HistoryScreen: React.FC = () => {
     : 0;
   const correctRate = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
 
-  /** 分野別データ（データがある分野のみ） */
+  const pieData =
+    totalQuestions > 0
+      ? [
+          { name: '正解', value: totalCorrect },
+          { name: '不正解', value: totalQuestions - totalCorrect },
+        ]
+      : [];
+
   const typeEntries = progress
     ? Object.entries(progress.byType)
         .filter(([, v]) => v.totalQuestions > 0)
@@ -62,31 +74,18 @@ export const HistoryScreen: React.FC = () => {
         })
     : [];
 
-  /** 棒グラフ用データ */
   const barData = typeEntries.map((e) => ({
     name: e.name,
     問題数: e.totalQuestions,
     正解数: e.correctAnswers,
   }));
 
-  /** 円グラフ用データ */
-  const pieData =
-    totalQuestions > 0
-      ? [
-          { name: '正解', value: totalCorrect },
-          { name: '不正解', value: totalQuestions - totalCorrect },
-        ]
-      : [];
-  const PIE_COLORS = ['#34d399', '#fca5a5'];
-
-  /** 日別グラフ用データ */
   const lineData = (progress?.dailyRecords ?? []).map((r) => ({
     date: r.date.slice(5).replace('-', '/'),
     問題数: r.totalQuestions,
     正解数: r.correctAnswers,
   }));
 
-  /** 学習開始日フォーマット */
   const startedAtFormatted = progress?.startedAt
     ? new Date(progress.startedAt).toLocaleDateString('ja-JP', {
         year: 'numeric',
@@ -106,7 +105,6 @@ export const HistoryScreen: React.FC = () => {
         <Container maxW="920px" py={{ base: 6, sm: 8 }} px={{ base: 5, sm: 6 }}>
           <VStack gap={7} align="stretch">
 
-            {/* A. ヘッダー */}
             <Heading
               as="h1"
               fontSize={{ base: '2xl', sm: '3xl' }}
@@ -117,7 +115,7 @@ export const HistoryScreen: React.FC = () => {
               <R rt="がくしゅう">学習</R><R rt="きろく">記録</R>
             </Heading>
 
-            {/* B. 全体サマリーカード */}
+            {/* トータルサマリー（円グラフ統合） */}
             <Box
               bg="white"
               borderRadius="2xl"
@@ -125,36 +123,93 @@ export const HistoryScreen: React.FC = () => {
               boxShadow="0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)"
             >
               {totalQuestions > 0 ? (
-                <VStack gap={4} align="stretch">
+                <VStack gap={5} align="stretch">
                   <Text fontSize="sm" fontWeight="700" color="gray.600">トータル</Text>
-                  <Flex gap={4} justify="center" flexWrap="wrap">
-                    <Box flex={1} textAlign="center" minW="80px">
-                      <Text fontSize={{ base: '2xl', sm: '4xl' }} fontWeight="800" color="gray.800">
-                        {totalQuestions}
-                      </Text>
-                      <Text fontSize="xs" color="gray.400" fontWeight="600">
-                        <R rt="もんだい">問題</R>数
-                      </Text>
+
+                  {/* 円グラフ + 数字を横並び */}
+                  <Flex
+                    direction={{ base: 'column', sm: 'row' }}
+                    align="center"
+                    gap={6}
+                  >
+                    {/* 円グラフ */}
+                    <Box position="relative" w="160px" h="160px" flexShrink={0}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={pieData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={50}
+                            outerRadius={75}
+                            dataKey="value"
+                            startAngle={90}
+                            endAngle={-270}
+                            stroke="none"
+                          >
+                            {pieData.map((_, idx) => (
+                              <Cell key={idx} fill={PIE_COLORS[idx]} />
+                            ))}
+                          </Pie>
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <Flex
+                        position="absolute"
+                        top="50%"
+                        left="50%"
+                        transform="translate(-50%, -50%)"
+                        direction="column"
+                        align="center"
+                        pointerEvents="none"
+                      >
+                        <Text fontSize="2xl" fontWeight="800" color="gray.800" lineHeight="1">
+                          {correctRate}%
+                        </Text>
+                        <Text fontSize="2xs" color="gray.400" fontWeight="600">
+                          <R rt="せいかい">正解</R><R rt="りつ">率</R>
+                        </Text>
+                      </Flex>
                     </Box>
-                    <Box w="1px" bg="gray.100" />
-                    <Box flex={1} textAlign="center" minW="80px">
-                      <Text fontSize={{ base: '2xl', sm: '4xl' }} fontWeight="800" color="#34d399">
-                        {totalCorrect}
-                      </Text>
-                      <Text fontSize="xs" color="gray.400" fontWeight="600">
-                        <R rt="せいかい">正解</R>数
-                      </Text>
-                    </Box>
-                    <Box w="1px" bg="gray.100" />
-                    <Box flex={1} textAlign="center" minW="80px">
-                      <Text fontSize={{ base: '2xl', sm: '4xl' }} fontWeight="800" color="#7c3aed">
-                        {correctRate}%
-                      </Text>
-                      <Text fontSize="xs" color="gray.400" fontWeight="600">
-                        <R rt="せいかい">正解</R><R rt="りつ">率</R>
-                      </Text>
-                    </Box>
+
+                    {/* 数字 */}
+                    <VStack gap={4} flex={1} align="stretch">
+                      <Flex align="center" gap={3}>
+                        <Box w="10px" h="10px" bg="#34d399" borderRadius="full" flexShrink={0} />
+                        <Box flex={1}>
+                          <Text fontSize="xs" color="gray.400" fontWeight="600">
+                            <R rt="せいかい">正解</R>数
+                          </Text>
+                        </Box>
+                        <Text fontSize="xl" fontWeight="800" color="#34d399">
+                          {totalCorrect}
+                        </Text>
+                      </Flex>
+                      <Flex align="center" gap={3}>
+                        <Box w="10px" h="10px" bg="#fca5a5" borderRadius="full" flexShrink={0} />
+                        <Box flex={1}>
+                          <Text fontSize="xs" color="gray.400" fontWeight="600">
+                            <R rt="ふせいかい">不正解</R>数
+                          </Text>
+                        </Box>
+                        <Text fontSize="xl" fontWeight="800" color="#fca5a5">
+                          {totalQuestions - totalCorrect}
+                        </Text>
+                      </Flex>
+                      <Box h="1px" bg="gray.100" />
+                      <Flex align="center" gap={3}>
+                        <Box w="10px" h="10px" bg="gray.300" borderRadius="full" flexShrink={0} />
+                        <Box flex={1}>
+                          <Text fontSize="xs" color="gray.400" fontWeight="600">
+                            <R rt="もんだい">問題</R>数
+                          </Text>
+                        </Box>
+                        <Text fontSize="xl" fontWeight="800" color="gray.800">
+                          {totalQuestions}
+                        </Text>
+                      </Flex>
+                    </VStack>
                   </Flex>
+
                   <Flex justify="center">{getStars(correctRate)}</Flex>
                 </VStack>
               ) : (
@@ -166,65 +221,38 @@ export const HistoryScreen: React.FC = () => {
 
             {/* 学習開始日 */}
             {startedAtFormatted && (
-              <Text fontSize="sm" color="gray.500" fontWeight="600" textAlign="center">
-                <R rt="がくしゅう">学習</R><R rt="かいし">開始</R>: {startedAtFormatted}
-              </Text>
-            )}
-
-            {/* C. 正解率の円グラフ */}
-            {totalQuestions > 0 && (
               <Box
                 bg="white"
                 borderRadius="2xl"
-                p={6}
+                p={5}
                 boxShadow="0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)"
               >
-                <Text fontSize="sm" fontWeight="700" color="gray.600" mb={4}>
-                  <R rt="せいかい">正解</R><R rt="りつ">率</R>
-                </Text>
-                <Box position="relative" w="100%" h="220px">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={90}
-                        dataKey="value"
-                        startAngle={90}
-                        endAngle={-270}
-                        stroke="none"
-                      >
-                        {pieData.map((_, idx) => (
-                          <Cell key={idx} fill={PIE_COLORS[idx]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  {/* 中央に正解率を表示 */}
+                <Flex align="center" gap={3}>
                   <Flex
-                    position="absolute"
-                    top="50%"
-                    left="50%"
-                    transform="translate(-50%, -50%)"
-                    direction="column"
                     align="center"
-                    pointerEvents="none"
+                    justify="center"
+                    w="44px"
+                    h="44px"
+                    bg="purple.50"
+                    borderRadius="xl"
+                    fontSize="22px"
+                    flexShrink={0}
                   >
-                    <Text fontSize="3xl" fontWeight="800" color="gray.800" lineHeight="1">
-                      {correctRate}%
-                    </Text>
-                    <Text fontSize="xs" color="gray.400" fontWeight="600">
-                      <R rt="せいかい">正解</R><R rt="りつ">率</R>
-                    </Text>
+                    📅
                   </Flex>
-                </Box>
+                  <Box>
+                    <Text fontSize="xs" color="gray.400" fontWeight="600">
+                      <R rt="がくしゅう">学習</R><R rt="かいし">開始</R>日
+                    </Text>
+                    <Text fontSize="md" fontWeight="700" color="gray.800">
+                      {startedAtFormatted}
+                    </Text>
+                  </Box>
+                </Flex>
               </Box>
             )}
 
-            {/* D. 分野別の棒グラフ */}
+            {/* 分野別の棒グラフ */}
             {totalQuestions > 0 && barData.length > 0 && (
               <Box
                 bg="white"
@@ -250,7 +278,7 @@ export const HistoryScreen: React.FC = () => {
               </Box>
             )}
 
-            {/* E. 日別の学習グラフ */}
+            {/* 日別の学習グラフ */}
             {lineData.length > 0 && (
               <Box
                 bg="white"
@@ -276,7 +304,7 @@ export const HistoryScreen: React.FC = () => {
               </Box>
             )}
 
-            {/* F. 分野別の詳細カード */}
+            {/* 分野別の詳細カード */}
             {typeEntries.length > 0 && (
               <VStack gap={3} align="stretch">
                 <Text fontSize="sm" fontWeight="700" color="gray.600">
@@ -332,7 +360,7 @@ export const HistoryScreen: React.FC = () => {
               </VStack>
             )}
 
-            {/* G. リセットボタン */}
+            {/* リセットボタン */}
             {totalQuestions > 0 && (
               <Flex justify="center" pt={2} pb={4}>
                 <Box
@@ -424,7 +452,6 @@ export const HistoryScreen: React.FC = () => {
         </Flex>
       )}
 
-      {/* タブバー */}
       <TabBar />
     </Flex>
   );

@@ -8,10 +8,12 @@ import { ProfileIcon } from '../../assets/icons';
 
 export const ProfileScreen: React.FC = () => {
   const navigate = useNavigate();
-  const { profile, updateName, updateAvatar, removeAvatar } = useProfile();
+  const { profile, updateName, updateAvatar, removeAvatar, updateAge } = useProfile();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(profile.name);
+  const [editingAge, setEditingAge] = useState(false);
+  const [ageValue, setAgeValue] = useState(profile.age?.toString() ?? '');
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -25,6 +27,12 @@ export const ProfileScreen: React.FC = () => {
   const handleNameSave = () => {
     updateName(nameValue.trim());
     setEditingName(false);
+  };
+
+  const handleAgeSave = () => {
+    const parsed = parseInt(ageValue, 10);
+    updateAge(isNaN(parsed) ? null : Math.max(0, Math.min(12, parsed)));
+    setEditingAge(false);
   };
 
   return (
@@ -204,6 +212,85 @@ export const ProfileScreen: React.FC = () => {
                 onClick={() => {
                   setNameValue(profile.name);
                   setEditingName(true);
+                }}
+                px={4}
+                py={2}
+                fontSize="sm"
+                fontWeight="600"
+                color="purple.500"
+                bg="purple.50"
+                borderRadius="lg"
+                _hover={{ bg: 'purple.100' }}
+                _active={{ transform: 'scale(0.97)' }}
+                minH="44px"
+              >
+                <R rt="へんこう">変更</R>
+              </chakra.button>
+            </Flex>
+          )}
+        </Box>
+
+        {/* 年齢 */}
+        <Box
+          bg="white"
+          borderRadius="2xl"
+          p={5}
+          boxShadow="0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)"
+        >
+          <Text fontSize="xs" color="gray.400" fontWeight="600" mb={3}>
+            <R rt="ねんれい">年齢</R>
+          </Text>
+          {editingAge ? (
+            <Flex gap={2} align="center">
+              <chakra.input
+                type="number"
+                value={ageValue}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAgeValue(e.target.value)}
+                placeholder="5"
+                w="80px"
+                px={4}
+                py={2.5}
+                fontSize="md"
+                fontWeight="600"
+                color="gray.800"
+                bg="gray.50"
+                border="2px solid"
+                borderColor="purple.300"
+                borderRadius="xl"
+                outline="none"
+                _focus={{ borderColor: 'purple.500' }}
+                autoFocus
+                min={0}
+                max={12}
+              />
+              <Text fontSize="md" color="gray.600" fontWeight="600"><R rt="さい">歳</R></Text>
+              <chakra.button
+                type="button"
+                onClick={handleAgeSave}
+                px={5}
+                py={2.5}
+                fontSize="sm"
+                fontWeight="700"
+                color="white"
+                bg="linear-gradient(135deg, #7c6cf0, #9b8afb)"
+                borderRadius="xl"
+                _hover={{ opacity: 0.9 }}
+                _active={{ transform: 'scale(0.97)' }}
+                minH="44px"
+              >
+                <R rt="ほぞん">保存</R>
+              </chakra.button>
+            </Flex>
+          ) : (
+            <Flex align="center" justify="space-between">
+              <Text fontSize="lg" fontWeight="700" color="gray.800">
+                {profile.age !== null ? <>{profile.age}<R rt="さい">歳</R></> : <>まだ<R rt="せってい">設定</R>されていません</>}
+              </Text>
+              <chakra.button
+                type="button"
+                onClick={() => {
+                  setAgeValue(profile.age?.toString() ?? '');
+                  setEditingAge(true);
                 }}
                 px={4}
                 py={2}

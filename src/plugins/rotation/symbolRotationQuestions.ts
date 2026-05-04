@@ -419,6 +419,336 @@ const question12: FixedQuestion = {
   ],
 };
 
+// ─── 追加問題（画像3枚目: 回転図形プリント） ───
+
+/**
+ * 問題⑬ (画像(1)) 右1回転
+ * 元: [白丸, 空; 白丸, 空]
+ * 右90度: [白丸, 白丸; 空, 空]
+ */
+const q13: FixedQuestion = {
+  originalGrid: [CW, E, CW, E],
+  direction: 'right1',
+  distractors: [
+    [E, E, CW, CW],
+    [E, CW, E, CW],
+    [CW, E, E, CW],
+  ],
+};
+
+/**
+ * 問題⑭ (画像(2)) 右1回転
+ * 元: [黒四角, 白丸; 空, 空]
+ * 右90度: [空, 黒四角; 空, 白丸]
+ */
+const q14: FixedQuestion = {
+  originalGrid: [SQ, CW, E, E],
+  direction: 'right1',
+  distractors: [
+    [CW, E, SQ, E],
+    [E, E, CW, SQ],
+    [SQ, E, CW, E],
+  ],
+};
+
+/**
+ * 問題⑮ (画像(3)) 右1回転
+ * 元: [白丸, 空; 黒丸, 空]
+ * 右90度: [黒丸, 白丸; 空, 空]
+ */
+const q15: FixedQuestion = {
+  originalGrid: [CW, E, CB, E],
+  direction: 'right1',
+  distractors: [
+    [E, E, CB, CW],
+    [E, CW, E, CB],
+    [CB, E, CW, E],
+  ],
+};
+
+/**
+ * 問題⑯ (画像(5)) 左1回転
+ * 元: [空, 黒三角↑; 白三角↓, 空]
+ * 左90度: 位置[上右,下右; 上左,下左] + 向き左回転
+ * = [黒三角←, 空; 空, 白三角→]
+ */
+const q16: FixedQuestion = {
+  originalGrid: [E, TB('up'), TW('down'), E],
+  direction: 'left1',
+  distractors: [
+    [E, TW('right'), TB('left'), E],
+    [TB('right'), E, E, TW('left')],
+    [TW('up'), E, E, TB('down')],
+  ],
+};
+
+/**
+ * 問題⑰ (画像(6)) 左1回転
+ * 元: [空, 黒三角↑; 白三角↓(逆), 空]
+ * 左90度: [黒三角←, 空; 空, 白三角→]
+ */
+const q17: FixedQuestion = {
+  originalGrid: [E, TB('up'), TW('down'), E],
+  direction: 'left1',
+  distractors: [
+    [TB('down'), E, E, TW('up')],
+    [E, TB('right'), TW('left'), E],
+    [TW('left'), E, E, TB('right')],
+  ],
+};
+
+/**
+ * 問題⑱ (画像(7)) 左1回転
+ * 元: [黒丸, 白三角→; 空, 黒三角↑]
+ * 左90度: 位置[上右,下右; 上左,下左] + 向き左回転
+ * = [白三角↑→左=白三角↑, 黒三角↑→左=黒三角←; 黒丸, 空]
+ * 修正: 位置[1,3,0,2] + 向き左回転
+ * = [白三角→→左=白三角↑, 黒三角↑→左=黒三角←; 黒丸, 空]
+ */
+const q18: FixedQuestion = {
+  originalGrid: [CB, TW('right'), E, TB('up')],
+  direction: 'left1',
+  distractors: [
+    [TB('left'), E, CW, TW('up')],
+    [E, CB, TW('up'), TB('left')],
+    [TW('down'), CB, TB('right'), E],
+  ],
+};
+
+/**
+ * 問題⑲ (画像(10)) 右1回転
+ * 元: 大きな黒三角（右上半分が黒）
+ * [空, 黒三角↑; 空, 空] のような対角パターン
+ * 右90度: [空, 空; 黒三角→, 空]
+ */
+const q19: FixedQuestion = {
+  originalGrid: [E, TB('up'), E, E],
+  direction: 'right1',
+  distractors: [
+    [E, E, E, TB('up')],
+    [TB('left'), E, E, E],
+    [E, E, TB('down'), E],
+  ],
+};
+
+/**
+ * 問題⑳ (画像(11)) 右1回転
+ * 元: [空, 黒四角; 白三角↓, 空]
+ * 右90度: [白三角↓→右=白三角→, 空; 空, 黒四角]
+ * 修正: 位置[2,0,3,1] + 向き右回転
+ * = [白三角→, 空; 空, 黒四角]
+ */
+const q20: FixedQuestion = {
+  originalGrid: [E, SQ, TW('down'), E],
+  direction: 'right1',
+  distractors: [
+    [E, TW('left'), SQ, E],
+    [SQ, E, E, TW('right')],
+    [TW('up'), E, E, SQ],
+  ],
+};
+
+/**
+ * 問題㉑ (画像(14)) 左1回転
+ * 元: [白三角→, 白三角←; 空, 黒三角→]
+ * 左90度: 位置[1,3,0,2] + 向き左回転
+ * = [白三角↑, 黒三角↑; 白三角↓, 空]
+ */
+const q21: FixedQuestion = {
+  originalGrid: [TW('right'), TW('left'), E, TB('right')],
+  direction: 'left1',
+  distractors: [
+    [TB('up'), TW('down'), TW('up'), E],
+    [E, TW('up'), TB('up'), TW('down')],
+    [TW('down'), E, TW('up'), TB('up')],
+  ],
+};
+
+/**
+ * 問題㉒ (画像(15)) 左1回転
+ * 元: [黒四角, 空; 空, 黒四角(小)]  L字型パターン
+ * 左90度: [空, 黒四角(小); 黒四角, 空]
+ */
+const q22: FixedQuestion = {
+  originalGrid: [SQ, E, E, SQ],
+  direction: 'left1',
+  distractors: [
+    [SQ, SQ, E, E],
+    [E, E, SQ, SQ],
+    [SQ, E, SQ, E],
+  ],
+};
+
+const additionalQuestions: FixedQuestion[] = [
+  q13, q14, q15, q16, q17, q18, q19, q20, q21, q22,
+];
+
+// ─── 追加問題（画像4枚目: 回転図形プリント2まいめ） ───
+
+/**
+ * 問題㉓ (画像(4)) 右1回転
+ * 元: [空, 白三角↑; 空, 空]
+ * 右90度: [空, 空; 白三角→, 空]
+ */
+const q23: FixedQuestion = {
+  originalGrid: [E, TW('up'), E, E],
+  direction: 'right1',
+  distractors: [
+    [E, E, E, TW('up')],
+    [TW('left'), E, E, E],
+    [E, E, TW('down'), E],
+  ],
+};
+
+/**
+ * 問題㉔ (画像(5)) 右1回転
+ * 元: [黒四角, 白三角→; 空, 黒四角]
+ * 右90度: 位置[2,0,3,1] + 向き右回転
+ * = [空, 黒四角; 黒四角, 白三角↓]
+ */
+const q24: FixedQuestion = {
+  originalGrid: [SQ, TW('right'), E, SQ],
+  direction: 'right1',
+  distractors: [
+    [SQ, E, TW('down'), SQ],
+    [TW('left'), SQ, SQ, E],
+    [E, SQ, SQ, TW('up')],
+  ],
+};
+
+/**
+ * 問題㉕ (画像(8)) 左1回転
+ * 元: [黒三角↑, 空; 黒四角, 空]
+ * 左90度: 位置[1,3,0,2] + 向き左回転
+ * = [空, 空; 黒三角←, 黒四角]
+ */
+const q25: FixedQuestion = {
+  originalGrid: [TB('up'), E, SQ, E],
+  direction: 'left1',
+  distractors: [
+    [E, SQ, E, TB('left')],
+    [SQ, TB('right'), E, E],
+    [E, E, TB('down'), SQ],
+  ],
+};
+
+/**
+ * 問題㉖ (画像(9)) 右1回転
+ * 元: [斜線, 空; 黒四角, 空] — 斜線は対角線
+ * 右90度: [黒四角, 斜線; 空, 空]
+ */
+const q26: FixedQuestion = {
+  originalGrid: [DL, E, SQ, E],
+  direction: 'right1',
+  distractors: [
+    [E, DL, E, SQ],
+    [SQ, E, DL, E],
+    [E, SQ, E, DL],
+  ],
+};
+
+/**
+ * 問題㉗ (画像(12)) 右1回転
+ * 元: [黒四角(大), 空; 空, 空]
+ * 右90度: [空, 黒四角; 空, 空]
+ */
+const q27: FixedQuestion = {
+  originalGrid: [SQ, E, E, E],
+  direction: 'right1',
+  distractors: [
+    [E, E, SQ, E],
+    [E, E, E, SQ],
+    [E, SQ, E, E],
+  ],
+};
+
+/**
+ * 問題㉘ (画像(13)) 右1回転
+ * 元: [斜線, 空; 空, 斜線] — 対角線が対角に配置
+ * 右90度: [空, 斜線; 斜線, 空]
+ */
+const q28: FixedQuestion = {
+  originalGrid: [DL, E, E, DL],
+  direction: 'right1',
+  distractors: [
+    [DL, DL, E, E],
+    [E, E, DL, DL],
+    [DL, E, DL, E],
+  ],
+};
+
+/**
+ * 問題㉙ (画像(16)) 右1回転
+ * 元: [黒三角→, 黒三角→; 空, 空]
+ * 右90度: [空, 黒三角↓; 空, 黒三角↓]
+ */
+const q29: FixedQuestion = {
+  originalGrid: [TB('right'), TB('right'), E, E],
+  direction: 'right1',
+  distractors: [
+    [E, E, TB('down'), TB('down')],
+    [TB('left'), E, TB('left'), E],
+    [E, TB('up'), E, TB('up')],
+  ],
+};
+
+/**
+ * 問題㉚ (画像(17)) 左1回転
+ * 元: [黒三角↑, 空; 黒三角↓, 黒三角→]
+ * 左90度: 位置[1,3,0,2] + 向き左回転
+ * = [空, 黒三角↑; 黒三角←, 黒三角↓]
+ * → 向き左回転: [空, 黒三角→→左=↑; 黒三角↑→左=←, 黒三角↓→左=→]
+ * 修正: 元の向きを左に回転
+ * ↑→左, ↓→右, →→↑
+ * = [空, TB(right→up); TB(up→left), TB(down→right)]
+ */
+const q30: FixedQuestion = {
+  originalGrid: [TB('up'), E, TB('down'), TB('right')],
+  direction: 'left1',
+  distractors: [
+    [E, TB('down'), TB('right'), TB('up')],
+    [TB('left'), TB('up'), E, TB('down')],
+    [TB('right'), E, TB('up'), TB('left')],
+  ],
+};
+
+/**
+ * 問題㉛ (画像(18)) 左1回転
+ * 元: [斜線, 黒三角→; 空, 黒三角↑]
+ * 左90度: 位置[1,3,0,2] + 向き左回転
+ * = [黒三角→→左=↑, 黒三角↑→左=←; 斜線, 空]
+ */
+const q31: FixedQuestion = {
+  originalGrid: [DL, TB('right'), E, TB('up')],
+  direction: 'left1',
+  distractors: [
+    [TB('left'), E, DL, TB('up')],
+    [E, TB('down'), TB('right'), DL],
+    [TB('down'), DL, E, TB('right')],
+  ],
+};
+
+/**
+ * 問題㉜ (画像(19)) 左1回転
+ * 元: [白三角↑, DC(X字); 白三角↓, 空]
+ * 左90度: 位置[1,3,0,2] + 向き左回転
+ * = [DC, 空; 白三角←, 白三角→]
+ * 向き: ↑→左, ↓→右
+ */
+const q32: FixedQuestion = {
+  originalGrid: [TW('up'), DC, TW('down'), E],
+  direction: 'left1',
+  distractors: [
+    [E, TW('left'), DC, TW('right')],
+    [TW('right'), DC, E, TW('left')],
+    [DC, TW('up'), TW('down'), E],
+  ],
+};
+
+const additionalQuestions2: FixedQuestion[] = [
+  q23, q24, q25, q26, q27, q28, q29, q30, q31, q32,
+];
+
 // ─── 固定問題プール ───
 
 const FIXED_QUESTIONS: FixedQuestion[] = [
@@ -434,6 +764,8 @@ const FIXED_QUESTIONS: FixedQuestion[] = [
   question10,
   question11,
   question12,
+  ...additionalQuestions,
+  ...additionalQuestions2,
 ];
 
 /** 固定問題プールからランダムに1問を生成する */

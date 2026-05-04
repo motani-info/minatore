@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Box, Container, Flex, Text, VStack } from '@chakra-ui/react';
 import { NavigationBar } from '../../../framework/components/NavigationBar';
 import { useProgress } from '../../../framework/hooks/useProgress';
@@ -20,7 +20,9 @@ export const AreaCompareScreen: React.FC = () => {
   const { progress } = useProgress();
   const typeProgress = progress?.byType['area-compare'];
   const location = useLocation();
+  const navigate = useNavigate();
   const initialIndex = (location.state as { questionIndex?: number })?.questionIndex;
+  const randomMode = (location.state as { randomMode?: boolean } | null)?.randomMode ?? false;
 
   const [question, setQuestion] = useState<Question<AreaCompareQuestionData, AreaCompareChoiceData>>(
     () => {
@@ -36,9 +38,13 @@ export const AreaCompareScreen: React.FC = () => {
   const totalDone = (typeProgress?.totalQuestions ?? 0) + questionCount;
 
   const handleNext = useCallback(() => {
+    if (randomMode) {
+      navigate('/random');
+      return;
+    }
     setQuestion(generateAreaCompareQuestion());
     setQuestionCount((c) => c + 1);
-  }, []);
+  }, [randomMode, navigate]);
 
   const handleRetry = useCallback(() => {}, []);
   const handleCorrect = useCallback(() => {}, []);

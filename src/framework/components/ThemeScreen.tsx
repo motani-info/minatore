@@ -5,8 +5,10 @@ import { registry } from '../../registry/questionTypeRegistry';
 import { getCategoryById, buildTabsForCategory } from '../categoryData';
 import type { TabDef } from '../categoryData';
 import type { Question } from '../../types/question';
-import { useProgress } from '../hooks/useProgress';
 import { R } from './Ruby';
+
+/** 1ページあたりの問題数 */
+const PAGE_SIZE = 10;
 
 /** 問題タイプごとのテーマカラー */
 const TYPE_THEMES: Record<string, { gradient: string; accent: string }> = {
@@ -20,6 +22,10 @@ const TYPE_THEMES: Record<string, { gradient: string; accent: string }> = {
   'overlay-cancel': { gradient: 'linear-gradient(135deg, #0891b2 0%, #67e8f9 100%)', accent: '#0891b2' },
   'odd-one-out': { gradient: 'linear-gradient(135deg, #dc2626 0%, #fca5a5 100%)', accent: '#dc2626' },
   seesaw: { gradient: 'linear-gradient(135deg, #059669 0%, #34d399 100%)', accent: '#059669' },
+  'water-volume': { gradient: 'linear-gradient(135deg, #2563eb 0%, #60a5fa 100%)', accent: '#2563eb' },
+  'compare-length': { gradient: 'linear-gradient(135deg, #0d9488 0%, #5eead4 100%)', accent: '#0d9488' },
+  'compare-spring': { gradient: 'linear-gradient(135deg, #047857 0%, #6ee7b7 100%)', accent: '#047857' },
+  'area-compare': { gradient: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', accent: '#7c3aed' },
   'shape-karta': { gradient: 'linear-gradient(135deg, #d97706 0%, #fbbf24 100%)', accent: '#d97706' },
   'syllable-count': { gradient: 'linear-gradient(135deg, #7c3aed 0%, #c4b5fd 100%)', accent: '#7c3aed' },
   'one-to-one': { gradient: 'linear-gradient(135deg, #0284c7 0%, #7dd3fc 100%)', accent: '#0284c7' },
@@ -62,7 +68,6 @@ function ThemeScreenInner({
   tabs: TabDef[];
 }) {
   const navigate = useNavigate();
-  const { progress } = useProgress();
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const activeTab = tabs[activeTabIndex];
 
@@ -71,26 +76,40 @@ function ThemeScreenInner({
   const [activeSubIndex, setActiveSubIndex] = useState(0);
   const activeUnit = activeTab.units[Math.min(activeSubIndex, activeTab.units.length - 1)];
 
-  // タブ切り替え時にサブタブをリセット
+  // ページング
+  const [currentPage, setCurrentPage] = useState(0);
+
+  // タブ切り替え時にサブタブとページをリセット
   const handleTabChange = (index: number) => {
     setActiveTabIndex(index);
     setActiveSubIndex(0);
+    setCurrentPage(0);
   };
 
-  // 問題生成: getAllQuestions があれば全問表示、なければ一定数生成
+  // 問題取得: getAllQuestions があれば全問表示、なければ生成
   const questionType = registry.get(activeUnit.id);
-  const questions: Question[] = useMemo(() => {
+  const allQuestions: Question[] = useMemo(() => {
     if (!questionType) return [];
     if (questionType.getAllQuestions) {
       return questionType.getAllQuestions();
     }
+    // アルゴリズム生成型: 一定数生成（将来的に固定プール化予定）
     return Array.from({ length: 20 }, () => questionType.generateQuestion());
   }, [questionType, activeSubIndex, activeTabIndex]);
 
-  const handleSelect = (index: number) => {
+  // ページング計算
+  const totalPages = Math.ceil(allQuestions.length / PAGE_SIZE);
+  const needsPaging = allQuestions.length > PAGE_SIZE;
+  const pageQuestions = needsPaging
+    ? allQuestions.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE)
+    : allQuestions;
+  const pageStartIndex = currentPage * PAGE_SIZE;
+
+  const handleSelect = (pageIndex: number) => {
     if (!questionType) return;
+    const globalIndex = pageStartIndex + pageIndex;
     navigate(`/question/${questionType.id}`, {
-      state: { selectedQuestion: questions[index] },
+      state: { selectedQuestion: allQuestions[globalIndex] },
     });
   };
 
@@ -115,7 +134,6 @@ function ThemeScreenInner({
           <Box position="absolute" left="-20px" bottom="-20px" w="100px" h="100px" bg="whiteAlpha.100" borderRadius="full" />
 
           <VStack gap={3} align="stretch" position="relative" zIndex={1}>
-            {/* ナビゲーション */}
             <Flex align="center" gap={3}>
               <chakra.button
                 type="button"
@@ -140,15 +158,12 @@ function ThemeScreenInner({
               <Box flex={1} />
             </Flex>
 
-            {/* タイトル */}
             <Box>
               <Text fontSize="2xl" fontWeight="800" color="white" lineHeight="1.3">
                 {category.title}
               </Text>
               <Text fontSize="sm" fontWeight="500" color="whiteAlpha.800" mt={0.5}>
-                {questions.length > 0
-                  ? `ぜんぶで ${questions.length} もん`
-                  : <><R rt="もんだい">問題</R>を<R rt="えら">選</R>んで<R rt="ちょうせん">挑戦</R>しよう</>}
+                ぜんぶで {allQuestions.length} もん
               </Text>
             </Box>
           </VStack>
@@ -160,7 +175,6 @@ function ThemeScreenInner({
             tabs={tabs}
             activeIndex={activeTabIndex}
             onTabChange={handleTabChange}
-            progress={progress}
           />
         </Box>
 
@@ -178,7 +192,7 @@ function ThemeScreenInner({
         >
           <VStack gap={5} align="stretch">
 
-            {/* サブタブ（グループ内の基本/応用など） */}
+            {/* サブタブ */}
             {hasSubTabs && (
               <Flex gap={2} overflowX="auto" pb={1}>
                 {activeTab.units.map((unit, i) => {
@@ -189,6 +203,7 @@ function ThemeScreenInner({
                       type="button"
                       onClick={() => {
                         setActiveSubIndex(i);
+                        setCurrentPage(0);
                       }}
                       px={4}
                       py={2}
@@ -212,17 +227,30 @@ function ThemeScreenInner({
               </Flex>
             )}
 
+            {/* ページング（上部） */}
+            {needsPaging && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={allQuestions.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setCurrentPage}
+                accent={theme.accent}
+              />
+            )}
+
             {/* 問題一覧 */}
             {questionType && (
               <SimpleGrid columns={2} gap={3}>
-                {questions.map((question, index) => {
+                {pageQuestions.map((question, pageIndex) => {
+                  const globalIndex = pageStartIndex + pageIndex;
                   const { QuestionDisplay } = questionType;
                   return (
                     <chakra.button
-                      key={`${activeUnit.id}-${index}`}
+                      key={`${activeUnit.id}-${globalIndex}`}
                       type="button"
-                      onClick={() => handleSelect(index)}
-                      aria-label={`もんだい ${index + 1}`}
+                      onClick={() => handleSelect(pageIndex)}
+                      aria-label={`もんだい ${globalIndex + 1}`}
                       display="flex"
                       flexDirection="column"
                       alignItems="center"
@@ -244,7 +272,6 @@ function ThemeScreenInner({
                       position="relative"
                       overflow="hidden"
                     >
-                      {/* 問題番号バッジ */}
                       <Flex
                         position="absolute"
                         top={2}
@@ -258,11 +285,10 @@ function ThemeScreenInner({
                         zIndex={1}
                       >
                         <Text fontSize="xs" fontWeight="800" color="white" lineHeight="1">
-                          {index + 1}
+                          {globalIndex + 1}
                         </Text>
                       </Flex>
 
-                      {/* 問題プレビュー */}
                       <Box
                         w="100%"
                         minH="100px"
@@ -276,7 +302,6 @@ function ThemeScreenInner({
                         <QuestionDisplay data={question.questionData} />
                       </Box>
 
-                      {/* ラベル */}
                       <Box
                         w="100%"
                         bg={theme.gradient}
@@ -292,6 +317,18 @@ function ThemeScreenInner({
                   );
                 })}
               </SimpleGrid>
+            )}
+
+            {/* ページング（下部） */}
+            {needsPaging && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={allQuestions.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setCurrentPage}
+                accent={theme.accent}
+              />
             )}
 
             {/* 未実装の場合 */}
@@ -315,20 +352,79 @@ function ThemeScreenInner({
   );
 }
 
+// ─── ページングコンポーネント ───
+
+interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  accent: string;
+}
+
+function Pagination({ currentPage, totalPages, totalItems, pageSize, onPageChange, accent }: PaginationProps) {
+  const start = currentPage * pageSize + 1;
+  const end = Math.min((currentPage + 1) * pageSize, totalItems);
+
+  return (
+    <Flex align="center" justify="center" gap={2}>
+      <chakra.button
+        type="button"
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 0}
+        w="36px"
+        h="36px"
+        fontSize="md"
+        fontWeight="700"
+        color={currentPage === 0 ? 'gray.300' : accent}
+        bg={currentPage === 0 ? 'gray.50' : 'gray.100'}
+        borderRadius="full"
+        cursor={currentPage === 0 ? 'default' : 'pointer'}
+        transition="all 0.15s"
+        _hover={currentPage === 0 ? {} : { bg: 'gray.200' }}
+        _active={currentPage === 0 ? {} : { transform: 'scale(0.95)' }}
+        aria-label="まえのページ"
+      >
+        ‹
+      </chakra.button>
+
+      <Text fontSize="sm" fontWeight="600" color="gray.500" px={2}>
+        {start}〜{end} / {totalItems}もん
+      </Text>
+
+      <chakra.button
+        type="button"
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage >= totalPages - 1}
+        w="36px"
+        h="36px"
+        fontSize="md"
+        fontWeight="700"
+        color={currentPage >= totalPages - 1 ? 'gray.300' : accent}
+        bg={currentPage >= totalPages - 1 ? 'gray.50' : 'gray.100'}
+        borderRadius="full"
+        cursor={currentPage >= totalPages - 1 ? 'default' : 'pointer'}
+        transition="all 0.15s"
+        _hover={currentPage >= totalPages - 1 ? {} : { bg: 'gray.200' }}
+        _active={currentPage >= totalPages - 1 ? {} : { transform: 'scale(0.95)' }}
+        aria-label="つぎのページ"
+      >
+        ›
+      </chakra.button>
+    </Flex>
+  );
+}
+
 // ─── 手帳風タブコンポーネント ───
 
 interface NotebookTabsProps {
   tabs: TabDef[];
   activeIndex: number;
   onTabChange: (index: number) => void;
-  progress: ReturnType<typeof useProgress>['progress'];
 }
 
-/**
- * 手帳のインデックスタブ風UI
- * タブが少しずつずれて重なり、アクティブなタブが前面に出る
- */
-function NotebookTabs({ tabs, activeIndex, onTabChange, progress }: NotebookTabsProps) {
+function NotebookTabs({ tabs, activeIndex, onTabChange }: NotebookTabsProps) {
   return (
     <Flex
       position="relative"
@@ -339,13 +435,15 @@ function NotebookTabs({ tabs, activeIndex, onTabChange, progress }: NotebookTabs
       {tabs.map((tab, index) => {
         const isActive = index === activeIndex;
         const tabColor = TAB_COLORS[index % TAB_COLORS.length];
-        const totalDone = tab.units.reduce(
-          (sum, u) => sum + (progress?.byType[u.id]?.totalQuestions ?? 0),
-          0,
-        );
 
-        // 重なり具合: 各タブは少しずつ右にずれる
-        // アクティブなタブは zIndex が最も高い
+        // タブ内の全ユニットの問題数を合計
+        const questionCount = tab.units.reduce((sum, u) => {
+          const qt = registry.get(u.id);
+          if (!qt) return sum;
+          if (qt.getAllQuestions) return sum + qt.getAllQuestions().length;
+          return sum + 20; // アルゴリズム生成型
+        }, 0);
+
         const zIndex = isActive ? tabs.length + 1 : tabs.length - Math.abs(index - activeIndex);
 
         return (
@@ -382,24 +480,22 @@ function NotebookTabs({ tabs, activeIndex, onTabChange, progress }: NotebookTabs
             <Text lineHeight="1" whiteSpace="nowrap">
               {tab.label}
             </Text>
-            {totalDone > 0 && (
-              <Box
-                bg={isActive ? tabColor.bg : `${tabColor.bg}44`}
-                borderRadius="full"
-                px={1.5}
-                py={0.5}
-                ml={0.5}
+            <Box
+              bg={isActive ? tabColor.bg : `${tabColor.bg}33`}
+              borderRadius="full"
+              px={1.5}
+              py={0.5}
+              ml={0.5}
+            >
+              <Text
+                fontSize="9px"
+                fontWeight="700"
+                color={isActive ? 'white' : tabColor.text}
+                lineHeight="1"
               >
-                <Text
-                  fontSize="9px"
-                  fontWeight="700"
-                  color={isActive ? 'white' : tabColor.text}
-                  lineHeight="1"
-                >
-                  {totalDone}
-                </Text>
-              </Box>
-            )}
+                {questionCount}
+              </Text>
+            </Box>
           </chakra.button>
         );
       })}

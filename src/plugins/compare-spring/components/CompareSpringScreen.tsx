@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Box, Container, Flex, Text, VStack, chakra } from '@chakra-ui/react';
 import { NavigationBar } from '../../../framework/components/NavigationBar';
 import { FeedbackOverlay } from '../../../framework/components/FeedbackOverlay';
@@ -30,7 +30,9 @@ export const CompareSpringScreen: React.FC = () => {
   const { progress, recordAnswer } = useProgress();
   const typeProgress = progress?.byType['compare-spring'];
   const location = useLocation();
+  const navigate = useNavigate();
   const initialIndex = (location.state as { questionIndex?: number })?.questionIndex;
+  const randomMode = (location.state as { randomMode?: boolean } | null)?.randomMode ?? false;
 
   const [question, setQuestion] = useState<Question<CompareSpringQuestionData, CompareSpringChoiceData>>(
     () => {
@@ -81,6 +83,10 @@ export const CompareSpringScreen: React.FC = () => {
 
   /** 次の問題へ */
   const handleNext = useCallback(() => {
+    if (randomMode) {
+      navigate('/random');
+      return;
+    }
     const newQ = generateCompareSpringQuestion();
     setQuestion(newQ);
     setMarks(newQ.questionData.springs.map(() => null));
@@ -88,7 +94,7 @@ export const CompareSpringScreen: React.FC = () => {
     setIsCorrect(null);
     setShowFeedback(false);
     setQuestionCount((c) => c + 1);
-  }, []);
+  }, [randomMode, navigate]);
 
   /** やり直し */
   const handleRetry = useCallback(() => {

@@ -1,4 +1,4 @@
-import { useParams, useLocation, Navigate } from 'react-router-dom';
+import { useParams, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { Box, Container, Flex, SimpleGrid, Text, VStack, chakra } from '@chakra-ui/react';
 import { registry } from '../../registry/questionTypeRegistry';
 import { useQuestionFlow } from '../hooks/useQuestionFlow';
@@ -39,12 +39,15 @@ export const QuestionScreen: React.FC = () => {
   }
 
   // 一覧画面から選択された問題があれば初期問題として渡す
-  const selectedQuestion = (location.state as { selectedQuestion?: Question } | null)?.selectedQuestion;
+  const locationState = location.state as { selectedQuestion?: Question; randomMode?: boolean } | null;
+  const selectedQuestion = locationState?.selectedQuestion;
+  const randomMode = locationState?.randomMode ?? false;
 
-  return <QuestionScreenInner questionType={questionType} initialQuestion={selectedQuestion} />;
+  return <QuestionScreenInner questionType={questionType} initialQuestion={selectedQuestion} randomMode={randomMode} />;
 };
 
-function QuestionScreenInner({ questionType, initialQuestion }: { questionType: NonNullable<ReturnType<typeof registry.get>>; initialQuestion?: Question }) {
+function QuestionScreenInner({ questionType, initialQuestion, randomMode }: { questionType: NonNullable<ReturnType<typeof registry.get>>; initialQuestion?: Question; randomMode?: boolean }) {
+  const navigate = useNavigate();
   const {
     currentQuestion,
     selectedIndex,
@@ -214,7 +217,7 @@ function QuestionScreenInner({ questionType, initialQuestion }: { questionType: 
       <FeedbackOverlay
         isCorrect={isCorrect ?? false}
         visible={showFeedback}
-        onNext={nextQuestion}
+        onNext={randomMode ? () => navigate('/random') : nextQuestion}
         onRetry={retryQuestion}
       />
     </Container>

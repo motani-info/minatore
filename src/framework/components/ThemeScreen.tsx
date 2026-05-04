@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useParams, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, useSearchParams, Navigate } from 'react-router-dom';
 import { Box, Container, Flex, SimpleGrid, Text, VStack, chakra } from '@chakra-ui/react';
 import { registry } from '../../registry/questionTypeRegistry';
 import { getCategoryById, buildTabsForCategory } from '../categoryData';
@@ -60,15 +60,26 @@ export const ThemeScreen: React.FC = () => {
     return <Navigate to="/" replace />;
   }
 
-  // HomeScreen からの初期タブ指定を受け取る
+  // HomeScreen からの初期タブ指定を受け取る（URLパラメータ優先、次にstate、デフォルト0）
+  const [searchParams] = useSearchParams();
   const state = location.state as { initialTab?: string; initialSubIndex?: number } | null;
+
   let initialTabIndex = 0;
   let initialSubIndex = 0;
-  if (state?.initialTab) {
+
+  const tabParam = searchParams.get('tab');
+  if (tabParam) {
+    const idx = tabs.findIndex((t) => t.label === tabParam);
+    if (idx >= 0) initialTabIndex = idx;
+  } else if (state?.initialTab) {
     const idx = tabs.findIndex((t) => t.label === state.initialTab);
     if (idx >= 0) initialTabIndex = idx;
   }
-  if (state?.initialSubIndex != null) {
+
+  const subParam = searchParams.get('sub');
+  if (subParam != null) {
+    initialSubIndex = parseInt(subParam, 10) || 0;
+  } else if (state?.initialSubIndex != null) {
     initialSubIndex = state.initialSubIndex;
   }
 
@@ -87,6 +98,7 @@ function ThemeScreenInner({
   initialSubIndex: number;
 }) {
   const navigate = useNavigate();
+  const [, setSearchParams] = useSearchParams();
   const [activeTabIndex, setActiveTabIndex] = useState(initialTabIndex);
   const activeTab = tabs[activeTabIndex];
 
@@ -98,11 +110,12 @@ function ThemeScreenInner({
   // ページング
   const [currentPage, setCurrentPage] = useState(0);
 
-  // タブ切り替え時にサブタブとページをリセット
+  // タブ切り替え時にサブタブとページをリセット、URLも更新
   const handleTabChange = (index: number) => {
     setActiveTabIndex(index);
     setActiveSubIndex(0);
     setCurrentPage(0);
+    setSearchParams({ tab: tabs[index].label }, { replace: true });
   };
 
   // 問題取得: getAllQuestions があれば全問表示、なければ生成

@@ -33,6 +33,8 @@ export const CompareSpringScreen: React.FC = () => {
   const navigate = useNavigate();
   const initialIndex = (location.state as { questionIndex?: number })?.questionIndex;
   const randomMode = (location.state as { randomMode?: boolean } | null)?.randomMode ?? false;
+  const randomCurrent = (location.state as { randomCurrent?: number } | null)?.randomCurrent;
+  const randomTotal = (location.state as { randomTotal?: number } | null)?.randomTotal;
 
   const [question, setQuestion] = useState<Question<CompareSpringQuestionData, CompareSpringChoiceData>>(
     () => {
@@ -123,7 +125,7 @@ export const CompareSpringScreen: React.FC = () => {
           <Box position="absolute" left="-20px" bottom="-20px" w="100px" h="100px" bg="whiteAlpha.100" borderRadius="full" />
 
           <VStack gap={5} align="stretch" position="relative" zIndex={1}>
-            <NavigationBar current={totalDone} total={30} />
+            <NavigationBar current={randomMode ? (randomCurrent ?? 1) : totalDone} total={randomMode ? (randomTotal ?? 10) : 30} />
 
             <Flex
               align="center"

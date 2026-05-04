@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import type { Question, QuestionType, ChoiceIndex } from '../../types/question';
 import { useProgress } from './useProgress';
 
@@ -34,26 +34,41 @@ export function useQuestionFlow(questionType: QuestionType, initialQuestion?: Qu
     phase: 'answering',
   }));
 
+  // refで二重タップ防止（stateの更新が反映される前の連打を防ぐ）
+  const isProcessingRef = useRef(false);
+
   /** 選択肢をタップした時の処理 */
   const selectChoice = useCallback(
     (index: ChoiceIndex) => {
-      // フィードバック表示中は選択肢の再タップを無効にする
-      if (state.phase !== 'answering') return;
+      // 二重タップ防止
+      if (isProcessingRef.current) return;
 
-      const isCorrect = questionType.checkAnswer(state.currentQuestion, index);
+      setState((prev) => {
+        // フィードバック表示中や既に回答済みの場合は無視
+        if (prev.phase !== 'answering' || prev.isAnswered) return prev;
 
-      setState((prev) => ({
-        ...prev,
-        selectedIndex: index,
-        isAnswered: true,
-        isCorrect,
-        phase: 'feedback',
-      }));
+        isProcessingRef.current = true;
 
-      // 進捗を記録する
-      recordAnswer(questionType.id, isCorrect);
+        const isCorrect = questionType.checkAnswer(prev.currentQuestion, index);
+
+        // 進捗を記録する
+        recordAnswer(questionType.id, isCorrect);
+
+        return {
+          ...prev,
+          selectedIndex: index,
+          isAnswered: true,
+          isCorrect,
+          phase: 'feedback',
+        };
+      });
+
+      // 次のイベントループで処理フラグをリセット
+      setTimeout(() => {
+        isProcessingRef.current = false;
+      }, 300);
     },
-    [state.phase, state.currentQuestion, questionType, recordAnswer]
+    [questionType, recordAnswer]
   );
 
   /** 次の問題へ遷移する */

@@ -33,6 +33,8 @@ export const FeedbackOverlay: React.FC<FeedbackOverlayProps> = ({
       role="dialog"
       aria-label="けっかひょうじ"
       px={6}
+      onClick={(e: React.MouseEvent) => e.stopPropagation()}
+      onTouchEnd={(e: React.TouchEvent) => e.stopPropagation()}
     >
       <Box
         bg="white"

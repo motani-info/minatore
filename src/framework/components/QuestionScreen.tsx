@@ -41,14 +41,16 @@ export const QuestionScreen: React.FC = () => {
   }
 
   // 一覧画面から選択された問題があれば初期問題として渡す
-  const locationState = location.state as { selectedQuestion?: Question; randomMode?: boolean } | null;
+  const locationState = location.state as { selectedQuestion?: Question; randomMode?: boolean; randomCurrent?: number; randomTotal?: number } | null;
   const selectedQuestion = locationState?.selectedQuestion;
   const randomMode = locationState?.randomMode ?? false;
+  const randomCurrent = locationState?.randomCurrent;
+  const randomTotal = locationState?.randomTotal;
 
-  return <QuestionScreenInner questionType={questionType} initialQuestion={selectedQuestion} randomMode={randomMode} />;
+  return <QuestionScreenInner questionType={questionType} initialQuestion={selectedQuestion} randomMode={randomMode} randomCurrent={randomCurrent} randomTotal={randomTotal} />;
 };
 
-function QuestionScreenInner({ questionType, initialQuestion, randomMode }: { questionType: NonNullable<ReturnType<typeof registry.get>>; initialQuestion?: Question; randomMode?: boolean }) {
+function QuestionScreenInner({ questionType, initialQuestion, randomMode, randomCurrent, randomTotal }: { questionType: NonNullable<ReturnType<typeof registry.get>>; initialQuestion?: Question; randomMode?: boolean; randomCurrent?: number; randomTotal?: number }) {
   const navigate = useNavigate();
   const {
     currentQuestion,
@@ -87,7 +89,7 @@ function QuestionScreenInner({ questionType, initialQuestion, randomMode }: { qu
           <Box position="absolute" left="-20px" bottom="-20px" w="100px" h="100px" bg="whiteAlpha.100" borderRadius="full" />
 
           <VStack gap={5} align="stretch" position="relative" zIndex={1}>
-            <NavigationBar current={totalDone} total={30} />
+            <NavigationBar current={randomMode ? (randomCurrent ?? 1) : totalDone} total={randomMode ? (randomTotal ?? 10) : 30} />
 
             {/* 問題表示エリア */}
             <Flex

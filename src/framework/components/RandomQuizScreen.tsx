@@ -27,13 +27,21 @@ export const RandomQuizScreen: React.FC = () => {
 
   // sessionStorage からキューを復元 or 新規生成
   const [typeIds] = useState<string[]>(() => {
-    const stored = sessionStorage.getItem('randomQuizTypeIds');
-    if (stored) {
+    const storedIds = sessionStorage.getItem('randomQuizTypeIds');
+    const storedIndex = sessionStorage.getItem('randomQuizIndex');
+    const idx = storedIndex ? parseInt(storedIndex, 10) : 0;
+
+    // 前回のキューが残っていて、まだ途中なら続きから
+    if (storedIds) {
       try {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        const parsed = JSON.parse(storedIds);
+        if (Array.isArray(parsed) && parsed.length > 0 && idx < parsed.length) {
+          return parsed;
+        }
       } catch { /* ignore */ }
     }
+
+    // 新規生成（前回完了済み or データなし）
     const ids = pickRandomTypeIds();
     sessionStorage.setItem('randomQuizTypeIds', JSON.stringify(ids));
     sessionStorage.setItem('randomQuizIndex', '0');

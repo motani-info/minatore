@@ -143,68 +143,80 @@ function ThemeScreenInner({
         {/* ヘッダー */}
         <Box
           bg={theme.gradient}
-          px={{ base: 5, sm: 6 }}
-          pt={{ base: 4, sm: 6 }}
-          pb={6}
+          px={{ base: 4, sm: 6 }}
+          pt={{ base: 3, sm: 4 }}
+          pb={3}
           position="relative"
           overflow="hidden"
         >
-          <Box position="absolute" right="-40px" top="-40px" w="160px" h="160px" bg="whiteAlpha.100" borderRadius="full" />
-          <Box position="absolute" left="-20px" bottom="-20px" w="100px" h="100px" bg="whiteAlpha.100" borderRadius="full" />
-
-          <VStack gap={3} align="stretch" position="relative" zIndex={1}>
-            <Flex align="center" gap={3}>
-              <chakra.button
-                type="button"
-                onClick={() => navigate('/')}
-                aria-label="ホームにもどる"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                w="40px"
-                h="40px"
-                fontSize="lg"
-                color="whiteAlpha.800"
-                borderRadius="full"
-                bg="whiteAlpha.200"
-                transition="all 0.15s"
-                _hover={{ bg: 'whiteAlpha.300', color: 'white' }}
-                _active={{ transform: 'scale(0.95)' }}
-                flexShrink={0}
-              >
-                ←
-              </chakra.button>
-              <Box flex={1} />
-            </Flex>
-
-            <Box>
-              <Text fontSize="2xl" fontWeight="800" color="white" lineHeight="1.3">
-                {category.title}
-              </Text>
-            </Box>
-          </VStack>
+          <Flex align="center" gap={3} position="relative" zIndex={1}>
+            <chakra.button
+              type="button"
+              onClick={() => navigate('/')}
+              aria-label="ホームにもどる"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              w="36px"
+              h="36px"
+              fontSize="md"
+              color="whiteAlpha.800"
+              borderRadius="full"
+              bg="whiteAlpha.200"
+              transition="all 0.15s"
+              _hover={{ bg: 'whiteAlpha.300', color: 'white' }}
+              _active={{ transform: 'scale(0.95)' }}
+              flexShrink={0}
+            >
+              ←
+            </chakra.button>
+            <Text fontSize="lg" fontWeight="800" color="white" lineHeight="1.3">
+              {category.title}
+            </Text>
+          </Flex>
         </Box>
 
-        {/* 手帳風タブ */}
-        <Box position="relative" zIndex={1} bg="white">
-          <NotebookTabs
-            tabs={tabs}
-            activeIndex={activeTabIndex}
-            onTabChange={handleTabChange}
-          />
+        {/* タブ */}
+        <Box bg="white" px={{ base: 4, sm: 6 }} pt={3} pb={0} borderBottom="1px solid" borderColor="gray.100">
+          <Flex gap={1} overflowX="auto" css={{ '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none' }}>
+            {tabs.map((tab, index) => {
+              const isActive = index === activeTabIndex;
+              const tabColor = TAB_COLORS[index % TAB_COLORS.length];
+              return (
+                <chakra.button
+                  key={tab.label}
+                  type="button"
+                  onClick={() => handleTabChange(index)}
+                  px={3}
+                  py={2}
+                  fontSize="xs"
+                  fontWeight={isActive ? '800' : '600'}
+                  color={isActive ? tabColor.text : 'gray.400'}
+                  bg="transparent"
+                  borderBottom="2px solid"
+                  borderColor={isActive ? tabColor.bg : 'transparent'}
+                  borderRadius={0}
+                  cursor="pointer"
+                  transition="all 0.15s"
+                  _hover={isActive ? {} : { color: 'gray.600' }}
+                  _active={{ transform: 'scale(0.97)' }}
+                  flexShrink={0}
+                  whiteSpace="nowrap"
+                >
+                  {tab.label}
+                </chakra.button>
+              );
+            })}
+          </Flex>
         </Box>
 
         {/* コンテンツ */}
         <Box
           flex={1}
           bg="white"
-          px={{ base: 5, sm: 6 }}
-          pt={5}
+          px={{ base: 4, sm: 6 }}
+          pt={4}
           pb={6}
-          position="relative"
-          zIndex={2}
-          borderTop="3px solid"
-          borderColor={TAB_COLORS[activeTabIndex % TAB_COLORS.length].bg}
         >
           <VStack gap={5} align="stretch">
 
@@ -428,96 +440,6 @@ function Pagination({ currentPage, totalPages, totalItems, pageSize, onPageChang
       >
         ›
       </chakra.button>
-    </Flex>
-  );
-}
-
-// ─── 手帳風タブコンポーネント ───
-
-interface NotebookTabsProps {
-  tabs: TabDef[];
-  activeIndex: number;
-  onTabChange: (index: number) => void;
-}
-
-function NotebookTabs({ tabs, activeIndex, onTabChange }: NotebookTabsProps) {
-  return (
-    <Flex
-      position="relative"
-      h="44px"
-      align="flex-end"
-      px={{ base: 3, sm: 4 }}
-      overflowX="auto"
-      css={{ '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none' }}
-    >
-      {tabs.map((tab, index) => {
-        const isActive = index === activeIndex;
-        const tabColor = TAB_COLORS[index % TAB_COLORS.length];
-
-        // タブ内の全ユニットの問題数を合計
-        const questionCount = tab.units.reduce((sum, u) => {
-          const qt = registry.get(u.id);
-          if (!qt) return sum;
-          if (qt.getAllQuestions) return sum + qt.getAllQuestions().length;
-          return sum + 20; // アルゴリズム生成型
-        }, 0);
-
-        const zIndex = isActive ? tabs.length + 1 : tabs.length - Math.abs(index - activeIndex);
-
-        return (
-          <chakra.button
-            key={tab.label}
-            type="button"
-            onClick={() => onTabChange(index)}
-            position="relative"
-            zIndex={zIndex}
-            display="flex"
-            alignItems="center"
-            gap={1}
-            px={{ base: 3, sm: 4 }}
-            pt={2}
-            pb={isActive ? 2.5 : 2}
-            bg={isActive ? 'white' : tabColor.bgLight}
-            color={isActive ? tabColor.text : `${tabColor.text}99`}
-            fontWeight={isActive ? '800' : '600'}
-            fontSize={{ base: 'xs', sm: 'sm' }}
-            borderTopRadius="xl"
-            borderBottom={isActive ? '3px solid' : 'none'}
-            borderBottomColor={isActive ? tabColor.bg : 'transparent'}
-            boxShadow={isActive
-              ? '0 -2px 8px rgba(0,0,0,0.08)'
-              : '0 -1px 4px rgba(0,0,0,0.04)'}
-            cursor="pointer"
-            transition="all 0.2s ease"
-            _hover={isActive ? {} : { bg: `${tabColor.bgLight}`, transform: 'translateY(-2px)' }}
-            _active={{ transform: 'scale(0.97)' }}
-            marginRight="-6px"
-            minH="36px"
-            flexShrink={0}
-            minW={0}
-          >
-            <Text lineHeight="1" whiteSpace="nowrap">
-              {tab.label}
-            </Text>
-            <Box
-              bg={isActive ? tabColor.bg : `${tabColor.bg}33`}
-              borderRadius="full"
-              px={1.5}
-              py={0.5}
-              ml={0.5}
-            >
-              <Text
-                fontSize="9px"
-                fontWeight="700"
-                color={isActive ? 'white' : tabColor.text}
-                lineHeight="1"
-              >
-                {questionCount}
-              </Text>
-            </Box>
-          </chakra.button>
-        );
-      })}
     </Flex>
   );
 }

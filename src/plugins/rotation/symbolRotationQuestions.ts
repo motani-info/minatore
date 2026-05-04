@@ -955,9 +955,10 @@ export function generateSymbolRotationQuestion(): Question<SymbolRotationQuestio
 
 /** 固定問題プールの全問題を返す */
 export function getAllSymbolRotationQuestions(): Question<SymbolRotationQuestionData, SymbolRotationChoiceData>[] {
-  return FIXED_QUESTIONS.map((fixedQ) => {
+  return FIXED_QUESTIONS.map((fixedQ, idx) => {
     const correctGrid = rotateSymbolGrid(fixedQ.originalGrid, fixedQ.direction);
-    const correctIndex = Math.floor(Math.random() * 4);
+    // 問題インデックスに基づいて正解位置を決定（毎回同じ結果になる）
+    const correctIndex = idx % 4;
     const choices: SymbolRotationChoiceData[] = [...fixedQ.distractors];
     choices.splice(correctIndex, 0, correctGrid);
     while (choices.length < 4) choices.push(correctGrid);

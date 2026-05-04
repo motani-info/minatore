@@ -293,12 +293,12 @@ const FIXED_QUESTIONS: FixedCompositionQuestion[] = [
 ];
 
 /** 固定問題を Question 形式に変換 */
-function buildQuestion(fixed: FixedCompositionQuestion): Question<ShapeCompositionQuestionData, ShapeCompositionChoiceData> {
+function buildQuestion(fixed: FixedCompositionQuestion, fixedIndex?: number): Question<ShapeCompositionQuestionData, ShapeCompositionChoiceData> {
   const correctChoice: ShapeCompositionChoiceData = { parts: fixed.correctParts };
   const distractorChoices: ShapeCompositionChoiceData[] = fixed.distractors.map(d => ({ parts: d }));
 
-  // 正解位置をランダムに決定
-  const correctIndex = Math.floor(Math.random() * 4);
+  // fixedIndexが指定されていれば決定的に、なければランダムに正解位置を決定
+  const correctIndex = fixedIndex != null ? (fixedIndex % 4) : Math.floor(Math.random() * 4);
   const choices: ShapeCompositionChoiceData[] = [...distractorChoices];
   choices.splice(correctIndex, 0, correctChoice);
 
@@ -317,7 +317,7 @@ export function generateShapeCompositionQuestion(): Question<ShapeCompositionQue
 
 /** 全問題を返す */
 export function getAllShapeCompositionQuestions(): Question<ShapeCompositionQuestionData, ShapeCompositionChoiceData>[] {
-  return FIXED_QUESTIONS.map(buildQuestion);
+  return FIXED_QUESTIONS.map((q, i) => buildQuestion(q, i));
 }
 
 /** 正解判定 */

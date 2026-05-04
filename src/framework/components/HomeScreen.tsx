@@ -104,7 +104,12 @@ export const HomeScreen: React.FC = () => {
             {/* ランダム10問カード */}
             <chakra.button
               type="button"
-              onClick={() => navigate('/random')}
+              onClick={() => {
+                // 前回のランダムクイズ進捗をリセットして新規開始
+                sessionStorage.removeItem('randomQuizTypeIds');
+                sessionStorage.removeItem('randomQuizIndex');
+                navigate('/random');
+              }}
               aria-label="ランダム10問"
               display="flex"
               alignItems="center"

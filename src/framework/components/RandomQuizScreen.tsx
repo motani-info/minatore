@@ -1,103 +1,120 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Container, Flex, Text, VStack, chakra } from '@chakra-ui/react';
 import { registry } from '../../registry/questionTypeRegistry';
 import { R } from './Ruby';
 
-const TOTAL_QUESTIONS = 10;
+/** ランダムクイズの出題数（今後設定画面から変更可能にする） */
+export const RANDOM_QUIZ_COUNT = 10;
 
-/** ランダムに問題タイプIDを10個選ぶ */
-function pickRandomTypeIds(): string[] {
+const SESSION_KEY_IDS = 'randomQuizTypeIds';
+const SESSION_KEY_INDEX = 'randomQuizIndex';
+
+/** ランダムに問題タイプIDを選ぶ */
+function pickRandomTypeIds(count: number): string[] {
   const allTypes = registry.getAll();
   if (allTypes.length === 0) return [];
-  return Array.from({ length: TOTAL_QUESTIONS }, () =>
+  return Array.from({ length: count }, () =>
     allTypes[Math.floor(Math.random() * allTypes.length)].id
   );
 }
 
+/** sessionStorageから現在のインデックスを取得 */
+function getStoredIndex(): number {
+  const stored = sessionStorage.getItem(SESSION_KEY_INDEX);
+  return stored ? parseInt(stored, 10) : 0;
+}
+
+/** sessionStorageからキューを取得 */
+function getStoredIds(): string[] | null {
+  const stored = sessionStorage.getItem(SESSION_KEY_IDS);
+  if (!stored) return null;
+  try {
+    const parsed = JSON.parse(stored);
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+  } catch { /* ignore */ }
+  return null;
+}
+
+/** 新しいランダムクイズを開始する */
+function startNewQuiz(): { ids: string[]; index: number } {
+  const ids = pickRandomTypeIds(RANDOM_QUIZ_COUNT);
+  sessionStorage.setItem(SESSION_KEY_IDS, JSON.stringify(ids));
+  sessionStorage.setItem(SESSION_KEY_INDEX, '0');
+  return { ids, index: 0 };
+}
+
 /**
- * ランダム10問画面
+ * ランダムクイズ画面
  *
- * ランダムに選んだ問題タイプの個別画面に自動遷移する。
- * 個別画面で回答後「つぎのもんだいへ」を押すと /random に戻り、次の問題に自動遷移する。
- * 進捗は sessionStorage で管理する。
+ * 動作フロー:
+ * 1. /random にアクセス
+ * 2. sessionStorageからキューとインデックスを読み取る
+ * 3. インデックス < キュー長 → 次の問題の個別画面に自動遷移
+ * 4. インデックス >= キュー長 → 結果画面を表示
+ * 5. 個別画面で回答後「つぎのもんだいへ」→ /random に戻る → 3に戻る
  */
 export const RandomQuizScreen: React.FC = () => {
   const navigate = useNavigate();
+  const hasNavigated = useRef(false);
 
-  // sessionStorage からキューを復元 or 新規生成
-  const [typeIds] = useState<string[]>(() => {
-    const storedIds = sessionStorage.getItem('randomQuizTypeIds');
-    const storedIndex = sessionStorage.getItem('randomQuizIndex');
-    const idx = storedIndex ? parseInt(storedIndex, 10) : 0;
+  // 現在の状態を読み取る
+  let ids = getStoredIds();
+  let currentIndex = getStoredIndex();
 
-    // 前回のキューが残っていて、まだ途中なら続きから
-    if (storedIds) {
-      try {
-        const parsed = JSON.parse(storedIds);
-        if (Array.isArray(parsed) && parsed.length > 0 && idx < parsed.length) {
-          return parsed;
-        }
-      } catch { /* ignore */ }
-    }
+  // キューがない or 完了済み → 新規開始
+  if (!ids || currentIndex >= ids.length) {
+    const newQuiz = startNewQuiz();
+    ids = newQuiz.ids;
+    currentIndex = newQuiz.index;
+  }
 
-    // 新規生成（前回完了済み or データなし）
-    const ids = pickRandomTypeIds();
-    sessionStorage.setItem('randomQuizTypeIds', JSON.stringify(ids));
-    sessionStorage.setItem('randomQuizIndex', '0');
-    return ids;
-  });
+  const isFinished = currentIndex >= ids.length;
 
-  const [currentIndex, setCurrentIndex] = useState<number>(() => {
-    const stored = sessionStorage.getItem('randomQuizIndex');
-    return stored ? parseInt(stored, 10) : 0;
-  });
-
-  const isFinished = currentIndex >= typeIds.length;
-
-  // 自動遷移: まだ問題が残っていれば個別画面に飛ぶ
+  // 自動遷移
   useEffect(() => {
-    if (isFinished) return;
-    const typeId = typeIds[currentIndex];
+    if (isFinished || hasNavigated.current) return;
+    hasNavigated.current = true;
+
+    const typeId = ids![currentIndex];
     if (!typeId) return;
 
-    // インデックスを進めてから遷移
-    const nextIdx = currentIndex + 1;
-    sessionStorage.setItem('randomQuizIndex', String(nextIdx));
-    setCurrentIndex(nextIdx);
+    // インデックスを進める
+    sessionStorage.setItem(SESSION_KEY_INDEX, String(currentIndex + 1));
 
-    // 個別画面に遷移（randomMode フラグ付き）
+    // 個別画面に遷移
     navigate(`/question/${typeId}`, {
       replace: true,
       state: {
         randomMode: true,
         randomCurrent: currentIndex + 1,
-        randomTotal: TOTAL_QUESTIONS,
+        randomTotal: RANDOM_QUIZ_COUNT,
       },
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  });
 
   /** もう一回 */
   const handleRestart = useCallback(() => {
-    const ids = pickRandomTypeIds();
-    sessionStorage.setItem('randomQuizTypeIds', JSON.stringify(ids));
-    sessionStorage.setItem('randomQuizIndex', '0');
+    startNewQuiz();
+    hasNavigated.current = false;
+    // 強制的に再レンダリング
+    navigate('/random', { replace: true });
     window.location.reload();
-  }, []);
+  }, [navigate]);
 
   /** やめる */
   const handleQuit = useCallback(() => {
-    sessionStorage.removeItem('randomQuizTypeIds');
-    sessionStorage.removeItem('randomQuizIndex');
+    sessionStorage.removeItem(SESSION_KEY_IDS);
+    sessionStorage.removeItem(SESSION_KEY_INDEX);
     navigate('/');
   }, [navigate]);
 
-  // まだ遷移していない場合（一瞬表示される）
+  // まだ遷移中（一瞬表示される）
   if (!isFinished) {
     return null;
   }
 
-  // 結果画面（全問終了後）
+  // 結果画面
   return (
     <Container maxW="920px" minH="100dvh" py={0} px={0}>
       <VStack gap={0} align="stretch" minH="100dvh">
@@ -162,7 +179,7 @@ export const RandomQuizScreen: React.FC = () => {
               textAlign="center"
             >
               <Text fontSize="md" color="gray.600" fontWeight="600">
-                {TOTAL_QUESTIONS}<R rt="もん">問</R>おわりました
+                {RANDOM_QUIZ_COUNT}<R rt="もん">問</R>おわりました
               </Text>
             </Box>
 

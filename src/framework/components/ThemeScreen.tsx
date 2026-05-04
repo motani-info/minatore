@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useParams, useNavigate, useLocation, useSearchParams, Navigate } from 'react-router-dom';
 import { Box, Container, Flex, SimpleGrid, Text, VStack, chakra } from '@chakra-ui/react';
 import { registry } from '../../registry/questionTypeRegistry';
@@ -120,14 +120,27 @@ function ThemeScreenInner({
 
   // 問題取得: getAllQuestions があれば全問表示、なければ生成
   const questionType = registry.get(activeUnit.id);
+
+  // 問題リストをキャッシュして不要な再生成を防ぐ
+  const questionsCache = useRef<{ key: string; questions: Question[] }>({ key: '', questions: [] });
+  const cacheKey = `${activeUnit.id}-${activeTabIndex}-${activeSubIndex}`;
+
   const allQuestions: Question[] = useMemo(() => {
     if (!questionType) return [];
-    if (questionType.getAllQuestions) {
-      return questionType.getAllQuestions();
+    // キャッシュが有効ならそのまま返す
+    if (questionsCache.current.key === cacheKey) {
+      return questionsCache.current.questions;
     }
-    // アルゴリズム生成型: 一定数生成（将来的に固定プール化予定）
-    return Array.from({ length: 20 }, () => questionType.generateQuestion());
-  }, [questionType, activeSubIndex, activeTabIndex]);
+    let questions: Question[];
+    if (questionType.getAllQuestions) {
+      questions = questionType.getAllQuestions();
+    } else {
+      // アルゴリズム生成型: 一定数生成
+      questions = Array.from({ length: 20 }, () => questionType.generateQuestion());
+    }
+    questionsCache.current = { key: cacheKey, questions };
+    return questions;
+  }, [questionType, cacheKey]);
 
   // ページング計算
   const totalPages = Math.ceil(allQuestions.length / PAGE_SIZE);

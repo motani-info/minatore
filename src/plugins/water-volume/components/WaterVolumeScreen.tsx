@@ -1,8 +1,9 @@
 import { useState, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Box, Container, Flex, Text, VStack } from '@chakra-ui/react';
 import { NavigationBar } from '../../../framework/components/NavigationBar';
 import { useProgress } from '../../../framework/hooks/useProgress';
-import { generateWaterVolumeQuestion } from '../waterVolumeQuestion';
+import { generateWaterVolumeQuestion, getAllWaterVolumeQuestions } from '../waterVolumeQuestion';
 import { WaterVolumeQuestionDisplay } from './QuestionDisplay';
 import { WaterVolumeAnswerUI } from './AnswerUI';
 import type { WaterVolumeQuestionData, WaterVolumeChoiceData } from '../types';
@@ -19,9 +20,17 @@ const THEME = {
 export const WaterVolumeScreen: React.FC = () => {
   const { progress } = useProgress();
   const typeProgress = progress?.byType['water-volume'];
+  const location = useLocation();
+  const initialIndex = (location.state as { questionIndex?: number })?.questionIndex;
 
   const [question, setQuestion] = useState<Question<WaterVolumeQuestionData, WaterVolumeChoiceData>>(
-    () => generateWaterVolumeQuestion(),
+    () => {
+      if (initialIndex != null) {
+        const all = getAllWaterVolumeQuestions();
+        if (initialIndex >= 0 && initialIndex < all.length) return all[initialIndex];
+      }
+      return generateWaterVolumeQuestion();
+    },
   );
   const [questionCount, setQuestionCount] = useState(0);
 

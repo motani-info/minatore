@@ -1,8 +1,9 @@
 import { useState, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Box, Container, Flex, Text, VStack } from '@chakra-ui/react';
 import { NavigationBar } from '../../../framework/components/NavigationBar';
 import { useProgress } from '../../../framework/hooks/useProgress';
-import { generateSeesawQuestion } from '../seesawQuestion';
+import { generateSeesawQuestion, getAllSeesawQuestions } from '../seesawQuestion';
 import { SeesawQuestionDisplay } from './QuestionDisplay';
 import { SeesawAnswerUI } from './ChoiceDisplay';
 import type { SeesawQuestionData, SeesawChoiceData } from '../types';
@@ -20,9 +21,17 @@ const THEME = {
 export const SeesawScreen: React.FC = () => {
   const { progress } = useProgress();
   const typeProgress = progress?.byType['seesaw'];
+  const location = useLocation();
+  const initialIndex = (location.state as { questionIndex?: number })?.questionIndex;
 
   const [question, setQuestion] = useState<Question<SeesawQuestionData, SeesawChoiceData>>(
-    () => generateSeesawQuestion()
+    () => {
+      if (initialIndex != null) {
+        const all = getAllSeesawQuestions();
+        if (initialIndex >= 0 && initialIndex < all.length) return all[initialIndex];
+      }
+      return generateSeesawQuestion();
+    }
   );
   const [questionCount, setQuestionCount] = useState(0);
 

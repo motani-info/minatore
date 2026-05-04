@@ -8,9 +8,6 @@ import type { Question } from '../../types/question';
 import { useProgress } from '../hooks/useProgress';
 import { R } from './Ruby';
 
-/** 一覧に表示する問題数 */
-const LIST_SIZE = 10;
-
 /** 問題タイプごとのテーマカラー */
 const TYPE_THEMES: Record<string, { gradient: string; accent: string }> = {
   rotation: { gradient: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', accent: '#7c3aed' },
@@ -78,32 +75,23 @@ function ThemeScreenInner({
   const handleTabChange = (index: number) => {
     setActiveTabIndex(index);
     setActiveSubIndex(0);
-    setSeed((s) => s + 1);
   };
 
-  // 問題生成
+  // 問題生成: getAllQuestions があれば全問表示、なければ一定数生成
   const questionType = registry.get(activeUnit.id);
-  const [seed, setSeed] = useState(0);
   const questions: Question[] = useMemo(() => {
-    void seed;
     if (!questionType) return [];
-    return Array.from({ length: LIST_SIZE }, () => questionType.generateQuestion());
-  }, [questionType, seed]);
+    if (questionType.getAllQuestions) {
+      return questionType.getAllQuestions();
+    }
+    return Array.from({ length: 10 }, () => questionType.generateQuestion());
+  }, [questionType, activeSubIndex, activeTabIndex]);
 
   const handleSelect = (index: number) => {
     if (!questionType) return;
     navigate(`/question/${questionType.id}`, {
       state: { selectedQuestion: questions[index] },
     });
-  };
-
-  const handleStartRandom = () => {
-    if (!questionType) return;
-    navigate(`/question/${questionType.id}`);
-  };
-
-  const handleShuffle = () => {
-    setSeed((s) => s + 1);
   };
 
   const theme = questionType
@@ -158,7 +146,9 @@ function ThemeScreenInner({
                 {category.title}
               </Text>
               <Text fontSize="sm" fontWeight="500" color="whiteAlpha.800" mt={0.5}>
-                <R rt="もんだい">問題</R>を<R rt="えら">選</R>んで<R rt="ちょうせん">挑戦</R>しよう
+                {questions.length > 0
+                  ? `ぜんぶで ${questions.length} もん`
+                  : <><R rt="もんだい">問題</R>を<R rt="えら">選</R>んで<R rt="ちょうせん">挑戦</R>しよう</>}
               </Text>
             </Box>
           </VStack>
@@ -199,7 +189,6 @@ function ThemeScreenInner({
                       type="button"
                       onClick={() => {
                         setActiveSubIndex(i);
-                        setSeed((s) => s + 1);
                       }}
                       px={4}
                       py={2}
@@ -223,51 +212,6 @@ function ThemeScreenInner({
               </Flex>
             )}
 
-            {/* アクションボタン */}
-            {questionType && (
-              <Flex gap={3}>
-                <chakra.button
-                  type="button"
-                  onClick={handleStartRandom}
-                  flex={1}
-                  py={3}
-                  bg={theme.gradient}
-                  color="white"
-                  fontWeight="700"
-                  fontSize="sm"
-                  borderRadius="xl"
-                  transition="all 0.15s"
-                  _hover={{ opacity: 0.9 }}
-                  _active={{ transform: 'scale(0.97)' }}
-                  minH="44px"
-                  cursor="pointer"
-                  boxShadow={`0 4px 12px ${theme.accent}33`}
-                  textAlign="center"
-                >
-                  ▶ すぐにはじめる
-                </chakra.button>
-                <chakra.button
-                  type="button"
-                  onClick={handleShuffle}
-                  px={4}
-                  py={3}
-                  bg="gray.100"
-                  color="gray.600"
-                  fontWeight="700"
-                  fontSize="sm"
-                  borderRadius="xl"
-                  transition="all 0.15s"
-                  _hover={{ bg: 'gray.200' }}
-                  _active={{ transform: 'scale(0.97)' }}
-                  minH="44px"
-                  cursor="pointer"
-                  textAlign="center"
-                >
-                  🔄 べつの<R rt="もんだい">問題</R>
-                </chakra.button>
-              </Flex>
-            )}
-
             {/* 問題一覧 */}
             {questionType && (
               <SimpleGrid columns={2} gap={3}>
@@ -275,7 +219,7 @@ function ThemeScreenInner({
                   const { QuestionDisplay } = questionType;
                   return (
                     <chakra.button
-                      key={`${activeUnit.id}-${index}-${seed}`}
+                      key={`${activeUnit.id}-${index}`}
                       type="button"
                       onClick={() => handleSelect(index)}
                       aria-label={`もんだい ${index + 1}`}

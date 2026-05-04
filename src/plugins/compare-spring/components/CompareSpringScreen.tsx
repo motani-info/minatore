@@ -1,9 +1,10 @@
 import { useState, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Box, Container, Flex, Text, VStack, chakra } from '@chakra-ui/react';
 import { NavigationBar } from '../../../framework/components/NavigationBar';
 import { FeedbackOverlay } from '../../../framework/components/FeedbackOverlay';
 import { useProgress } from '../../../framework/hooks/useProgress';
-import { generateCompareSpringQuestion, validateSpringMarks } from '../compareSpringQuestion';
+import { generateCompareSpringQuestion, validateSpringMarks, getAllCompareSpringQuestions } from '../compareSpringQuestion';
 import { CompareSpringQuestionDisplay } from './QuestionDisplay';
 import { SpringDisplay } from './SpringDisplay';
 import type { CompareSpringQuestionData, CompareSpringChoiceData, SpringMarkType } from '../types';
@@ -28,9 +29,17 @@ const MARK_LABELS: Record<string, string> = {
 export const CompareSpringScreen: React.FC = () => {
   const { progress, recordAnswer } = useProgress();
   const typeProgress = progress?.byType['compare-spring'];
+  const location = useLocation();
+  const initialIndex = (location.state as { questionIndex?: number })?.questionIndex;
 
   const [question, setQuestion] = useState<Question<CompareSpringQuestionData, CompareSpringChoiceData>>(
-    () => generateCompareSpringQuestion()
+    () => {
+      if (initialIndex != null) {
+        const all = getAllCompareSpringQuestions();
+        if (initialIndex >= 0 && initialIndex < all.length) return all[initialIndex];
+      }
+      return generateCompareSpringQuestion();
+    }
   );
   const [questionCount, setQuestionCount] = useState(0);
   const [marks, setMarks] = useState<SpringMarkType[]>(() =>

@@ -1,8 +1,9 @@
 import { useState, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Box, Container, Flex, Text, VStack } from '@chakra-ui/react';
 import { NavigationBar } from '../../../framework/components/NavigationBar';
 import { useProgress } from '../../../framework/hooks/useProgress';
-import { generateAreaCompareQuestion } from '../areaCompareQuestion';
+import { generateAreaCompareQuestion, getAllAreaCompareQuestions } from '../areaCompareQuestion';
 import { AreaCompareQuestionDisplay } from './QuestionDisplay';
 import { AreaCompareAnswerUI } from './AnswerUI';
 import type { AreaCompareQuestionData, AreaCompareChoiceData } from '../types';
@@ -18,9 +19,17 @@ const THEME = {
 export const AreaCompareScreen: React.FC = () => {
   const { progress } = useProgress();
   const typeProgress = progress?.byType['area-compare'];
+  const location = useLocation();
+  const initialIndex = (location.state as { questionIndex?: number })?.questionIndex;
 
   const [question, setQuestion] = useState<Question<AreaCompareQuestionData, AreaCompareChoiceData>>(
-    () => generateAreaCompareQuestion(),
+    () => {
+      if (initialIndex != null) {
+        const all = getAllAreaCompareQuestions();
+        if (initialIndex >= 0 && initialIndex < all.length) return all[initialIndex];
+      }
+      return generateAreaCompareQuestion();
+    },
   );
   const [questionCount, setQuestionCount] = useState(0);
 

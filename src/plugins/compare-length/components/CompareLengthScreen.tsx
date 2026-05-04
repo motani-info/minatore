@@ -1,9 +1,10 @@
 import { useState, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Box, Container, Flex, Text, VStack, chakra } from '@chakra-ui/react';
 import { NavigationBar } from '../../../framework/components/NavigationBar';
 import { FeedbackOverlay } from '../../../framework/components/FeedbackOverlay';
 import { useProgress } from '../../../framework/hooks/useProgress';
-import { generateCompareLengthQuestion, validateLengthMarks } from '../compareLengthQuestion';
+import { generateCompareLengthQuestion, validateLengthMarks, getAllCompareLengthQuestions } from '../compareLengthQuestion';
 import { CompareLengthQuestionDisplay } from './QuestionDisplay';
 import { LineDisplay } from './LineDisplay';
 import type { CompareLengthQuestionData, CompareLengthChoiceData, LengthMarkType } from '../types';
@@ -21,9 +22,17 @@ const THEME = {
 export const CompareLengthScreen: React.FC = () => {
   const { progress, recordAnswer } = useProgress();
   const typeProgress = progress?.byType['compare-length'];
+  const location = useLocation();
+  const initialIndex = (location.state as { questionIndex?: number })?.questionIndex;
 
   const [question, setQuestion] = useState<Question<CompareLengthQuestionData, CompareLengthChoiceData>>(
-    () => generateCompareLengthQuestion()
+    () => {
+      if (initialIndex != null) {
+        const all = getAllCompareLengthQuestions();
+        if (initialIndex >= 0 && initialIndex < all.length) return all[initialIndex];
+      }
+      return generateCompareLengthQuestion();
+    }
   );
   const [questionCount, setQuestionCount] = useState(0);
   const [marks, setMarks] = useState<LengthMarkType[]>(() =>

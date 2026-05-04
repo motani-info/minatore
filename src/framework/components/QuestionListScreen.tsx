@@ -5,6 +5,9 @@ import { registry } from '../../registry/questionTypeRegistry';
 import type { Question, QuestionType } from '../../types/question';
 import { R } from './Ruby';
 
+/** ランダム生成型プラグインで生成する問題数 */
+const GENERATED_COUNT = 10;
+
 /** 問題タイプごとのテーマカラー */
 const TYPE_THEMES: Record<string, { gradient: string; accent: string }> = {
   rotation: { gradient: 'linear-gradient(135deg, #7c6cf0 0%, #a78bfa 100%)', accent: '#7c6cf0' },
@@ -38,25 +41,42 @@ export const QuestionListScreen: React.FC = () => {
   return <QuestionListInner questionType={questionType} />;
 };
 
+/** 専用画面を持つ問題タイプID（App.tsxで固定ルートが定義されているもの） */
+const CUSTOM_SCREEN_TYPES = new Set([
+  'seesaw',
+  'water-volume',
+  'compare-length',
+  'compare-spring',
+  'area-compare',
+]);
+
 function QuestionListInner({ questionType }: { questionType: QuestionType }) {
   const navigate = useNavigate();
   const theme = TYPE_THEMES[questionType.id] ?? DEFAULT_THEME;
+  const isCustomScreen = CUSTOM_SCREEN_TYPES.has(questionType.id);
 
-  // getAllQuestions があれば全問表示、なければ generateQuestion で生成
+  // getAllQuestions があれば全問表示、なければ一定数生成
   const questions: Question[] = useMemo(() => {
     if (questionType.getAllQuestions) {
       return questionType.getAllQuestions();
     }
-    // フォールバック: ランダム生成（従来互換）
-    return Array.from({ length: 10 }, () => questionType.generateQuestion());
+    return Array.from({ length: GENERATED_COUNT }, () => questionType.generateQuestion());
   }, [questionType]);
 
   const { QuestionDisplay } = questionType;
+  const hasFixedPool = !!questionType.getAllQuestions;
 
   const handleSelect = (index: number) => {
-    navigate(`/question/${questionType.id}`, {
-      state: { selectedQuestion: questions[index] },
-    });
+    if (isCustomScreen) {
+      // 専用画面を持つ問題タイプは、選んだ問題のインデックスをstateで渡して専用画面に遷移
+      navigate(`/question/${questionType.id}`, {
+        state: { questionIndex: index },
+      });
+    } else {
+      navigate(`/question/${questionType.id}`, {
+        state: { selectedQuestion: questions[index] },
+      });
+    }
   };
 
   return (
@@ -72,7 +92,6 @@ function QuestionListInner({ questionType }: { questionType: QuestionType }) {
           position="relative"
           overflow="hidden"
         >
-          {/* 背景装飾 */}
           <Box position="absolute" right="-40px" top="-40px" w="160px" h="160px" bg="whiteAlpha.100" borderRadius="full" />
           <Box position="absolute" left="-20px" bottom="-20px" w="100px" h="100px" bg="whiteAlpha.100" borderRadius="full" />
 
@@ -81,8 +100,8 @@ function QuestionListInner({ questionType }: { questionType: QuestionType }) {
             <Flex align="center" gap={3}>
               <chakra.button
                 type="button"
-                onClick={() => navigate('/')}
-                aria-label="ホームにもどる"
+                onClick={() => navigate(-1)}
+                aria-label="もどる"
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
@@ -109,7 +128,9 @@ function QuestionListInner({ questionType }: { questionType: QuestionType }) {
                 {questionType.displayName}
               </Text>
               <Text fontSize="sm" fontWeight="500" color="whiteAlpha.800" mt={1}>
-                <R rt="もんだい">問題</R>を<R rt="えら">選</R>んで<R rt="ちょうせん">挑戦</R>しよう
+                {hasFixedPool
+                  ? `ぜんぶで ${questions.length} もん`
+                  : <><R rt="もんだい">問題</R>を<R rt="えら">選</R>んで<R rt="ちょうせん">挑戦</R>しよう</>}
               </Text>
             </Box>
           </VStack>

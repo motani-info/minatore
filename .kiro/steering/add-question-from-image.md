@@ -1,5 +1,5 @@
 ---
-inclusion: manual
+inclusion: auto
 ---
 
 # 画像から問題プラグインを追加するガイド

@@ -95,13 +95,14 @@ export function generateOverlayCancelQuestion(): Question<OverlayCancelQuestionD
     });
   } while (!hasCancel && attempts < 100);
 
-  // ダミー2つを生成
+  // ダミー3つを生成（4択）
   const distractors: Grid2x2[] = [];
   distractors.push(generateDistractor(correctResult, distractors));
   distractors.push(generateDistractor(correctResult, distractors));
+  distractors.push(generateDistractor(correctResult, distractors));
 
-  // 正解位置をランダムに配置（3択）
-  const correctIndex = randomInt(0, 2);
+  // 正解位置をランダムに配置（4択）
+  const correctIndex = randomInt(0, 3);
   const choices: OverlayCancelChoiceData[] = [...distractors];
   choices.splice(correctIndex, 0, correctResult);
 

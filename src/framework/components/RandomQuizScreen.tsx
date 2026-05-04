@@ -9,14 +9,23 @@ import { R } from './Ruby';
 
 const TOTAL_QUESTIONS = 10;
 
+/** 専用画面を持つ問題タイプ（4択UIに対応しない） */
+const CUSTOM_SCREEN_TYPES = new Set([
+  'seesaw',
+  'water-volume',
+  'compare-length',
+  'compare-spring',
+  'area-compare',
+]);
+
 interface RandomQuestion {
   questionType: QuestionType;
   question: Question;
 }
 
-/** 実装済みの問題タイプからランダムに10問を生成する */
+/** 実装済みの問題タイプからランダムに10問を生成する（4択対応のもののみ） */
 function generateRandomQuestions(): RandomQuestion[] {
-  const allTypes = registry.getAll();
+  const allTypes = registry.getAll().filter((t) => !CUSTOM_SCREEN_TYPES.has(t.id));
   if (allTypes.length === 0) return [];
 
   const questions: RandomQuestion[] = [];

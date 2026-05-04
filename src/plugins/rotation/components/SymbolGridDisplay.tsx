@@ -57,10 +57,30 @@ const CellRenderer: React.FC<{ cell: CellSymbol; cellSize: number }> = ({ cell, 
           <line x1="4" y1="4" x2="36" y2="36" stroke="#1a1a1a" strokeWidth="2.5" />
         </svg>
       );
+    case 'diagonal-cross':
+      return (
+        <svg width={iconSize} height={iconSize} viewBox="0 0 40 40">
+          <line x1="4" y1="4" x2="36" y2="36" stroke="#1a1a1a" strokeWidth="2.5" />
+          <line x1="36" y1="4" x2="4" y2="36" stroke="#1a1a1a" strokeWidth="2.5" />
+        </svg>
+      );
+    case 'square-black':
+      return (
+        <svg width={iconSize} height={iconSize} viewBox="0 0 40 40">
+          <rect x="6" y="6" width="28" height="28" fill="#1a1a1a" />
+        </svg>
+      );
     case 'arrow-right':
       return (
         <svg width={iconSize} height={iconSize} viewBox="0 0 40 40" style={{ transform }}>
           <polygon points="8,14 28,14 28,8 38,20 28,32 28,26 8,26" fill="#1a1a1a" />
+        </svg>
+      );
+    case 'arrow-curved':
+      return (
+        <svg width={iconSize} height={iconSize} viewBox="0 0 40 40" style={{ transform }}>
+          <path d="M12 30 Q12 12, 28 12" fill="none" stroke="#1a1a1a" strokeWidth="3" strokeLinecap="round" />
+          <polygon points="24,6 34,12 24,18" fill="#1a1a1a" />
         </svg>
       );
     case 'person-man':

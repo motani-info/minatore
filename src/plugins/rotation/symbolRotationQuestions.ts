@@ -15,7 +15,10 @@ const CB: CellSymbol = { type: 'circle-black' };
 const TW = (dir: CellSymbol['direction'] = 'up'): CellSymbol => ({ type: 'triangle-white', direction: dir });
 const TB = (dir: CellSymbol['direction'] = 'up'): CellSymbol => ({ type: 'triangle-black', direction: dir });
 const DL: CellSymbol = { type: 'diagonal-line' };
+const DC: CellSymbol = { type: 'diagonal-cross' };
+const SQ: CellSymbol = { type: 'square-black' };
 const AR: CellSymbol = { type: 'arrow-right' };
+const AC = (dir: CellSymbol['direction'] = 'up'): CellSymbol => ({ type: 'arrow-curved', direction: dir });
 const PM: CellSymbol = { type: 'person-man' };
 const PW: CellSymbol = { type: 'person-woman' };
 const HB: CellSymbol = { type: 'heart-black' };
@@ -338,6 +341,84 @@ const question7: FixedQuestion = {
   ],
 };
 
+/**
+ * 問題⑨ 右1回転（画像2枚目・問題(1)）
+ * 元: [黒四角(小), 空; 黒四角(大), 白丸]
+ * 右90度回転: [黒四角(大), 黒四角(小); 白丸, 空]
+ *
+ * 選択肢（画像から4つ）:
+ * ①[黒四角, 空; 白丸, 黒四角]
+ * ②[白丸, 黒四角; 空, 黒四角]
+ * ③[黒四角, 黒四角; 白丸, 空] ← 正解
+ * ④[空, 白丸; 黒四角, 黒四角]
+ */
+const question9: FixedQuestion = {
+  originalGrid: [SQ, E, SQ, CW],
+  direction: 'right1',
+  distractors: [
+    [SQ, E, CW, SQ],
+    [CW, SQ, E, SQ],
+    [E, CW, SQ, SQ],
+  ],
+};
+
+/**
+ * 問題⑩ 右1回転（画像2枚目・問題(2)）
+ * 元: [白丸, 黒丸; 黒丸, 白丸]
+ * 右90度回転: [黒丸, 白丸; 白丸, 黒丸]
+ *
+ * 選択肢（画像から4つ）:
+ * ①[白丸, 黒丸; 黒丸, 白丸]（元と同じ）
+ * ②[黒丸, 白丸; 白丸, 黒丸] ← 正解
+ * ③[黒丸, 黒丸; 白丸, 白丸]
+ * ④[白丸, 白丸; 黒丸, 黒丸]
+ */
+const question10: FixedQuestion = {
+  originalGrid: [CW, CB, CB, CW],
+  direction: 'right1',
+  distractors: [
+    [CW, CB, CB, CW],
+    [CB, CB, CW, CW],
+    [CW, CW, CB, CB],
+  ],
+};
+
+/**
+ * 問題⑪ 右1回転（画像2枚目・問題(3)）
+ * 元: X字の対角線パターン（2×2グリッドの各セルに対角線）
+ * [対角線\, 対角線/; 対角線/, 対角線\] → X字模様
+ * 右90度回転: 位置が入れ替わる
+ *
+ * 選択肢（画像から4つ）
+ */
+const question11: FixedQuestion = {
+  originalGrid: [DL, DC, DC, DL],
+  direction: 'right1',
+  distractors: [
+    [DC, DL, DL, DC],
+    [DL, DL, DC, DC],
+    [DC, DC, DL, DL],
+  ],
+};
+
+/**
+ * 問題⑫ 右1回転（画像2枚目・問題(4)）
+ * 元: 曲がった矢印パターン
+ * [矢印↗, 矢印↗; 矢印↗, 矢印↗] → 全部同じ向きの曲がった矢印
+ * 右90度回転: 全部の矢印が右に90度回転
+ *
+ * 選択肢（画像から4つ）
+ */
+const question12: FixedQuestion = {
+  originalGrid: [AC('right'), AC('right'), AC('right'), AC('right')],
+  direction: 'right1',
+  distractors: [
+    [AC('left'), AC('left'), AC('left'), AC('left')],
+    [AC('up'), AC('up'), AC('up'), AC('up')],
+    [AC('right'), AC('left'), AC('right'), AC('left')],
+  ],
+};
+
 // ─── 固定問題プール ───
 
 const FIXED_QUESTIONS: FixedQuestion[] = [
@@ -349,6 +430,10 @@ const FIXED_QUESTIONS: FixedQuestion[] = [
   question6,
   question7,
   question8,
+  question9,
+  question10,
+  question11,
+  question12,
 ];
 
 /** 固定問題プールからランダムに1問を生成する */

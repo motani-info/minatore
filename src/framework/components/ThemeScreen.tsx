@@ -84,7 +84,7 @@ function ThemeScreenInner({
     if (questionType.getAllQuestions) {
       return questionType.getAllQuestions();
     }
-    return Array.from({ length: 10 }, () => questionType.generateQuestion());
+    return Array.from({ length: 20 }, () => questionType.generateQuestion());
   }, [questionType, activeSubIndex, activeTabIndex]);
 
   const handleSelect = (index: number) => {

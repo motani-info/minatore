@@ -6,7 +6,7 @@ import type { Question, QuestionType } from '../../types/question';
 import { R } from './Ruby';
 
 /** ランダム生成型プラグインで生成する問題数 */
-const GENERATED_COUNT = 10;
+const GENERATED_COUNT = 20;
 
 /** 問題タイプごとのテーマカラー */
 const TYPE_THEMES: Record<string, { gradient: string; accent: string }> = {

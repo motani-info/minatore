@@ -10,6 +10,7 @@
 2. **幼稚園児ファースト**: すべてのUI/UXは幼稚園児が直感的に操作できることを最優先とする
 3. **段階的拡張**: 問題タイプを順次追加し、カリキュラムに沿った学習体験を構築する
 4. **オフライン完結**: localStorage によるデータ永続化のみを使用し、ネットワーク通信を一切行わない
+5. **カテゴリ・グループ化**: 問題タイプをカテゴリ（図形・記憶・数量/推理・運筆）で分類し、関連する問題をグループ化して段階的に学習できる構造
 
 ### 技術スタック
 
@@ -22,6 +23,7 @@
 | ルーティング | React Router v7 (HashRouter) | SPA内のページ遷移、GitHub Pages対応 |
 | テスト | Vitest + React Testing Library | Viteとの統合、高速なテスト実行 |
 | PBTライブラリ | fast-check | TypeScript対応のプロパティベーステスト |
+| E2Eテスト | Playwright | ブラウザ自動テスト |
 | デプロイ | GitHub Pages + GitHub Actions | mainブランチへのpushで自動デプロイ |
 
 ---
@@ -36,8 +38,11 @@ graph TB
         Router["React Router (HashRouter)"]
         
         subgraph Framework["共通フレームワーク層"]
-            HomeScreen["ホーム画面"]
-            QuestionScreen["問題画面"]
+            CategoryData["categoryData.ts<br/>カテゴリ・単元定義"]
+            HomeScreen["ホーム画面<br/>（カテゴリカード方式）"]
+            ThemeScreen["テーマ画面<br/>（カテゴリ別タブ）"]
+            QuestionListScreen["問題一覧画面"]
+            QuestionScreen["問題画面（共通4択）"]
             RandomQuizScreen["ランダムクイズ画面"]
             ProfileScreen["プロフィール画面"]
             HistoryScreen["履歴画面"]
@@ -46,13 +51,40 @@ graph TB
             TabBar["タブバーナビゲーション"]
         end
         
+        subgraph CustomScreens["専用画面層"]
+            SeesawScreen["シーソー専用画面"]
+            WaterVolumeScreen["水量比較専用画面"]
+            CompareLengthScreen["長さ比較専用画面"]
+            CompareSpringScreen["ばね比較専用画面"]
+            AreaCompareScreen["広さ比較専用画面"]
+        end
+        
         subgraph PluginLayer["プラグイン層"]
             Registry["問題タイプレジストリ"]
             Interface["問題タイプインターフェース"]
-            RotationPlugin["回転図形問題"]
-            OverlayPlugin["重ね図形問題"]
-            PuzzlePlugin["図形パズル問題"]
-            FuturePlugin["将来の問題タイプ..."]
+            
+            subgraph ShapePlugins["図形プラグイン"]
+                RotationPlugin["回転図形（基本）"]
+                SymbolRotationPlugin["回転図形（応用）"]
+                OverlayPlugin["重ね図形（基本）"]
+                OverlayAdvancedPlugin["重ね図形（応用）"]
+                OverlayShapePlugin["重ね図形（図形）"]
+                LineOverlayPlugin["重ね図形（線）"]
+                PuzzlePlugin["図形パズル"]
+                OverlayCancelPlugin["折り重ね（相殺）"]
+                OddOneOutPlugin["異図形発見"]
+            end
+            
+            subgraph MathPlugins["数量・推理プラグイン"]
+                SeesawPlugin["比較（重さ）"]
+                WaterVolumePlugin["比較（水量）"]
+                CompareLengthPlugin["比較（長さ）"]
+                CompareSpringPlugin["比較（ばね）"]
+                AreaComparePlugin["比較（広さ）"]
+                ShapeKartaPlugin["図形と数カルタ"]
+                SyllableCountPlugin["文字数あつまり"]
+                OneToOnePlugin["1対1対応"]
+            end
         end
         
         subgraph DataLayer["データ層"]
@@ -63,28 +95,32 @@ graph TB
     end
     
     Router --> HomeScreen
+    Router --> ThemeScreen
+    Router --> QuestionListScreen
     Router --> QuestionScreen
     Router --> RandomQuizScreen
     Router --> ProfileScreen
     Router --> HistoryScreen
-    QuestionScreen --> FeedbackSystem
-    RandomQuizScreen --> FeedbackSystem
+    Router --> CustomScreens
+    
+    HomeScreen --> CategoryData
+    ThemeScreen --> CategoryData
     QuestionScreen --> Interface
     RandomQuizScreen --> Registry
-    HomeScreen --> Registry
+    ThemeScreen --> Registry
+    QuestionListScreen --> Registry
     HomeScreen --> ProgressManager
     HomeScreen --> TabBar
     ProfileScreen --> TabBar
     HistoryScreen --> TabBar
     HistoryScreen --> ProgressManager
-    Registry --> RotationPlugin
-    Registry --> OverlayPlugin
-    Registry --> PuzzlePlugin
-    Registry --> FuturePlugin
+    
+    Registry --> ShapePlugins
+    Registry --> MathPlugins
+    
     ProgressManager --> StorageService
-    ProfileScreen --> ProfileService
-    StorageService --> LocalStorage
     ProfileService --> LocalStorage
+    StorageService --> LocalStorage
 ```
 
 ### Low-Level アーキテクチャ: データフロー
@@ -93,6 +129,8 @@ graph TB
 sequenceDiagram
     participant U as 学習者
     participant H as ホーム画面
+    participant T as テーマ画面
+    participant L as 問題一覧画面
     participant R as レジストリ
     participant Q as 問題画面
     participant P as 問題タイプ
@@ -100,12 +138,16 @@ sequenceDiagram
     participant S as ストレージ
 
     U->>H: アプリ起動
-    H->>R: 登録済み問題タイプ取得
     H->>S: 進捗データ読み込み
-    H-->>U: 問題タイプ一覧表示
+    H-->>U: カテゴリカード一覧表示
     
-    U->>H: 問題タイプカードをタップ
-    H->>Q: 問題タイプIDで遷移
+    U->>H: カテゴリカードをタップ
+    H->>T: /theme/:themeId に遷移
+    T->>R: カテゴリ内の問題タイプ取得
+    T-->>U: タブ付き問題一覧表示
+    
+    U->>T: 問題カードをタップ
+    T->>Q: /question/:typeId に遷移
     Q->>P: 問題生成（generateQuestion）
     P-->>Q: 問題データ返却
     Q-->>U: 問題・選択肢表示
@@ -116,9 +158,6 @@ sequenceDiagram
     Q->>F: フィードバック表示
     Q->>S: 進捗データ保存
     F-->>U: ○/✕ 表示
-    
-    U->>Q: 「つぎのもんだいへ」タップ
-    Q->>P: 新しい問題生成
 ```
 
 ### 画面遷移図
@@ -126,99 +165,96 @@ sequenceDiagram
 ```mermaid
 graph LR
     subgraph Screens["画面構成"]
-        Home["🏠 ホーム画面<br/>カテゴリ別単元一覧<br/>ランダムクイズ入口"]
-        Question["📝 問題画面<br/>問題表示エリア<br/>指示テキスト<br/>選択肢エリア"]
+        Home["🏠 ホーム画面<br/>カテゴリカード一覧<br/>ランダムクイズ入口"]
+        Theme["📂 テーマ画面<br/>カテゴリ別タブ<br/>問題プレビュー一覧"]
+        QList["📋 問題一覧画面<br/>全問題プレビュー"]
+        Question["📝 問題画面（共通4択）<br/>問題表示エリア<br/>指示テキスト<br/>選択肢エリア"]
+        Custom["🎯 専用画面<br/>seesaw/water-volume<br/>compare-length/compare-spring<br/>area-compare"]
         Random["🎲 ランダムクイズ<br/>10問出題<br/>結果表示"]
         Profile["👤 プロフィール<br/>名前・アバター<br/>学習統計"]
         History["📊 履歴画面<br/>学習記録<br/>グラフ表示"]
-        Feedback["✅ フィードバック表示<br/>○/✕ 表示<br/>正解ハイライト<br/>「つぎのもんだいへ」"]
     end
 
-    Home -- "単元カードをタップ" --> Question
+    Home -- "カテゴリカードをタップ" --> Theme
+    Theme -- "問題カードをタップ" --> Question
+    Theme -- "専用画面タイプをタップ" --> Custom
     Home -- "ランダム10問をタップ" --> Random
-    Home -- "タブバー: プロフィール" --> Profile
     Home -- "タブバー: きろく" --> History
+    Home -- "タブバー: プロフィール" --> Profile
     Profile -- "タブバー: ホーム" --> Home
     History -- "タブバー: ホーム" --> Home
-    Question -- "選択肢をタップ" --> Feedback
-    Random -- "選択肢をタップ" --> Feedback
-    Feedback -- "「つぎのもんだいへ」タップ" --> Question
-    Feedback -- "「もどる」タップ" --> Home
-    Question -- "「もどる」タップ" --> Home
-    Random -- "「×」タップ" --> Home
+    Question -- "「もどる」タップ" --> Theme
+    Custom -- "「もどる」タップ" --> Theme
+    Random -- "自動遷移" --> Question
+    Random -- "自動遷移" --> Custom
+    Question -- "回答後 /random に戻る" --> Random
+    Custom -- "回答後 /random に戻る" --> Random
 ```
 
-### ユーザー操作フロー: 問題に回答する
+### ユーザー操作フロー: カテゴリ→テーマ→問題
 
 ```mermaid
 sequenceDiagram
     actor 学習者
     participant Home as ホーム画面
+    participant Theme as テーマ画面
     participant QScreen as 問題画面
-    participant Plugin as 回転図形問題<br/>プラグイン
-    participant Feedback as フィードバック<br/>オーバーレイ
-    participant Storage as ストレージ<br/>サービス
+    participant Plugin as 問題プラグイン
+    participant Feedback as フィードバック
+    participant Storage as ストレージ
 
     学習者->>Home: アプリを開く
     Home->>Storage: loadProgress()
     Storage-->>Home: 進捗データ
-    Note over Home: 問題タイプ一覧と<br/>進捗サマリーを表示
+    Note over Home: カテゴリカード一覧表示<br/>（図形・記憶・数量/推理・運筆）
 
-    学習者->>Home: 「かいてんずけい」カードをタップ
-    Home->>QScreen: /question/rotation に遷移
+    学習者->>Home: 「図形」カードをタップ
+    Home->>Theme: /theme/shapes に遷移
+
+    Note over Theme: 手帳風タブ表示<br/>（回転図形/重ね図形/図形パズル/...）
+    学習者->>Theme: 「回転図形」タブ→「基本」サブタブ
+    Note over Theme: 問題プレビュー一覧表示
+
+    学習者->>Theme: 問題カードをタップ
+    Theme->>QScreen: /question/rotation に遷移
 
     loop 問題を繰り返す
         QScreen->>Plugin: generateQuestion()
-        Plugin-->>QScreen: 問題データ（グリッド・選択肢・指示テキスト）
-        Note over QScreen: 問題表示エリア: 元のグリッド<br/>指示テキスト: 「右に1かいまわすと...」<br/>選択肢エリア: 4つのグリッド
-
+        Plugin-->>QScreen: 問題データ
         学習者->>QScreen: 選択肢をタップ
-        Note over QScreen: タップした選択肢に<br/>視覚的フィードバック
-        QScreen->>Plugin: checkAnswer(question, selectedIndex)
-        Plugin-->>QScreen: true / false
-
-        alt 正解の場合
-            QScreen->>Feedback: isCorrect=true で表示
-            Note over Feedback: 緑色の○を<br/>拡大アニメーション
-        else 不正解の場合
-            QScreen->>Feedback: isCorrect=false で表示
-            Note over Feedback: 赤色の✕を穏やかに表示<br/>正解を枠線ハイライト
-        end
-
-        QScreen->>Storage: recordAnswer("rotation", isCorrect)
-        Note over Feedback: 「つぎのもんだいへ」<br/>ボタンを表示
-
-        alt 続ける場合
-            学習者->>Feedback: 「つぎのもんだいへ」タップ
-        else 終了する場合
-            学習者->>QScreen: 「もどる」タップ
-            QScreen->>Home: ホーム画面に遷移
-        end
+        QScreen->>Plugin: checkAnswer()
+        Plugin-->>QScreen: 判定結果
+        QScreen->>Feedback: フィードバック表示
+        QScreen->>Storage: recordAnswer()
+        学習者->>Feedback: 「つぎのもんだいへ」タップ
     end
 ```
 
-### ユーザー操作フロー: 新しい問題タイプの追加（開発者向け）
+### ユーザー操作フロー: ランダムクイズ
 
 ```mermaid
 sequenceDiagram
-    participant Dev as 開発者
-    participant Plugin as 新問題タイプ<br/>モジュール
-    participant Registry as 問題タイプ<br/>レジストリ
+    actor 学習者
     participant Home as ホーム画面
-    participant Storage as ストレージ<br/>サービス
+    participant Random as ランダムクイズ画面
+    participant QScreen as 個別問題画面
+    participant Session as sessionStorage
 
-    Dev->>Plugin: QuestionType インターフェースを実装
-    Note over Plugin: id, displayName, icon<br/>generateQuestion<br/>QuestionDisplay<br/>ChoiceDisplay<br/>checkAnswer
-    Dev->>Registry: registry.register(newQuestionType)
+    学習者->>Home: 「ランダム10問」をタップ
+    Home->>Random: /random に遷移
+    Random->>Session: 問題タイプIDキュー生成・保存
+    Random->>Session: currentIndex = 0 保存
     
-    Note over Home: 次回レンダリング時
-    Home->>Registry: getAll()
-    Registry-->>Home: [...既存タイプ, 新タイプ]
-    Note over Home: 新しいカードが自動表示
-
-    Home->>Storage: loadProgress()
-    Note over Storage: 新タイプのデータがない場合<br/>初期状態（0問/0正解）で追加
-    Storage-->>Home: 既存データ + 新タイプ初期データ
+    loop 10問繰り返し
+        Random->>QScreen: /question/:typeId に自動遷移<br/>（randomMode: true）
+        Note over QScreen: 問題表示・回答
+        学習者->>QScreen: 回答後「つぎのもんだいへ」
+        QScreen->>Random: /random に戻る
+        Random->>Session: currentIndex++
+    end
+    
+    Note over Random: 全問完了→結果画面表示
+    学習者->>Random: 「もう一回」or「ホームにもどる」
 ```
 
 ### ルーティング構成
@@ -228,7 +264,13 @@ sequenceDiagram
 <HashRouter>
   <Routes>
     <Route path="/" element={<HomeScreen />} />
+    <Route path="/theme/:themeId" element={<ThemeScreen />} />
+    <Route path="/questions/:typeId" element={<QuestionListScreen />} />
     <Route path="/question/seesaw" element={<SeesawScreen />} />
+    <Route path="/question/water-volume" element={<WaterVolumeScreen />} />
+    <Route path="/question/compare-length" element={<CompareLengthScreen />} />
+    <Route path="/question/compare-spring" element={<CompareSpringScreen />} />
+    <Route path="/question/area-compare" element={<AreaCompareScreen />} />
     <Route path="/question/:typeId" element={<QuestionScreen />} />
     <Route path="/profile" element={<ProfileScreen />} />
     <Route path="/random" element={<RandomQuizScreen />} />
@@ -239,25 +281,60 @@ sequenceDiagram
 
 | パス | 画面 | 説明 |
 |------|------|------|
-| `/` | HomeScreen | カテゴリ別単元一覧、進捗サマリー |
-| `/question/:typeId` | QuestionScreen | 特定問題タイプの連続出題 |
+| `/` | HomeScreen | カテゴリカード一覧、ランダムクイズ入口 |
+| `/theme/:themeId` | ThemeScreen | カテゴリ別テーマ画面（タブ付き問題一覧） |
+| `/questions/:typeId` | QuestionListScreen | 問題タイプ別の問題一覧画面 |
+| `/question/seesaw` | SeesawScreen | シーソー問題専用画面 |
+| `/question/water-volume` | WaterVolumeScreen | 水量比較問題専用画面 |
+| `/question/compare-length` | CompareLengthScreen | 長さ比較問題専用画面 |
+| `/question/compare-spring` | CompareSpringScreen | ばね比較問題専用画面 |
+| `/question/area-compare` | AreaCompareScreen | 広さ比較問題専用画面 |
+| `/question/:typeId` | QuestionScreen | 共通4択問題画面 |
 | `/profile` | ProfileScreen | プロフィール設定・学習統計 |
 | `/random` | RandomQuizScreen | 全問題タイプからランダム10問 |
 | `/history` | HistoryScreen | 学習履歴・グラフ表示 |
 
 ### 実装済み問題タイプ一覧
 
-| ID | 表示名 | アイコン | カテゴリ | 概要 |
-|----|--------|---------|---------|------|
-| `rotation` | 回転図形 | 🔄 | 図形 | 2×2グリッドの回転操作に関する4択問題 |
-| `overlay` | 重ね図形 | 🔲 | 図形 | 左列を右列に折り重ねた結果を選ぶ4択問題 |
-| `puzzle` | 図形パズル | 🧩 | 図形 | 2つのピースを合わせてお手本を作る4択問題 |
-| `seesaw` | 比較（重さ） | ⚖️ | 数量・推理 | シーソーの傾きから重さの関係を推理し、一番重い/軽いものを選ぶ問題 |
-| `shape-karta` | 図形と数カルタ | 🎴 | 数量・推理 | 複数条件の指示に一致するカードを4択から選ぶ問題 |
-| `overlay-cancel` | 折り重ね（相殺） | 🔲 | 図形 | グリッドを折り重ね、○と×が相殺するルール付き3択問題 |
-| `syllable-count` | 文字数あつまり | 🔤 | 数量・推理 | 単語の文字数（音の数）と同じ人数のグループを選ぶ問題 |
-| `one-to-one` | 1対1対応 | 🐤 | 数量・推理 | 2種類のアイテムの過不足を問う問題 |
-| `odd-one-out` | 異図形発見 | 🔍 | 図形 | 並んだ図形の中から1つだけ違うものを見つける問題 |
+| ID | 表示名 | アイコン | カテゴリ | グループ | 問題数 | 画面 | 概要 |
+|----|--------|---------|---------|---------|--------|------|------|
+| `rotation` | 回転図形（基本） | 🔄 | 図形 | 回転図形 | ランダム生成 | 共通4択 | 2×2グリッドの回転操作に関する4択問題 |
+| `symbol-rotation` | 回転図形（応用） | 🎯 | 図形 | 回転図形 | 固定32問 | 共通4択 | 2×2グリッドにシンボル（丸、三角、四角、矢印、トランプマーク等）を配置した回転問題 |
+| `overlay` | 重ね図形（基本） | 🔲 | 図形 | 重ね図形 | ランダム生成 | 共通4択 | 左列を右列に折り重ねた結果を選ぶ4択問題 |
+| `overlay-advanced` | 重ね図形（応用） | 🔲 | 図形 | 重ね図形 | 固定8問 | 共通4択 | 3×3グリッドの○重なり問題（AND演算） |
+| `overlay-shape` | 重ね図形（図形） | 🔲 | 図形 | 重ね図形 | 固定4問 | 共通4択 | 白黒パターン（三角形・四角形のSVGポリゴン）を重ねる問題 |
+| `line-overlay` | 重ね図形（線） | 📐 | 図形 | 重ね図形 | ランダム生成 | 共通4択 | 4×4ドットグリッド上の線図形を2つ重ねた結果を答える問題 |
+| `puzzle` | 図形パズル | 🧩 | 図形 | — | ランダム生成 | 共通4択 | 2つのピースを合わせてお手本を作る4択問題 |
+| `overlay-cancel` | 折り重ね（相殺） | 🔲 | 図形 | — | ランダム生成 | 共通4択 | グリッドを折り重ね、○と×が相殺するルール付き4択問題 |
+| `odd-one-out` | 異図形発見 | 🔍 | 図形 | — | ランダム生成 | 共通4択 | 並んだ図形の中から1つだけ違うものを見つける問題 |
+| `seesaw` | 比較（重さ） | ⚖️ | 数量・推理 | 比較 | 固定4問 | 専用画面 | シーソーの傾きから重さの関係を推理し、○×マークで回答 |
+| `water-volume` | 比較（水量） | 💧 | 数量・推理 | 比較 | 固定10問 | 専用画面 | コップ/水槽の水量を比較する○×マーク問題 |
+| `compare-length` | 比較（長さ） | 📏 | 数量・推理 | 比較 | 固定4問 | 専用画面 | 線の長さを比較する○×マーク問題 |
+| `compare-spring` | 比較（ばね） | 🔩 | 数量・推理 | 比較 | 固定4問 | 専用画面 | ばねの伸びで重さを比較する◎△×マーク問題 |
+| `area-compare` | 比較（広さ） | ⬛ | 数量・推理 | 比較 | 固定10問 | 専用画面 | グリッド上の黒い部分の広さを比較する○×マーク問題 |
+| `shape-karta` | 図形と数カルタ | 🎴 | 数量・推理 | — | ランダム生成 | 共通4択 | 複数条件の指示に一致するカードを4択から選ぶ問題 |
+| `syllable-count` | 文字数あつまり | 🔤 | 数量・推理 | — | ランダム生成 | 共通4択 | 単語の文字数（音の数）と同じ人数のグループを選ぶ問題 |
+| `one-to-one` | 1対1対応 | 🐤 | 数量・推理 | — | ランダム生成 | 共通4択 | 2種類のアイテムの過不足を問う問題 |
+
+### カテゴリ構造
+
+| カテゴリ | ID | 実装済み問題タイプ |
+|---------|----|--------------------|
+| 図形 | `shapes` | rotation, symbol-rotation, overlay, overlay-advanced, overlay-shape, line-overlay, puzzle, overlay-cancel, odd-one-out |
+| 記憶 | `memory` | （未実装） |
+| 数量・推理 | `math-reasoning` | seesaw, water-volume, compare-length, compare-spring, area-compare, shape-karta, syllable-count, one-to-one |
+| 運筆 | `writing` | （未実装） |
+
+### グループ化
+
+同じカテゴリ内で関連する問題タイプはグループ化され、テーマ画面でタブ→サブタブとして表示される:
+
+| グループ名 | 含まれる問題タイプ |
+|-----------|-------------------|
+| 回転図形 | rotation（基本）, symbol-rotation（応用） |
+| 重ね図形 | overlay（基本）, overlay-advanced（応用）, overlay-shape（図形）, line-overlay（線） |
+| 比較 | seesaw（重さ）, water-volume（水量）, compare-length（長さ）, compare-spring（ばね）, area-compare（広さ） |
+
 
 ### ディレクトリ構成
 
@@ -273,9 +350,12 @@ src/
 │   └── ui/
 │       └── provider.tsx              # Chakra UI プロバイダー
 ├── framework/
+│   ├── categoryData.ts               # カテゴリ・単元の定義データ（一元管理）
 │   ├── components/
-│   │   ├── HomeScreen.tsx            # ホーム画面（カテゴリ別単元一覧）
-│   │   ├── QuestionScreen.tsx        # 問題画面（共通レイアウト）
+│   │   ├── HomeScreen.tsx            # ホーム画面（カテゴリカード方式）
+│   │   ├── ThemeScreen.tsx           # テーマ画面（カテゴリ別タブ・問題一覧）
+│   │   ├── QuestionListScreen.tsx    # 問題一覧画面（全問表示 or ランダム生成）
+│   │   ├── QuestionScreen.tsx        # 問題画面（共通4択レイアウト）
 │   │   ├── RandomQuizScreen.tsx      # ランダムクイズ画面（10問モード）
 │   │   ├── ProfileScreen.tsx         # プロフィール画面
 │   │   ├── FeedbackOverlay.tsx       # 結果フィードバック表示
@@ -287,76 +367,135 @@ src/
 │       ├── useProfile.ts             # プロフィールデータ管理フック
 │       ├── useProgress.ts            # 進捗データ管理フック
 │       └── useQuestionFlow.ts        # 問題出題フロー管理フック
-├── storage/
-│   ├── storageService.ts             # localStorage操作サービス（進捗）
-│   └── profileService.ts            # localStorage操作サービス（プロフィール）
 ├── plugins/
 │   ├── rotation/
-│   │   ├── index.ts                  # 問題タイプ登録エントリ
-│   │   ├── rotationQuestion.ts       # 問題生成・正解判定ロジック
+│   │   ├── index.ts                  # 回転図形（基本）登録エントリ
+│   │   ├── symbolRotationIndex.ts    # 回転図形（応用）登録エントリ
+│   │   ├── rotationQuestion.ts       # 基本：問題生成・正解判定ロジック
+│   │   ├── symbolRotationQuestions.ts # 応用：固定32問データ
 │   │   ├── components/
 │   │   │   ├── GridDisplay.tsx        # グリッド表示コンポーネント
-│   │   │   ├── QuestionDisplay.tsx    # 問題表示コンポーネント
-│   │   │   └── ChoicesDisplay.tsx     # 選択肢表示コンポーネント
+│   │   │   ├── QuestionDisplay.tsx    # 基本：問題表示
+│   │   │   ├── ChoicesDisplay.tsx     # 基本：選択肢表示
+│   │   │   ├── SymbolQuestionDisplay.tsx  # 応用：問題表示
+│   │   │   └── SymbolChoiceDisplay.tsx    # 応用：選択肢表示
 │   │   └── types.ts                  # 回転図形問題固有の型定義
 │   ├── overlay/
-│   │   ├── index.ts                  # 問題タイプ登録エントリ
+│   │   ├── index.ts                  # 重ね図形（基本）登録エントリ
 │   │   ├── overlayQuestion.ts        # 問題生成・正解判定ロジック
 │   │   ├── components/
-│   │   │   ├── QuestionDisplay.tsx    # 問題表示コンポーネント
-│   │   │   └── ChoiceDisplay.tsx      # 選択肢表示コンポーネント
-│   │   └── types.ts                  # 重ね図形問題固有の型定義
+│   │   │   ├── QuestionDisplay.tsx    # 問題表示
+│   │   │   └── ChoiceDisplay.tsx      # 選択肢表示
+│   │   └── types.ts                  # 型定義
+│   ├── overlay-advanced/
+│   │   ├── index.ts                  # 重ね図形（応用）登録エントリ
+│   │   ├── overlayAdvancedQuestion.ts # 固定8問データ
+│   │   ├── components/
+│   │   │   ├── Grid3x3Display.tsx     # 3×3グリッド表示
+│   │   │   ├── QuestionDisplay.tsx    # 問題表示
+│   │   │   └── ChoiceDisplay.tsx      # 選択肢表示
+│   │   └── types.ts                  # 型定義
+│   ├── overlay-shape/
+│   │   ├── index.ts                  # 重ね図形（図形）登録エントリ
+│   │   ├── overlayShapeQuestion.ts   # 固定4問データ
+│   │   ├── components/
+│   │   │   ├── QuestionDisplay.tsx    # 問題表示（SVGポリゴン）
+│   │   │   └── ChoiceDisplay.tsx      # 選択肢表示
+│   │   └── types.ts                  # 型定義
+│   ├── line-overlay/
+│   │   ├── index.ts                  # 重ね図形（線）登録エントリ
+│   │   ├── lineOverlayQuestion.ts    # 問題生成ロジック
+│   │   ├── components/
+│   │   │   ├── DotGrid.tsx            # 4×4ドットグリッド表示
+│   │   │   ├── QuestionDisplay.tsx    # 問題表示
+│   │   │   └── ChoiceDisplay.tsx      # 選択肢表示
+│   │   └── types.ts                  # 型定義
 │   ├── puzzle/
-│   │   ├── index.ts                  # 問題タイプ登録エントリ
+│   │   ├── index.ts                  # 図形パズル登録エントリ
 │   │   ├── puzzleQuestion.ts         # 問題生成・正解判定ロジック
 │   │   ├── components/
-│   │   │   ├── QuestionDisplay.tsx    # 問題表示コンポーネント
-│   │   │   └── ChoiceDisplay.tsx      # 選択肢表示コンポーネント
-│   │   └── types.ts                  # 図形パズル問題固有の型定義
-│   └── seesaw/
-│       ├── index.ts                  # 問題タイプ登録エントリ
-│       ├── seesawQuestion.ts         # 固定問題データ・正解判定ロジック
-│       ├── components/
-│       │   ├── SeesawDisplay.tsx      # シーソーSVG表示コンポーネント
-│       │   ├── SeesawScreen.tsx       # シーソー問題専用画面（カスタムUI）
-│       │   ├── QuestionDisplay.tsx    # 問題表示コンポーネント（シーソー2つ）
-│       │   └── ChoiceDisplay.tsx      # 回答UI（アイテムに○/×をつける）
-│       └── types.ts                  # シーソー問題固有の型定義
-│   ├── shape-karta/
-│   │   ├── index.ts                  # 問題タイプ登録エントリ
-│   │   ├── shapeKartaQuestion.ts     # 問題生成・正解判定ロジック
-│   │   ├── components/
-│   │   │   ├── QuestionDisplay.tsx    # 指示テキスト表示
-│   │   │   └── ChoiceDisplay.tsx      # カード表示（CSS図形）
+│   │   │   ├── QuestionDisplay.tsx    # 問題表示
+│   │   │   └── ChoiceDisplay.tsx      # 選択肢表示
 │   │   └── types.ts                  # 型定義
 │   ├── overlay-cancel/
-│   │   ├── index.ts                  # 問題タイプ登録エントリ
+│   │   ├── index.ts                  # 折り重ね（相殺）登録エントリ
 │   │   ├── overlayCancelQuestion.ts  # 問題生成・正解判定ロジック
 │   │   ├── components/
 │   │   │   ├── QuestionDisplay.tsx    # 左右グリッド表示
 │   │   │   └── ChoiceDisplay.tsx      # 選択肢グリッド表示
 │   │   └── types.ts                  # 型定義
+│   ├── odd-one-out/
+│   │   ├── index.ts                  # 異図形発見登録エントリ
+│   │   ├── oddOneOutQuestion.ts      # 問題生成・正解判定ロジック
+│   │   ├── components/
+│   │   │   ├── QuestionDisplay.tsx    # グリッド表示
+│   │   │   └── ChoiceDisplay.tsx      # 選択肢表示
+│   │   └── types.ts                  # 型定義
+│   ├── seesaw/
+│   │   ├── index.ts                  # 比較（重さ）登録エントリ
+│   │   ├── seesawQuestion.ts         # 固定4問データ・正解判定ロジック
+│   │   ├── components/
+│   │   │   ├── SeesawDisplay.tsx      # シーソーSVG表示
+│   │   │   ├── SeesawScreen.tsx       # 専用画面（カスタムUI）
+│   │   │   ├── QuestionDisplay.tsx    # 問題表示
+│   │   │   └── ChoiceDisplay.tsx      # 回答UI（○/×マーク）
+│   │   └── types.ts                  # 型定義
+│   ├── water-volume/
+│   │   ├── index.ts                  # 比較（水量）登録エントリ
+│   │   ├── waterVolumeQuestion.ts    # 固定10問データ・正解判定ロジック
+│   │   ├── components/
+│   │   │   ├── WaterVolumeScreen.tsx  # 専用画面（カスタムUI）
+│   │   │   ├── QuestionDisplay.tsx    # 問題表示
+│   │   │   └── ChoiceDisplay.tsx      # 回答UI（○/×マーク）
+│   │   └── types.ts                  # 型定義
+│   ├── compare-length/
+│   │   ├── index.ts                  # 比較（長さ）登録エントリ
+│   │   ├── compareLengthQuestion.ts  # 固定4問データ・正解判定ロジック
+│   │   ├── components/
+│   │   │   ├── CompareLengthScreen.tsx # 専用画面（カスタムUI）
+│   │   │   ├── LineDisplay.tsx        # 線の長さ表示
+│   │   │   ├── QuestionDisplay.tsx    # 問題表示
+│   │   │   └── ChoiceDisplay.tsx      # 回答UI（○/×マーク）
+│   │   └── types.ts                  # 型定義
+│   ├── compare-spring/
+│   │   ├── index.ts                  # 比較（ばね）登録エントリ
+│   │   ├── compareSpringQuestion.ts  # 固定4問データ・正解判定ロジック
+│   │   ├── components/
+│   │   │   ├── CompareSpringScreen.tsx # 専用画面（カスタムUI）
+│   │   │   ├── SpringDisplay.tsx      # ばね表示
+│   │   │   ├── QuestionDisplay.tsx    # 問題表示
+│   │   │   └── ChoiceDisplay.tsx      # 回答UI（◎/△/×マーク）
+│   │   └── types.ts                  # 型定義
+│   ├── area-compare/
+│   │   ├── index.ts                  # 比較（広さ）登録エントリ
+│   │   ├── areaCompareQuestion.ts    # 固定10問データ・正解判定ロジック
+│   │   ├── components/
+│   │   │   ├── AreaCompareScreen.tsx  # 専用画面（カスタムUI）
+│   │   │   ├── AreaGridDisplay.tsx    # グリッド表示
+│   │   │   ├── AnswerUI.tsx           # 回答UI
+│   │   │   ├── QuestionDisplay.tsx    # 問題表示
+│   │   │   └── ChoiceDisplay.tsx      # 選択肢表示
+│   │   └── types.ts                  # 型定義
+│   ├── shape-karta/
+│   │   ├── index.ts                  # 図形と数カルタ登録エントリ
+│   │   ├── shapeKartaQuestion.ts     # 問題生成・正解判定ロジック
+│   │   ├── components/
+│   │   │   ├── QuestionDisplay.tsx    # 指示テキスト表示
+│   │   │   └── ChoiceDisplay.tsx      # カード表示（CSS図形）
+│   │   └── types.ts                  # 型定義
 │   ├── syllable-count/
-│   │   ├── index.ts                  # 問題タイプ登録エントリ
+│   │   ├── index.ts                  # 文字数あつまり登録エントリ
 │   │   ├── syllableCountQuestion.ts  # 問題生成・正解判定ロジック
 │   │   ├── components/
 │   │   │   ├── QuestionDisplay.tsx    # 単語表示
 │   │   │   └── ChoiceDisplay.tsx      # グループ表示
 │   │   └── types.ts                  # 型定義
-│   ├── one-to-one/
-│   │   ├── index.ts                  # 問題タイプ登録エントリ
-│   │   ├── oneToOneQuestion.ts       # 問題生成・正解判定ロジック
-│   │   ├── components/
-│   │   │   ├── QuestionDisplay.tsx    # アイテム配置表示
-│   │   │   └── ChoiceDisplay.tsx      # 回答ボタン表示
-│   │   └── types.ts                  # 型定義
-│   └── odd-one-out/
-│       ├── index.ts                  # 問題タイプ登録エントリ
-│       ├── oddOneOutQuestion.ts      # 問題生成・正解判定ロジック
+│   └── one-to-one/
+│       ├── index.ts                  # 1対1対応登録エントリ
+│       ├── oneToOneQuestion.ts       # 問題生成・正解判定ロジック
 │       ├── components/
-│       │   ├── OddOneOutScreen.tsx    # 専用画面（グリッドタップ）
-│       │   ├── QuestionDisplay.tsx    # グリッド表示
-│       │   └── ChoiceDisplay.tsx      # ダミー
+│       │   ├── QuestionDisplay.tsx    # アイテム配置表示
+│       │   └── ChoiceDisplay.tsx      # 回答ボタン表示
 │       └── types.ts                  # 型定義
 └── styles/
     └── global.css                    # グローバルスタイル
@@ -399,6 +538,8 @@ interface QuestionType<TQuestionData = unknown, TChoiceData = unknown> {
   icon: string | React.ComponentType;
   /** 問題を生成する関数 */
   generateQuestion: () => Question<TQuestionData, TChoiceData>;
+  /** 登録済みの全問題を返す関数（固定問題プールがある場合） */
+  getAllQuestions?: () => Question<TQuestionData, TChoiceData>[];
   /** 問題表示コンポーネント */
   QuestionDisplay: React.ComponentType<{ data: TQuestionData }>;
   /** 選択肢表示コンポーネント */
@@ -415,6 +556,66 @@ interface QuestionType<TQuestionData = unknown, TChoiceData = unknown> {
   ) => boolean;
 }
 ```
+
+#### `getAllQuestions` オプショナルメソッド
+
+固定問題プールを持つ問題タイプは `getAllQuestions` メソッドを実装する。このメソッドが存在する場合:
+- `QuestionListScreen` / `ThemeScreen` で全問題をプレビュー付きで一覧表示する
+- ユーザーは任意の問題を選んで挑戦できる
+- `generateQuestion` はプールからランダムに1問を返す
+
+`getAllQuestions` が未定義の場合:
+- `QuestionListScreen` / `ThemeScreen` ではランダム生成した問題を一定数（20問）表示する
+- 毎回異なる問題が生成される
+
+### カテゴリデータ定義
+
+```typescript
+// framework/categoryData.ts
+
+/** 単元定義 */
+interface UnitDef {
+  id: string;
+  name: string;
+  icon: string;
+  /** 実装済みの問題タイプIDと一致すれば遷移可能 */
+  implemented: boolean;
+  /** サブグループ名（同じ名前の単元はグループ化される） */
+  group?: string;
+  /** グループ内のサブラベル（基本/応用など） */
+  subLabel?: string;
+}
+
+/** カテゴリ定義 */
+interface CategoryDef {
+  id: string;
+  title: string;
+  color: string;
+  implementedGradients: Record<string, string>;
+  unimplementedGradient: string;
+  unimplementedTextColor: string;
+  units: UnitDef[];
+}
+
+/** タブ定義（テーマ画面で使用） */
+interface TabDef {
+  label: string;
+  units: UnitDef[];
+  color: string;
+  gradient: string;
+}
+
+/** カテゴリ一覧定数 */
+const CATEGORIES: CategoryDef[];
+
+/** カテゴリIDからカテゴリ定義を取得する */
+function getCategoryById(id: string): CategoryDef | undefined;
+
+/** カテゴリの実装済み単元からタブ定義を生成する */
+function buildTabsForCategory(category: CategoryDef): TabDef[];
+```
+
+`categoryData.ts` はカテゴリ・単元の定義データを一元管理するファイルである。`HomeScreen` と `ThemeScreen` の両方で共有され、問題タイプの追加時にはこのファイルに単元定義を追加するだけで画面に反映される。
 
 ### 問題タイプレジストリ
 
@@ -448,48 +649,30 @@ export const registry = new QuestionTypeRegistry();
 
 /** 日別の学習記録 */
 interface DailyRecord {
-  /** 日付 (YYYY-MM-DD) */
-  date: string;
-  /** その日の問題数 */
+  date: string;           // YYYY-MM-DD
   totalQuestions: number;
-  /** その日の正解数 */
   correctAnswers: number;
 }
 
 interface ProgressData {
-  /** 問題タイプごとの進捗 */
   byType: Record<QuestionTypeId, TypeProgress>;
-  /** 最終更新日時 */
   lastUpdated: string;
-  /** 学習開始日時 (ISO string) — 初回回答時に自動記録 */
   startedAt?: string;
-  /** 日別の学習記録 */
   dailyRecords?: DailyRecord[];
 }
 
 interface TypeProgress {
-  /** 累計問題数 */
   totalQuestions: number;
-  /** 累計正答数 */
   correctAnswers: number;
 }
 
 class StorageService {
   private readonly STORAGE_KEY = 'exam-app-progress';
 
-  /** 進捗データを読み込む */
   loadProgress(): ProgressData;
-
-  /** 進捗データを保存する */
   saveProgress(data: ProgressData): boolean;
-
-  /** 回答結果を記録する（問題タイプID、正解かどうか） */
   recordAnswer(typeId: QuestionTypeId, isCorrect: boolean): boolean;
-
-  /** 全体の累計を計算する */
   getTotalProgress(data: ProgressData): TypeProgress;
-
-  /** 進捗データをリセットする */
   resetProgress(): boolean;
 }
 
@@ -502,52 +685,16 @@ export const storageService = new StorageService();
 // storage/profileService.ts
 
 interface ProfileData {
-  /** 表示名 */
   name: string;
-  /** アバター画像（Base64 Data URL） */
   avatarUrl: string | null;
 }
 
-/** プロフィールを読み込む */
 function loadProfile(): ProfileData;
-
-/** プロフィールを保存する */
 function saveProfile(data: ProfileData): boolean;
-
-/** 画像ファイルをBase64 Data URLに変換（最大200x200にリサイズ） */
 function fileToDataUrl(file: File, maxSize?: number): Promise<string>;
 ```
 
 ### フレームワークコンポーネント
-
-#### 問題画面のレイアウト構成
-
-```mermaid
-graph TB
-    subgraph QuestionScreenLayout["問題画面レイアウト"]
-        direction TB
-        Nav["🔙 ナビゲーションバー<br/>「もどる」ボタン"]
-        
-        subgraph QuestionArea["問題表示エリア（画面上部）"]
-            QDisplay["問題タイプ固有の<br/>問題表示コンポーネント<br/>（例: 2×2グリッド）"]
-        end
-        
-        subgraph InstructionArea["指示テキストエリア（中央）"]
-            Instruction["ひらがなの指示テキスト<br/>+ 矢印アイコン<br/>（例: みぎに90ど...）"]
-        end
-        
-        subgraph ChoiceArea["選択肢エリア（画面下部）"]
-            C1["選択肢1"] 
-            C2["選択肢2"]
-            C3["選択肢3"] 
-            C4["選択肢4"]
-        end
-        
-        Nav --> QuestionArea
-        QuestionArea --> InstructionArea
-        InstructionArea --> ChoiceArea
-    end
-```
 
 #### HomeScreen
 
@@ -556,14 +703,50 @@ graph TB
 
 /**
  * ホーム画面コンポーネント
- * - カテゴリ別（図形・記憶・数量/推理・運筆）に単元を一覧表示
- * - 実装済み単元はカラフルなグラデーションカードで表示（タップで問題画面に遷移）
- * - 未実装単元は「準備中」バッジ付きの薄いカードで表示（タップ不可）
- * - ヘッダーにプロフィールアバターを表示
+ * - CATEGORIES定数からカテゴリカードを2列グリッドで表示
+ * - 実装済みカテゴリはカラフルなグラデーションカード（タップで /theme/:id に遷移）
+ * - 未実装カテゴリは「準備中」バッジ付きの薄いカード（タップ不可）
  * - 「ランダム10問」カードで全問題タイプからランダム出題
+ * - ヘッダーにプロフィールアバターを表示
  * - 画面下部にタブバーナビゲーション
  */
 const HomeScreen: React.FC;
+```
+
+#### ThemeScreen
+
+```typescript
+// framework/components/ThemeScreen.tsx
+
+/**
+ * テーマ画面コンポーネント（カテゴリ別）
+ * - URLパラメータ :themeId からカテゴリを特定
+ * - buildTabsForCategory() でタブ定義を生成
+ * - 手帳風タブUI（NotebookTabs）でグループを切り替え
+ * - グループ内にサブタイプがある場合はサブタブ（基本/応用等）を表示
+ * - 問題プレビューを2列グリッドで表示（QuestionDisplay を scale(0.65) で縮小表示）
+ * - getAllQuestions がある場合は全問表示、ない場合は20問生成
+ * - 10問超の場合はページング表示
+ * - 問題カードタップで /question/:typeId に遷移（selectedQuestion を state で渡す）
+ */
+const ThemeScreen: React.FC;
+```
+
+#### QuestionListScreen
+
+```typescript
+// framework/components/QuestionListScreen.tsx
+
+/**
+ * 問題一覧画面コンポーネント
+ * - URLパラメータ :typeId から問題タイプを特定
+ * - getAllQuestions() がある場合は全問表示
+ * - ない場合は GENERATED_COUNT (20) 問をランダム生成して表示
+ * - 問題プレビューを2列グリッドで表示
+ * - 専用画面タイプ（seesaw, water-volume等）の場合は専用画面に遷移
+ * - それ以外は共通QuestionScreenに selectedQuestion を state で渡して遷移
+ */
+const QuestionListScreen: React.FC;
 ```
 
 #### RandomQuizScreen
@@ -573,15 +756,49 @@ const HomeScreen: React.FC;
 
 /**
  * ランダムクイズ画面コンポーネント
- * - 登録済み全問題タイプからランダムに10問を生成
- * - 進捗バー（現在の問題番号/10）を表示
- * - 各問題で問題タイプ固有のQuestionDisplay/ChoiceDisplayを描画
- * - 回答後にFeedbackOverlayを表示
- * - 10問完了後に結果画面を表示（正答率、メッセージ、リトライ/ホームボタン）
- * - 結果メッセージ: 80%以上→🎉、60%以上→😊、それ以下→👏
+ * - 登録済み全問題タイプからランダムに10個のtypeIdを選択
+ * - sessionStorage でキュー（typeIds配列）と進捗（currentIndex）を管理
+ * - マウント時に未完了の問題があれば自動的に /question/:typeId に遷移
+ *   （randomMode: true, randomCurrent, randomTotal を state で渡す）
+ * - 個別画面で回答後「つぎのもんだいへ」→ /random に戻る → 次の問題に自動遷移
+ * - 10問完了後に結果画面を表示（「もう一回」/「ホームにもどる」）
  */
 const RandomQuizScreen: React.FC;
 ```
+
+#### QuestionScreen
+
+```typescript
+// framework/components/QuestionScreen.tsx
+
+/**
+ * 問題画面コンポーネント（共通4択フレームワーク）
+ * - 3領域レイアウト: 問題表示エリア / 指示テキスト / 選択肢エリア
+ * - 問題タイプのQuestionDisplay/ChoiceDisplayを動的に描画
+ * - useQuestionFlow フックで回答処理とフィードバック表示を管理
+ * - location.state.selectedQuestion がある場合はその問題を表示
+ * - randomMode の場合は回答後に /random に戻る
+ */
+const QuestionScreen: React.FC;
+```
+
+#### 専用画面パターン
+
+以下の問題タイプは共通4択UIではなく、専用画面（カスタムUI）を使用する:
+
+| 問題タイプ | 専用画面 | 回答方式 |
+|-----------|---------|---------|
+| seesaw | SeesawScreen | 3つのアイテムに○/×マークをつける |
+| water-volume | WaterVolumeScreen | 複数アイテムに○/×マークをつける |
+| compare-length | CompareLengthScreen | 複数の線に○/×マークをつける |
+| compare-spring | CompareSpringScreen | 複数のばねに◎/△/×マークをつける |
+| area-compare | AreaCompareScreen | 複数のグリッドに○/×マークをつける |
+
+専用画面の共通特徴:
+- 固定問題プール（`getAllQuestions` を実装）
+- マーク方式の回答UI（4択ではない）
+- 問題固有のビジュアル表示（SVG/Canvas）
+- App.tsx で固定ルート `/question/:typeId` として定義（`:typeId` のワイルドカードより前に配置）
 
 #### ProfileScreen
 
@@ -590,7 +807,7 @@ const RandomQuizScreen: React.FC;
 
 /**
  * プロフィール画面コンポーネント
- * - アバター画像の設定・変更・削除（カメラアイコンで操作）
+ * - アバター画像の設定・変更・削除
  * - 名前の設定・編集（インライン編集、最大20文字）
  * - 学習統計の表示（累計問題数、正答数、正答率）
  * - 画面下部にタブバーナビゲーション
@@ -607,8 +824,7 @@ const ProfileScreen: React.FC;
  * タブバーナビゲーションコンポーネント
  * - 画面下部に固定表示（sticky）
  * - 3つのタブ: ホーム（🏠）、きろく（📊）、プロフィール（👤）
- * - 現在のルートに応じてアクティブ状態を表示（紫色ハイライト）
- * - aria-current属性によるアクセシビリティ対応
+ * - 現在のルートに応じてアクティブ状態を表示
  */
 const TabBar: React.FC;
 ```
@@ -620,34 +836,16 @@ const TabBar: React.FC;
 
 /**
  * 履歴画面コンポーネント
- * - 全体サマリー（「トータル」ラベル付き、問題数、正解数、正解率、★評価）
- * - 学習開始日の表示（startedAt がある場合のみ）
+ * - 全体サマリー（問題数、正解数、正解率、★評価）
+ * - 学習開始日の表示
  * - 正解率の円グラフ（recharts PieChart）
  * - 分野別の棒グラフ（recharts BarChart）
- * - 日別の学習グラフ（recharts LineChart、dailyRecords がある場合のみ）
+ * - 日別の学習グラフ（recharts LineChart）
  * - 分野別の詳細カード
  * - 記録リセットボタン（確認ダイアログ付き）
  * - 画面下部にタブバーナビゲーション
  */
 const HistoryScreen: React.FC;
-```
-
-#### QuestionScreen
-
-```typescript
-// framework/components/QuestionScreen.tsx
-
-interface QuestionScreenProps {
-  // React Router経由でquestionTypeIdを取得
-}
-
-/**
- * 問題画面コンポーネント（共通フレームワーク）
- * - 3領域レイアウト: 問題表示エリア / 指示テキスト / 選択肢エリア
- * - 問題タイプのコンポーネントを動的に描画
- * - 回答処理とフィードバック表示を管理
- */
-const QuestionScreen: React.FC<QuestionScreenProps>;
 ```
 
 #### FeedbackOverlay
@@ -656,24 +854,76 @@ const QuestionScreen: React.FC<QuestionScreenProps>;
 // framework/components/FeedbackOverlay.tsx
 
 interface FeedbackOverlayProps {
-  /** 正解かどうか */
   isCorrect: boolean;
-  /** 表示中かどうか */
   visible: boolean;
-  /** 「つぎのもんだいへ」ボタンのコールバック */
   onNext: () => void;
 }
 
 /**
  * 結果フィードバックオーバーレイ
- * - 正解: 緑色の○を拡大アニメーション（0.3秒以上）で表示
+ * - 正解: 緑色の○を拡大アニメーション
  * - 不正解: 赤色の✕を穏やかに表示
  * - 「つぎのもんだいへ」ボタンを表示
  */
 const FeedbackOverlay: React.FC<FeedbackOverlayProps>;
 ```
 
-### 回転図形問題プラグイン
+### 問題画面のレイアウト構成
+
+```mermaid
+graph TB
+    subgraph QuestionScreenLayout["問題画面レイアウト（共通4択）"]
+        direction TB
+        Nav["🔙 ナビゲーションバー<br/>「もどる」ボタン"]
+        
+        subgraph QuestionArea["問題表示エリア（画面上部）"]
+            QDisplay["問題タイプ固有の<br/>QuestionDisplay コンポーネント"]
+        end
+        
+        subgraph InstructionArea["指示テキストエリア（中央）"]
+            Instruction["ひらがなの指示テキスト"]
+        end
+        
+        subgraph ChoiceArea["選択肢エリア（画面下部）"]
+            C1["選択肢1"] 
+            C2["選択肢2"]
+            C3["選択肢3"] 
+            C4["選択肢4"]
+        end
+        
+        Nav --> QuestionArea
+        QuestionArea --> InstructionArea
+        InstructionArea --> ChoiceArea
+    end
+```
+
+```mermaid
+graph TB
+    subgraph CustomScreenLayout["専用画面レイアウト（比較系）"]
+        direction TB
+        Nav2["🔙 ナビゲーションバー"]
+        
+        subgraph VisualArea["ビジュアル表示エリア"]
+            Visual["問題固有のビジュアル<br/>（シーソーSVG/水量図/線/ばね/グリッド）"]
+        end
+        
+        subgraph MarkArea["マーク回答エリア"]
+            Items["アイテム一覧"]
+            Marks["○/×/◎/△ マーク選択"]
+        end
+        
+        subgraph ActionArea["アクションエリア"]
+            Submit["こたえあわせボタン"]
+        end
+        
+        Nav2 --> VisualArea
+        VisualArea --> MarkArea
+        MarkArea --> ActionArea
+    end
+```
+
+
+### 回転図形問題プラグイン（基本）
 
 #### Low-Level: 回転ロジック
 
@@ -688,41 +938,24 @@ type RotationDirection = 'right1' | 'left1' | 'right2' | 'left2';
 
 /** 回転図形問題の問題データ */
 interface RotationQuestionData {
-  /** 元のグリッドパターン */
   originalGrid: Grid;
-  /** 回転方向 */
   direction: RotationDirection;
 }
 
 /** 回転図形問題の選択肢データ */
 type RotationChoiceData = Grid;
 
-/** グリッドを右90度回転する */
 function rotateRight90(grid: Grid): Grid;
-
-/** グリッドを左90度回転する */
 function rotateLeft90(grid: Grid): Grid;
-
-/** グリッドを180度回転する */
 function rotate180(grid: Grid): Grid;
-
-/** 指定方向にグリッドを回転する */
 function rotateGrid(grid: Grid, direction: RotationDirection): Grid;
-
-/** 有効なランダムグリッドを生成する（1つ以上塗り＆1つ以上空白） */
 function generateRandomGrid(): Grid;
-
-/** 不正解の選択肢を生成する（正解・他の不正解と重複しない） */
 function generateDistractors(correctGrid: Grid, count: number): Grid[];
-
-/** 2つのグリッドが同一か判定する */
 function gridsEqual(a: Grid, b: Grid): boolean;
-
-/** 問題を生成する */
 function generateRotationQuestion(): Question<RotationQuestionData, RotationChoiceData>;
 ```
 
-#### Low-Level: 回転アルゴリズム
+#### 回転アルゴリズム
 
 2×2グリッドのインデックスマッピング:
 
@@ -732,177 +965,183 @@ function generateRotationQuestion(): Question<RotationQuestionData, RotationChoi
   [0] [1]
   [2] [3]
 
-右90度回転: [2, 0, 3, 1]  （列を下から上に読む）
-左90度回転: [1, 3, 0, 2]  （列を上から下に読む）
-180度回転:  [3, 2, 1, 0]  （逆順）
+右90度回転: [2, 0, 3, 1]
+左90度回転: [1, 3, 0, 2]
+180度回転:  [3, 2, 1, 0]
 ```
 
 ```mermaid
 graph LR
     subgraph Original["元のグリッド"]
-        direction TB
         O["[0] [1]<br/>[2] [3]"]
     end
     subgraph Right90["右90度回転"]
-        direction TB
         R["[2] [0]<br/>[3] [1]"]
     end
     subgraph Left90["左90度回転"]
-        direction TB
         L["[1] [3]<br/>[0] [2]"]
     end
     subgraph Rot180["180度回転"]
-        direction TB
         R2["[3] [2]<br/>[1] [0]"]
     end
 
     Original -- "右90°" --> Right90
     Original -- "左90°" --> Left90
     Original -- "180°" --> Rot180
-    Right90 -- "右90°×3" --> Original
-    Left90 -- "左90°×3" --> Original
 ```
+
+### 回転図形問題プラグイン（応用: symbol-rotation）
 
 ```typescript
-function rotateRight90(grid: Grid): Grid {
-  return [grid[2], grid[0], grid[3], grid[1]];
+// plugins/rotation/types.ts (追加部分)
+
+/** シンボルの種類 */
+type SymbolType = 'circle' | 'triangle' | 'square' | 'arrow' | 'heart' | 'diamond' | 'club' | 'spade' | ...;
+
+/** 2×2グリッドのシンボル配置 */
+type SymbolGrid = [SymbolType | null, SymbolType | null, SymbolType | null, SymbolType | null];
+
+/** シンボル回転問題の問題データ */
+interface SymbolRotationQuestionData {
+  originalGrid: SymbolGrid;
+  direction: RotationDirection;
 }
 
-function rotateLeft90(grid: Grid): Grid {
-  return [grid[1], grid[3], grid[0], grid[2]];
-}
-
-function rotate180(grid: Grid): Grid {
-  return [grid[3], grid[2], grid[1], grid[0]];
-}
+type SymbolRotationChoiceData = SymbolGrid;
 ```
 
-#### 不正解選択肢の生成戦略
+- 固定32問の問題プール（`getAllQuestions` を実装）
+- 2×2グリッドにシンボル（丸、三角、四角、矢印、トランプマーク等）を配置
+- 回転ロジックは基本と同じ（位置の入れ替え）
 
-不正解の選択肢は以下の方法で生成する:
-
-1. 正解以外の回転結果（他の回転方向の結果）を候補に含める
-2. ランダムに有効なグリッドを生成する
-3. 正解および既存の不正解と重複しないことを確認する
-4. 3つの不正解が揃うまで繰り返す
-
-### 重ね図形問題プラグイン
+### 重ね図形問題プラグイン（基本: overlay）
 
 ```typescript
 // plugins/overlay/types.ts
 
-/** セルの値（丸、バツ、空） */
 type CellValue = 'circle' | 'cross' | 'empty';
 
-/** 重ね図形のグリッド（左列2セル + 右列2セル） */
 interface OverlayGrid {
   left: [CellValue, CellValue];
   right: [CellValue, CellValue];
 }
 
-/** 重ね結果（2セル） */
 type OverlayResult = [CellValue, CellValue];
 
-/** 重ね図形問題の問題データ */
 interface OverlayQuestionData {
   grid: OverlayGrid;
 }
 
-/** 重ね図形問題の選択肢データ */
 type OverlayChoiceData = OverlayResult;
 ```
 
-#### 重ね合わせルール
-
+重ね合わせルール:
 - `cross + circle = empty`（打ち消し合う）
 - `circle + cross = empty`（打ち消し合う）
 - 同じ記号同士 = そのまま残る
 - `empty + 何か = 何か`
-- `何か + empty = 何か`
 
-指示テキスト: 「パタンと右におると\nどうなりますか？」
+### 重ね図形問題プラグイン（応用: overlay-advanced）
+
+- 3×3グリッドの○重なり問題
+- AND演算: 両方のグリッドで○がある位置のみ結果に○が残る
+- 固定8問の問題プール
+
+### 重ね図形問題プラグイン（図形: overlay-shape）
+
+- 白黒パターン（三角形・四角形のSVGポリゴン）を重ねる問題
+- 固定4問の問題プール
+- SVGで図形を描画
+
+### 重ね図形問題プラグイン（線: line-overlay）
+
+- 4×4ドットグリッド上の線図形を2つ重ねた結果を答える
+- ランダム生成（`getAllQuestions` なし）
+- DotGrid コンポーネントでドットと線を描画
+
+### 折り重ね（相殺）問題プラグイン（overlay-cancel）
+
+- グリッドを折り重ね、○と×が相殺するルール付き4択問題
+- ランダム生成
+- 4択（3択から修正済み）
 
 ### 図形パズル問題プラグイン
 
 ```typescript
 // plugins/puzzle/types.ts
 
-/** 2×2グリッド（パズル用） */
 type PuzzleGrid = [boolean, boolean, boolean, boolean];
 
-/** ピースの組み合わせ */
 interface PiecePair {
   pieceA: PuzzleGrid;
   pieceB: PuzzleGrid;
 }
 
-/** 図形パズル問題の問題データ */
 interface PuzzleQuestionData {
   targetGrid: PuzzleGrid;
 }
 
-/** 図形パズル問題の選択肢データ */
 type PuzzleChoiceData = PiecePair;
 ```
 
-#### パズルロジック
-
+パズルロジック:
 - お手本グリッド: 2〜3マスが塗りつぶし
-- ピース分割: お手本を2つの非重複ピースに分割（各ピースに1つ以上の塗りつぶし）
-- 合成: OR演算（どちらかのピースで塗りつぶし → 結果も塗りつぶし）
-- 指示テキスト: 「2つのピースを合わせると\nお手本になるのはどれ？」
+- ピース分割: お手本を2つの非重複ピースに分割
+- 合成: OR演算
 
-### 比較（重さ：シーソー）問題プラグイン
+### 比較（重さ: seesaw）問題プラグイン
 
 ```typescript
 // plugins/seesaw/types.ts
 
-/** アイテム（シーソーに乗るもの） */
 interface SeesawItem {
-  emoji: string;       // 表示用の絵文字
-  name: string;        // アイテム名（ひらがな）
-  weight: number;      // 重さ（内部比較用、大きいほど重い）
+  emoji: string;
+  name: string;
+  weight: number;
 }
 
-/** シーソーの状態 */
 interface SeesawState {
-  left: SeesawItem;    // 左側のアイテム
-  right: SeesawItem;   // 右側のアイテム
-  tilt: 'left' | 'right' | 'balanced';  // 傾き方向
+  left: SeesawItem;
+  right: SeesawItem;
+  tilt: 'left' | 'right' | 'balanced';
 }
 
-/** シーソー問題の問題データ */
 interface SeesawQuestionData {
-  seesaws: [SeesawState, SeesawState];           // シーソー2つ
-  items: [SeesawItem, SeesawItem, SeesawItem];   // 比較対象の全アイテム（3つ）
+  seesaws: [SeesawState, SeesawState];
+  items: [SeesawItem, SeesawItem, SeesawItem];
 }
-
-/** シーソー問題の選択肢データ */
-interface SeesawChoiceData {
-  heaviestIndex: number;  // 一番重いアイテムのインデックス
-  lightestIndex: number;  // 一番軽いアイテムのインデックス
-}
-
-/** ユーザーの回答マーク */
-type MarkType = 'circle' | 'cross' | null;
 ```
 
-#### シーソー問題の特徴
+- 専用画面（SeesawScreen）: 3つのアイテムに○（一番重い）/×（一番軽い）をつける
+- 固定4問の問題プール
+- シーソーはSVGで描画
 
-- **回答方式**: 既存の4択UIとは異なり、3つのアイテムそれぞれに○（一番重い）/×（一番軽い）をつける方式
-- **問題データ**: 固定問題セット（画像から抽出した4問）をランダムに出題
-- **表示**: シーソーはSVGで描画、アイテムは絵文字で表現
-- **判定**: 一番重いものに○、一番軽いものに×が正しくつけられたら正解
-- **指示テキスト**: 「いちばんおもいものには○、いちばんかるいものには×をつけましょう」
+### 比較（水量: water-volume）問題プラグイン
 
-#### 固定問題セット
+- 専用画面（WaterVolumeScreen）
+- コップ/水槽の水量を比較する○×マーク問題
+- 固定10問の問題プール
 
-| 問題 | アイテム | 関係 |
-|------|---------|------|
-| (1) | 🐟魚 > 🍆なす > 🥒きゅうり | 魚が一番重い、きゅうりが一番軽い |
-| (2) | 🐟魚 > 🍌バナナ > 🍆なす | 魚が一番重い、なすが一番軽い |
-| (3) | 🍉スイカ > 🍎りんご > 🍌バナナ | スイカが一番重い、バナナが一番軽い |
-| (4) | 🐌かたつむり > 🪲かぶとむし > 🦗バッタ | かたつむりが一番重い、バッタが一番軽い |
+### 比較（長さ: compare-length）問題プラグイン
+
+- 専用画面（CompareLengthScreen）
+- 線の長さを比較する○×マーク問題
+- 固定4問の問題プール
+- LineDisplay コンポーネントで線を描画
+
+### 比較（ばね: compare-spring）問題プラグイン
+
+- 専用画面（CompareSpringScreen）
+- ばねの伸びで重さを比較する◎△×マーク問題
+- 固定4問の問題プール
+- SpringDisplay コンポーネントでばねを描画
+
+### 比較（広さ: area-compare）問題プラグイン
+
+- 専用画面（AreaCompareScreen）
+- グリッド上の黒い部分の広さを比較する○×マーク問題
+- 固定10問の問題プール
+- AreaGridDisplay コンポーネントでグリッドを描画
 
 ---
 
@@ -914,18 +1153,23 @@ type MarkType = 'circle' | 'cross' | null;
 {
   "exam-app-progress": {
     "byType": {
-      "rotation": {
-        "totalQuestions": 15,
-        "correctAnswers": 10
-      },
-      "overlay": {
-        "totalQuestions": 8,
-        "correctAnswers": 5
-      },
-      "puzzle": {
-        "totalQuestions": 12,
-        "correctAnswers": 9
-      }
+      "rotation": { "totalQuestions": 15, "correctAnswers": 10 },
+      "symbol-rotation": { "totalQuestions": 8, "correctAnswers": 6 },
+      "overlay": { "totalQuestions": 8, "correctAnswers": 5 },
+      "overlay-advanced": { "totalQuestions": 4, "correctAnswers": 3 },
+      "overlay-shape": { "totalQuestions": 2, "correctAnswers": 2 },
+      "line-overlay": { "totalQuestions": 5, "correctAnswers": 3 },
+      "puzzle": { "totalQuestions": 12, "correctAnswers": 9 },
+      "overlay-cancel": { "totalQuestions": 6, "correctAnswers": 4 },
+      "odd-one-out": { "totalQuestions": 10, "correctAnswers": 7 },
+      "seesaw": { "totalQuestions": 4, "correctAnswers": 3 },
+      "water-volume": { "totalQuestions": 10, "correctAnswers": 8 },
+      "compare-length": { "totalQuestions": 4, "correctAnswers": 4 },
+      "compare-spring": { "totalQuestions": 4, "correctAnswers": 2 },
+      "area-compare": { "totalQuestions": 10, "correctAnswers": 7 },
+      "shape-karta": { "totalQuestions": 5, "correctAnswers": 4 },
+      "syllable-count": { "totalQuestions": 8, "correctAnswers": 6 },
+      "one-to-one": { "totalQuestions": 6, "correctAnswers": 5 }
     },
     "lastUpdated": "2024-01-15T10:30:00.000Z",
     "startedAt": "2024-01-10T08:00:00.000Z",
@@ -949,23 +1193,12 @@ type MarkType = 'circle' | 'cross' | null;
 }
 ```
 
-### 問題データ（ランタイム）
+### ランダムクイズ進捗（sessionStorage）
 
-```typescript
-// 回転図形問題の生成例
+```json
 {
-  questionData: {
-    originalGrid: [true, false, true, false],  // ■□■□
-    direction: 'right1'
-  },
-  choices: [
-    [false, true, false, true],   // 不正解1
-    [true, true, false, false],   // 正解（右90度回転結果）
-    [false, false, true, true],   // 不正解2
-    [true, false, false, true]    // 不正解3
-  ],
-  correctIndex: 1,
-  instructionText: '右に1かいまわすと\nどれになりますか？'
+  "randomQuizTypeIds": ["rotation", "seesaw", "overlay", "puzzle", "symbol-rotation", "water-volume", "shape-karta", "overlay-cancel", "one-to-one", "area-compare"],
+  "randomQuizIndex": "3"
 }
 ```
 
@@ -973,17 +1206,12 @@ type MarkType = 'circle' | 'cross' | null;
 
 ```typescript
 /** 問題画面の状態 */
-interface QuestionScreenState {
-  /** 現在の問題タイプ */
-  questionType: QuestionType;
-  /** 現在の問題 */
+interface QuestionFlowState {
   currentQuestion: Question;
-  /** 選択された選択肢のインデックス（未選択はnull） */
   selectedIndex: ChoiceIndex | null;
-  /** 回答済みかどうか */
   isAnswered: boolean;
-  /** 正解かどうか（回答後に設定） */
   isCorrect: boolean | null;
+  phase: 'answering' | 'judging' | 'feedback';
 }
 ```
 
@@ -992,19 +1220,29 @@ interface QuestionScreenState {
 ```mermaid
 stateDiagram-v2
     [*] --> ホーム画面
-    ホーム画面 --> 問題表示中: 単元カード選択
+    ホーム画面 --> テーマ画面: カテゴリカード選択
+    テーマ画面 --> 問題表示中: 問題カード選択（共通4択）
+    テーマ画面 --> 専用画面: 問題カード選択（専用画面タイプ）
     ホーム画面 --> ランダムクイズ: ランダム10問タップ
     ホーム画面 --> プロフィール: タブバー
+    ホーム画面 --> 履歴画面: タブバー
     プロフィール --> ホーム画面: タブバー
-    問題表示中 --> 回答判定中: 選択肢タップ
-    回答判定中 --> フィードバック表示中: 判定完了
+    履歴画面 --> ホーム画面: タブバー
+    
+    問題表示中 --> フィードバック表示中: 選択肢タップ→判定
     フィードバック表示中 --> 問題表示中: 「つぎのもんだいへ」タップ
-    フィードバック表示中 --> ホーム画面: 「もどる」タップ
-    問題表示中 --> ホーム画面: 「もどる」タップ
-    ランダムクイズ --> ランダム回答判定: 選択肢タップ
-    ランダム回答判定 --> ランダムフィードバック: 判定完了
-    ランダムフィードバック --> ランダムクイズ: 「つぎのもんだいへ」タップ
-    ランダムフィードバック --> ランダム結果: 10問完了
+    フィードバック表示中 --> テーマ画面: 「もどる」タップ
+    問題表示中 --> テーマ画面: 「もどる」タップ
+    
+    専用画面 --> フィードバック: こたえあわせ→判定
+    フィードバック --> 専用画面: 「つぎのもんだいへ」タップ
+    フィードバック --> テーマ画面: 「もどる」タップ
+    
+    ランダムクイズ --> 問題表示中: 自動遷移（共通4択タイプ）
+    ランダムクイズ --> 専用画面: 自動遷移（専用画面タイプ）
+    問題表示中 --> ランダムクイズ: randomMode時に回答後戻る
+    専用画面 --> ランダムクイズ: randomMode時に回答後戻る
+    ランダムクイズ --> ランダム結果: 10問完了
     ランダム結果 --> ランダムクイズ: もう一回
     ランダム結果 --> ホーム画面: ホームに戻る
 ```
@@ -1013,7 +1251,7 @@ stateDiagram-v2
 
 ## 正当性プロパティ（Correctness Properties）
 
-*プロパティとは、システムのすべての有効な実行において成り立つべき特性や振る舞いのことである。人間が読める仕様と機械的に検証可能な正当性保証の橋渡しとなる形式的な記述である。*
+*プロパティとは、システムのすべての有効な実行において成り立つべき特性や振る舞いのことである。*
 
 ### Property 1: レジストリの登録・取得ラウンドトリップ
 
@@ -1083,7 +1321,7 @@ stateDiagram-v2
 
 | エラー状況 | 対応方針 | 根拠 |
 |-----------|---------|------|
-| localStorage未対応ブラウザ | 進捗保存なしで動作継続。問題出題は正常に行う | 要件5.5 |
+| localStorage未対応ブラウザ | 進捗保存なしで動作継続 | 要件5.5 |
 | localStorage容量超過 | 保存失敗を無視し、問題出題を継続 | 要件5.5 |
 | localStorageデータ破損 | 初期状態にリセットして起動 | 要件5.4の拡張 |
 | JSON解析エラー | 初期状態にリセットして起動 | 堅牢性 |
@@ -1094,12 +1332,12 @@ stateDiagram-v2
 |-----------|---------|------|
 | 不正解選択肢の生成失敗（無限ループ防止） | 最大試行回数（100回）を設定し、超過時はランダムグリッドで埋める | 堅牢性 |
 | 未登録の問題タイプIDでのアクセス | ホーム画面にリダイレクト | 堅牢性 |
+| 存在しないカテゴリIDでのテーマ画面アクセス | ホーム画面にリダイレクト | 堅牢性 |
 
 ### エラーハンドリングの実装方針
 
 ```typescript
 // storage/storageService.ts
-
 loadProgress(): ProgressData {
   try {
     const raw = localStorage.getItem(this.STORAGE_KEY);
@@ -1118,8 +1356,7 @@ saveProgress(data: ProgressData): boolean {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
     return true;
   } catch {
-    // 要件5.5: エラーを表示せずに継続
-    return false;
+    return false;  // エラーを表示せずに継続
   }
 }
 ```
@@ -1130,10 +1367,11 @@ saveProgress(data: ProgressData): boolean {
 
 ### テストの全体方針
 
-本アプリケーションでは、**ユニットテスト**と**プロパティベーステスト**の二本柱でテストを行う。
+本アプリケーションでは、**ユニットテスト**、**プロパティベーステスト**、**E2Eテスト**の三本柱でテストを行う。
 
 - **ユニットテスト**: 具体的な例、エッジケース、UIインタラクションの検証
 - **プロパティベーステスト**: 普遍的な性質の検証（回転ロジック、データ永続化、問題生成）
+- **E2Eテスト**: Playwright によるブラウザ自動テスト（スモークテスト）
 
 ### テストツール
 
@@ -1142,15 +1380,11 @@ saveProgress(data: ProgressData): boolean {
 | Vitest | テストランナー |
 | React Testing Library | UIコンポーネントテスト |
 | fast-check | プロパティベーステスト |
+| Playwright | E2Eブラウザテスト |
 
 ### プロパティベーステスト
 
 プロパティベーステストは `fast-check` ライブラリを使用し、各テストは最低100回のイテレーションで実行する。
-
-各テストには以下のタグ形式でコメントを付与する:
-```
-// Feature: elementary-exam-app, Property {number}: {property_text}
-```
 
 #### 対象プロパティ一覧
 
@@ -1167,61 +1401,17 @@ saveProgress(data: ProgressData): boolean {
 | Property 9 | rotateRight90 / rotateLeft90 | 逆操作のラウンドトリップ |
 | Property 10 | rotate180 / rotateRight90 | 180度回転 = 右90度×2 |
 
-### ユニットテスト
-
-#### UIコンポーネントテスト（React Testing Library）
-
-| テスト対象 | テスト内容 | 対応要件 |
-|-----------|-----------|---------|
-| HomeScreen | 問題タイプ一覧の表示 | 2.1, 2.2 |
-| HomeScreen | 進捗サマリーの表示 | 2.3 |
-| HomeScreen | カードタップで問題画面に遷移 | 2.4 |
-| QuestionScreen | 3領域レイアウトの構成 | 3.1 |
-| QuestionScreen | 問題・選択肢コンポーネントの描画 | 3.2, 3.3 |
-| QuestionScreen | 指示テキストの表示 | 3.4 |
-| QuestionScreen | 選択肢タップで正解判定 | 3.5 |
-| FeedbackOverlay | 正解時の○表示 | 4.1 |
-| FeedbackOverlay | 不正解時の✕表示と正解ハイライト | 4.2, 4.3 |
-| FeedbackOverlay | 「つぎのもんだいへ」ボタン | 4.4, 4.6 |
-| FeedbackOverlay | フィードバック中の選択肢無効化 | 4.5 |
-| NavigationBar | 戻るボタンの表示と動作 | 2.5 |
-
-#### エッジケーステスト
-
-| テスト対象 | テスト内容 | 対応要件 |
-|-----------|-----------|---------|
-| StorageService | localStorage未対応時の動作 | 5.5 |
-| StorageService | データ未存在時の初期状態 | 5.4 |
-| StorageService | データ破損時のリカバリ | エラーハンドリング |
-
-#### アクセシビリティテスト
-
-| テスト対象 | テスト内容 | 対応要件 |
-|-----------|-----------|---------|
-| 全インタラクティブ要素 | タップ領域 ≥ 44×44px | 2.6, 8.4 |
-| GridDisplay | コントラスト比 ≥ 4.5:1 | 8.5 |
-| 全テキスト要素 | フォントサイズ ≥ 16px | 10.6 |
-
-### テストディレクトリ構成
+### E2Eテスト
 
 ```
-src/
-├── __tests__/
-│   ├── registry/
-│   │   └── questionTypeRegistry.test.ts
-│   ├── storage/
-│   │   └── storageService.test.ts
-│   ├── framework/
-│   │   ├── HomeScreen.test.tsx
-│   │   ├── QuestionScreen.test.tsx
-│   │   └── FeedbackOverlay.test.tsx
-│   └── plugins/
-│       └── rotation/
-│           ├── rotationQuestion.test.ts      # ユニットテスト
-│           └── rotationQuestion.property.test.ts  # プロパティテスト
-├── __tests__/properties/
-│   ├── registry.property.test.ts
-│   ├── storage.property.test.ts
-│   └── rotation.property.test.ts
+e2e/
+└── smoke.spec.ts    # スモークテスト（ホーム画面表示、基本遷移）
 ```
 
+### ステアリングファイル
+
+| ファイル | inclusion | 説明 |
+|---------|-----------|------|
+| `.kiro/steering/add-question-from-image.md` | auto | 画像から問題プラグインを追加するガイド |
+| `.kiro/steering/seesaw-plugin-pattern.md` | manual | シーソー問題の実装パターン |
+| `.kiro/steering/ui-verification.md` | auto | UI変更時のPlaywright確認ルール |

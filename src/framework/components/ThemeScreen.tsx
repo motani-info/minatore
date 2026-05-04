@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { Box, Container, Flex, SimpleGrid, Text, VStack, chakra } from '@chakra-ui/react';
 import { registry } from '../../registry/questionTypeRegistry';
 import { getCategoryById, buildTabsForCategory } from '../categoryData';
@@ -45,6 +45,7 @@ const TAB_COLORS = [
 
 export const ThemeScreen: React.FC = () => {
   const { themeId } = useParams<{ themeId: string }>();
+  const location = useLocation();
   const category = themeId ? getCategoryById(themeId) : undefined;
 
   if (!category) {
@@ -57,23 +58,39 @@ export const ThemeScreen: React.FC = () => {
     return <Navigate to="/" replace />;
   }
 
-  return <ThemeScreenInner category={category} tabs={tabs} />;
+  // HomeScreen からの初期タブ指定を受け取る
+  const state = location.state as { initialTab?: string; initialSubIndex?: number } | null;
+  let initialTabIndex = 0;
+  let initialSubIndex = 0;
+  if (state?.initialTab) {
+    const idx = tabs.findIndex((t) => t.label === state.initialTab);
+    if (idx >= 0) initialTabIndex = idx;
+  }
+  if (state?.initialSubIndex != null) {
+    initialSubIndex = state.initialSubIndex;
+  }
+
+  return <ThemeScreenInner category={category} tabs={tabs} initialTabIndex={initialTabIndex} initialSubIndex={initialSubIndex} />;
 };
 
 function ThemeScreenInner({
   category,
   tabs,
+  initialTabIndex,
+  initialSubIndex,
 }: {
   category: ReturnType<typeof getCategoryById> & {};
   tabs: TabDef[];
+  initialTabIndex: number;
+  initialSubIndex: number;
 }) {
   const navigate = useNavigate();
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const [activeTabIndex, setActiveTabIndex] = useState(initialTabIndex);
   const activeTab = tabs[activeTabIndex];
 
   // グループ内にサブタイプがある場合のサブタブ
   const hasSubTabs = activeTab.units.length > 1;
-  const [activeSubIndex, setActiveSubIndex] = useState(0);
+  const [activeSubIndex, setActiveSubIndex] = useState(initialSubIndex);
   const activeUnit = activeTab.units[Math.min(activeSubIndex, activeTab.units.length - 1)];
 
   // ページング

@@ -898,6 +898,133 @@ const additionalQuestions3: FixedQuestion[] = [
   q33, q34, q35, q36, q37, q38, q39, q40, q41,
 ];
 
+// ─── 追加問題4（回転図形プリント: 4まいめ） ───
+
+/**
+ * 問題㊷ 右1回転 — 矢印パターン（◁ ▷ ▽ ▲）
+ * 元: [黒三角←, 黒三角→; 黒三角↓, 黒三角↑]
+ * 右90度: 位置[2,0,3,1] + 向き右回転
+ * = [黒三角↓→右=→, 黒三角←→右=↑; 黒三角↑→右=→, 黒三角→→右=↓]
+ * 修正: ←→↑, →→↓, ↓→←... いや
+ * 右回転: ←→↑, →→↓, ↓→→... いや
+ * 右90度回転の向き: up→right, right→down, down→left, left→up
+ * ←(left)→up, →(right)→down, ↓(down)→left, ↑(up)→right
+ * 位置[2,0,3,1]: [↓,←,↑,→] → 向き回転 → [left, up, right, down]
+ * = [黒三角←, 黒三角↑; 黒三角→, 黒三角↓]
+ */
+const q42: FixedQuestion = {
+  originalGrid: [TB('left'), TB('right'), TB('down'), TB('up')],
+  direction: 'right1',
+  distractors: [
+    [TB('up'), TB('down'), TB('left'), TB('right')],
+    [TB('right'), TB('left'), TB('up'), TB('down')],
+    [TB('down'), TB('up'), TB('right'), TB('left')],
+  ],
+};
+
+/**
+ * 問題㊸ 左1回転 — 白三角と黒三角の混合
+ * 元: [白三角↓, 黒三角↓; 白三角→, 黒三角←]
+ * 左90度: 位置[1,3,0,2] + 向き左回転
+ * 左回転の向き: up→left, left→down, down→right, right→up
+ * 位置[1,3,0,2]: [黒三角↓, 黒三角←, 白三角↓, 白三角→]
+ * 向き左回転: [黒三角→, 黒三角↓, 白三角→, 白三角↑]
+ * = [黒三角→, 黒三角↓; 白三角→, 白三角↑]
+ */
+const q43: FixedQuestion = {
+  originalGrid: [TW('down'), TB('down'), TW('right'), TB('left')],
+  direction: 'left1',
+  distractors: [
+    [TW('up'), TB('up'), TW('left'), TB('right')],
+    [TB('right'), TW('right'), TB('up'), TW('up')],
+    [TB('down'), TW('down'), TB('left'), TW('left')],
+  ],
+};
+
+/**
+ * 問題㊹ 右1回転 — 白黒パターン（チェッカーボード風）
+ * 元: [黒四角, 空; 黒四角, 空]  左列が黒
+ * 右90度: 位置[2,0,3,1]
+ * = [黒四角, 黒四角; 空, 空]  上段が黒
+ */
+const q44: FixedQuestion = {
+  originalGrid: [SQ, E, SQ, E],
+  direction: 'right1',
+  distractors: [
+    [E, E, SQ, SQ],
+    [E, SQ, E, SQ],
+    [SQ, E, E, SQ],
+  ],
+};
+
+/**
+ * 問題㊺ 左1回転 — 白黒パターン（L字型）
+ * 元: [黒四角, 空; 黒四角, 黒四角]  L字型
+ * 左90度: 位置[1,3,0,2]
+ * = [空, 黒四角; 黒四角, 黒四角]
+ */
+const q45: FixedQuestion = {
+  originalGrid: [SQ, E, SQ, SQ],
+  direction: 'left1',
+  distractors: [
+    [SQ, SQ, E, SQ],
+    [SQ, SQ, E, E],
+    [SQ, SQ, SQ, E],
+  ],
+};
+
+/**
+ * 問題㊻ 右1回転 — 白黒パターン（コの字型）
+ * 元: [黒四角, 空; 空, 黒四角]  対角配置
+ * 右90度: 位置[2,0,3,1]
+ * = [空, 黒四角; 黒四角, 空]
+ */
+const q46: FixedQuestion = {
+  originalGrid: [SQ, E, E, SQ],
+  direction: 'right1',
+  distractors: [
+    [SQ, SQ, E, E],
+    [E, E, SQ, SQ],
+    [E, SQ, SQ, E],
+  ],
+};
+
+/**
+ * 問題㊼ 左1回転 — 白黒パターン（逆L字型）
+ * 元: [空, 黒四角; 空, 黒四角]  右列が黒
+ * 左90度: 位置[1,3,0,2]
+ * = [黒四角, 黒四角; 空, 空]  上段が黒
+ */
+const q47: FixedQuestion = {
+  originalGrid: [E, SQ, E, SQ],
+  direction: 'left1',
+  distractors: [
+    [E, E, SQ, SQ],
+    [SQ, E, SQ, E],
+    [E, SQ, SQ, E],
+  ],
+};
+
+/**
+ * 問題㊽ 右1回転 — 白黒パターン（T字型）
+ * 元: [黒四角, 黒四角; 空, 黒四角]  右上・左上・右下が黒
+ * 右90度: 位置[2,0,3,1]
+ * = [空, 黒四角; 黒四角, 黒四角]
+ */
+const q48: FixedQuestion = {
+  originalGrid: [SQ, SQ, E, SQ],
+  direction: 'right1',
+  distractors: [
+    [SQ, E, SQ, SQ],
+    [SQ, SQ, SQ, E],
+    [E, SQ, SQ, E],
+  ],
+};
+
+const additionalQuestions4: FixedQuestion[] = [
+  q42, q43, q44, q45, q46, q47, q48,
+];
+
 // ─── 固定問題プール ───
 
 const FIXED_QUESTIONS: FixedQuestion[] = [
@@ -916,6 +1043,7 @@ const FIXED_QUESTIONS: FixedQuestion[] = [
   ...additionalQuestions,
   ...additionalQuestions2,
   ...additionalQuestions3,
+  ...additionalQuestions4,
 ];
 
 /** 固定問題プールからランダムに1問を生成する */

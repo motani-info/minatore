@@ -8,7 +8,7 @@ import { registerOverlayPlugin } from './plugins/overlay';
 import { registerPuzzlePlugin } from './plugins/puzzle';
 import { registerSeesawPlugin } from './plugins/seesaw';
 import { registerShapeKartaPlugin } from './plugins/shape-karta';
-import { registerOverlayCancelPlugin } from './plugins/overlay-cancel';
+import { registerOverlayCancelPlugin, registerOverlayCancel3x3Plugin, registerOverlayCancel4x4Plugin } from './plugins/overlay-cancel';
 import { registerSyllableCountPlugin } from './plugins/syllable-count';
 import { registerOneToOnePlugin } from './plugins/one-to-one';
 import { registerCompareLengthPlugin } from './plugins/compare-length';
@@ -21,6 +21,8 @@ import { registerWaterVolumePlugin } from './plugins/water-volume';
 import { registerAreaComparePlugin } from './plugins/area-compare';
 import { registerRotationSequencePlugin } from './plugins/rotation-sequence';
 import { registerShapeCompositionPlugin } from './plugins/shape-composition';
+import { registerOverlayComposePlugin } from './plugins/overlay-compose';
+import { registerLineDecomposePlugin } from './plugins/line-decompose';
 
 // プラグイン登録
 registerRotationPlugin();
@@ -34,6 +36,8 @@ registerPuzzlePlugin();
 registerSeesawPlugin();
 registerShapeKartaPlugin();
 registerOverlayCancelPlugin();
+registerOverlayCancel3x3Plugin();
+registerOverlayCancel4x4Plugin();
 registerSyllableCountPlugin();
 registerOneToOnePlugin();
 registerCompareLengthPlugin();
@@ -41,6 +45,8 @@ registerCompareSpringPlugin();
 registerWaterVolumePlugin();
 registerAreaComparePlugin();
 registerShapeCompositionPlugin();
+registerOverlayComposePlugin();
+registerLineDecomposePlugin();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

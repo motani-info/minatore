@@ -1,51 +1,30 @@
 /**
  * 図形構成問題の型定義
  *
- * お手本の図形が示され、3つのパーツを組み合わせて
+ * 4×4グリッド上のお手本図形（塗りつぶしパターン）が示され、
+ * 2つのピース（それぞれグリッドパターン）を組み合わせて
  * お手本と同じ形を作れる選択肢を見つける問題。
+ *
+ * ピースA + ピースB = お手本（OR演算、重なりなし）
  */
 
-/** 図形パーツの種類 */
-export type ShapePartType =
-  | 'rect'        // 長方形
-  | 'square'      // 正方形
-  | 'triangle'    // 三角形
-  | 'circle'      // 円
-  | 'semicircle'  // 半円
-  | 'quarter'     // 四分円
-  | 'trapezoid'   // 台形
-  | 'diamond'     // ひし形
-  | 'cross'       // 十字
-  | 'l-shape'     // L字
-  | 'arrow';      // 矢印
+/** 4×4グリッドのセル状態 */
+export type GridCell = boolean;
 
-/** 図形パーツの定義 */
-export interface ShapePart {
-  type: ShapePartType;
-  /** 幅（相対値 0-100） */
-  width: number;
-  /** 高さ（相対値 0-100） */
-  height: number;
-  /** 回転角度 */
-  rotation?: number;
-  /** 塗りつぶし（true=黒, false=白枠のみ） */
-  filled?: boolean;
+/** 4×4グリッド（16セル、行優先） */
+export type Grid4x4 = GridCell[];
+
+/** 2つのピースの組み合わせ */
+export interface PiecePair {
+  pieceA: Grid4x4;
+  pieceB: Grid4x4;
 }
-
-/** 選択肢のパーツセット（3つのパーツ） */
-export type PartsSet = [ShapePart, ShapePart, ShapePart];
-
-/** お手本図形のSVGパス定義 */
-export type ModelShape = string[];
 
 /** 問題データ */
 export interface ShapeCompositionQuestionData {
-  /** お手本図形のSVGポリゴン座標群（0-100正規化） */
-  model: ModelShape;
+  /** お手本の4×4グリッドパターン */
+  model: Grid4x4;
 }
 
-/** 選択肢データ */
-export interface ShapeCompositionChoiceData {
-  /** 3つのパーツ */
-  parts: PartsSet;
-}
+/** 選択肢データ（2つのピースの組み合わせ） */
+export type ShapeCompositionChoiceData = PiecePair;

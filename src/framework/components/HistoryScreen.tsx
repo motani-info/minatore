@@ -19,13 +19,30 @@ import { TabBar } from './TabBar';
 import { R } from './Ruby';
 
 /** 分野名マッピング */
-const TYPE_NAMES: Record<string, { name: string; icon: string; color: string }> = {
-  rotation: { name: '回転図形', icon: '🔄', color: '#7c3aed' },
-  overlay: { name: '重ね図形', icon: '🔲', color: '#2563eb' },
-  puzzle: { name: '図形パズル', icon: '🧩', color: '#ec4899' },
-  seesaw: { name: '重さくらべ', icon: '⚖️', color: '#059669' },
-  'one-to-one': { name: '一つずつ', icon: '🔢', color: '#0891b2' },
-  'overlay-cancel': { name: '打ちけし', icon: '🔲', color: '#6366f1' },
+const TYPE_NAMES: Record<string, { name: string; icon: string; color: string; category: string }> = {
+  rotation: { name: '回転（基本）', icon: '🔄', color: '#7c3aed', category: '図形' },
+  'symbol-rotation': { name: '回転（応用）', icon: '🎯', color: '#9333ea', category: '図形' },
+  'rotation-sequence': { name: '回転（連続）', icon: '🔄', color: '#6d28d9', category: '図形' },
+  overlay: { name: '重ね（基本）', icon: '🔲', color: '#3b82f6', category: '図形' },
+  'overlay-advanced': { name: '重ね（応用）', icon: '🔲', color: '#1d4ed8', category: '図形' },
+  'overlay-shape': { name: '重ね（図形）', icon: '🔲', color: '#1e40af', category: '図形' },
+  'line-overlay': { name: '重ね（線）', icon: '📐', color: '#1e3a5f', category: '図形' },
+  'line-decompose': { name: '重ね（分解）', icon: '📐', color: '#4f46e5', category: '図形' },
+  'overlay-compose': { name: '折り重ね（合成）', icon: '🔲', color: '#6366f1', category: '図形' },
+  puzzle: { name: '図形パズル', icon: '🧩', color: '#ec4899', category: '図形' },
+  'overlay-cancel': { name: '折り重ね（相殺）', icon: '🔲', color: '#0891b2', category: '図形' },
+  'overlay-cancel-3x3': { name: '折り重ね（3×3）', icon: '🔲', color: '#0e7490', category: '図形' },
+  'overlay-cancel-4x4': { name: '折り重ね（4×4）', icon: '🔲', color: '#155e75', category: '図形' },
+  'odd-one-out': { name: '異図形発見', icon: '🔍', color: '#dc2626', category: '図形' },
+  'shape-composition': { name: '図形構成', icon: '🧩', color: '#ea580c', category: '図形' },
+  seesaw: { name: '重さくらべ', icon: '⚖️', color: '#059669', category: '数量・推理' },
+  'water-volume': { name: '水量くらべ', icon: '💧', color: '#2563eb', category: '数量・推理' },
+  'compare-length': { name: '長さくらべ', icon: '📏', color: '#0d9488', category: '数量・推理' },
+  'compare-spring': { name: 'ばねくらべ', icon: '🔩', color: '#047857', category: '数量・推理' },
+  'area-compare': { name: '広さくらべ', icon: '⬛', color: '#7c3aed', category: '数量・推理' },
+  'shape-karta': { name: '図形カルタ', icon: '🎴', color: '#d97706', category: '数量・推理' },
+  'syllable-count': { name: '文字数', icon: '🔤', color: '#7c3aed', category: '数量・推理' },
+  'one-to-one': { name: '1対1対応', icon: '🐤', color: '#0284c7', category: '数量・推理' },
 };
 
 /** 正解率から★評価を返す（5段階） */
@@ -68,17 +85,22 @@ export const HistoryScreen: React.FC = () => {
     ? Object.entries(progress.byType)
         .filter(([, v]) => v.totalQuestions > 0)
         .map(([key, v]) => {
-          const meta = TYPE_NAMES[key] ?? { name: key, icon: '📝', color: '#6b7280' };
+          const meta = TYPE_NAMES[key] ?? { name: key, icon: '📝', color: '#6b7280', category: 'その他' };
           const rate = v.totalQuestions > 0 ? Math.round((v.correctAnswers / v.totalQuestions) * 100) : 0;
           return { key, ...meta, ...v, rate };
         })
     : [];
 
-  const barData = typeEntries.map((e) => ({
-    name: e.name,
-    問題数: e.totalQuestions,
-    正解数: e.correctAnswers,
-  }));
+  // カテゴリ別に集計（棒グラフ用）
+  const categoryData = typeEntries.reduce<Record<string, { name: string; 問題数: number; 正解数: number; color: string }>>((acc, e) => {
+    if (!acc[e.category]) {
+      acc[e.category] = { name: e.category, 問題数: 0, 正解数: 0, color: e.category === '図形' ? '#7c3aed' : '#059669' };
+    }
+    acc[e.category].問題数 += e.totalQuestions;
+    acc[e.category].正解数 += e.correctAnswers;
+    return acc;
+  }, {});
+  const barData = Object.values(categoryData);
 
   const lineData = (progress?.dailyRecords ?? []).map((r) => ({
     date: r.date.slice(5).replace('-', '/'),
@@ -261,9 +283,9 @@ export const HistoryScreen: React.FC = () => {
                 boxShadow="0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)"
               >
                 <Text fontSize="sm" fontWeight="700" color="gray.600" mb={4}>
-                  <R rt="ぶんや">分野</R><R rt="べつ">別</R><R rt="せいせき">成績</R>
+                  カテゴリ<R rt="べつ">別</R><R rt="せいせき">成績</R>
                 </Text>
-                <Box w="100%" h="250px">
+                <Box w="100%" h="180px">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={barData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} />

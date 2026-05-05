@@ -87,12 +87,12 @@ export const HomeScreen: React.FC = () => {
   return (
     <Flex direction="column" minH="100dvh">
       <Box flex={1}>
-        <Container maxW="920px" py={{ base: 6, sm: 8 }} px={{ base: 5, sm: 6 }}>
-          <VStack gap={7} align="stretch">
+        <Container maxW="920px" py={{ base: 4, sm: 6 }} px={{ base: 3, sm: 5 }}>
+          <VStack gap={5} align="stretch">
 
             {/* ヘッダー */}
-            <Flex align="start" justify="space-between">
-              <Box>
+            <Flex align="start" justify="center" position="relative">
+              <Box textAlign="center">
                 <Heading
                   as="h1"
                   fontSize={{ base: '2xl', sm: '3xl' }}
@@ -102,15 +102,13 @@ export const HomeScreen: React.FC = () => {
                 >
                   みなトレ
                 </Heading>
-                <Text fontSize="sm" color="gray.400" mt={1}>
-                  {profile.name
-                    ? <>{profile.name}さんの <R rt="れんしゅう">練習</R></>
-                    : <>国立小学校<R rt="じゅけん">受験</R> <R rt="もんだい">問題</R><R rt="れんしゅう">練習</R></>}
+                <Text fontSize="xs" color="gray.400" mt={0.5}>
+                  国立小学校<R rt="じゅけん">受験</R> <R rt="もんだい">問題</R><R rt="れんしゅう">練習</R>
                 </Text>
               </Box>
 
               {/* アバター + レベルバー */}
-              <Flex direction="column" align="center" gap={1.5} flexShrink={0}>
+              <Flex direction="column" align="center" gap={1.5} flexShrink={0} position="absolute" right={0} top={0}>
                 <chakra.button
                   type="button"
                   onClick={() => navigate('/profile')}
@@ -261,7 +259,6 @@ export const HomeScreen: React.FC = () => {
                         const firstUnit = tab.units[0];
                         const theme = TYPE_THEMES[firstUnit.id]
                           ?? { gradient: `linear-gradient(135deg, ${cat.color} 0%, ${cat.color}88 100%)`, accent: cat.color };
-                        const subCount = tab.units.length;
 
                         // サムネイルアイコンを取得
                         const ThumbnailIcon = TYPE_THUMBNAILS[firstUnit.id];
@@ -293,7 +290,7 @@ export const HomeScreen: React.FC = () => {
                             <Box position="absolute" right="-6px" top="-6px" w="32px" h="32px" bg="whiteAlpha.200" borderRadius="full" />
 
                             {/* タイトル（上） */}
-                            <Text fontSize="sm" fontWeight="800" color="white" lineHeight="1.3" w="100%">
+                            <Text fontSize="sm" fontWeight="800" color="white" lineHeight="1.3" w="100%" textAlign="center">
                               {tab.label}
                             </Text>
 
@@ -313,14 +310,6 @@ export const HomeScreen: React.FC = () => {
                               )}
                             </Flex>
 
-                            {/* 分類（下） — サブタイプがある場合のみ */}
-                            {subCount > 1 ? (
-                              <Text fontSize="xs" fontWeight="500" color="whiteAlpha.700" lineHeight="1.3" w="100%">
-                                {tab.units.map(u => u.subLabel ?? u.name).join('・')}
-                              </Text>
-                            ) : (
-                              <Box h="1em" />
-                            )}
                           </chakra.button>
                         );
                       })}

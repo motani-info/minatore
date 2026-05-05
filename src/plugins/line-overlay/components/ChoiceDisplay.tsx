@@ -13,6 +13,8 @@ interface ChoiceDisplayProps {
  * 線図形の重ね合わせ問題の選択肢表示コンポーネント
  */
 export const LineOverlayChoiceDisplay: React.FC<ChoiceDisplayProps> = ({ data }) => {
+  const gridSize = data.gridSize ?? 4;
+
   return (
     <Flex
       align="center"
@@ -25,7 +27,7 @@ export const LineOverlayChoiceDisplay: React.FC<ChoiceDisplayProps> = ({ data })
       bg="white"
       p={1}
     >
-      <DotGrid figure={data} size={140} />
+      <DotGrid figure={data.figure} size={140} gridSize={gridSize} />
     </Flex>
   );
 };

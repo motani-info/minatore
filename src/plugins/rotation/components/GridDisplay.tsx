@@ -18,15 +18,15 @@ export const GridDisplay: React.FC<GridDisplayProps> = ({ grid, size }) => {
   const containerSize = (() => {
     if (isLarge) {
       switch (n) {
-        case 2: return { w: 'min(52vw, 220px)', h: 'min(52vw, 220px)', minW: '160px', minH: '160px' };
-        case 3: return { w: 'min(56vw, 240px)', h: 'min(56vw, 240px)', minW: '168px', minH: '168px' };
-        case 4: return { w: 'min(60vw, 260px)', h: 'min(60vw, 260px)', minW: '176px', minH: '176px' };
+        case 2: return { w: 'min(44vw, 200px)', h: 'min(44vw, 200px)' };
+        case 3: return { w: 'min(48vw, 220px)', h: 'min(48vw, 220px)' };
+        case 4: return { w: 'min(52vw, 240px)', h: 'min(52vw, 240px)' };
       }
     } else {
       switch (n) {
-        case 2: return { w: 'min(28vw, 100px)', h: 'min(28vw, 100px)', minW: '80px', minH: '80px' };
-        case 3: return { w: 'min(30vw, 108px)', h: 'min(30vw, 108px)', minW: '84px', minH: '84px' };
-        case 4: return { w: 'min(32vw, 116px)', h: 'min(32vw, 116px)', minW: '88px', minH: '88px' };
+        case 2: return { w: 'min(34vw, 130px)', h: 'min(34vw, 130px)' };
+        case 3: return { w: 'min(36vw, 140px)', h: 'min(36vw, 140px)' };
+        case 4: return { w: 'min(38vw, 150px)', h: 'min(38vw, 150px)' };
       }
     }
   })();
@@ -41,8 +41,7 @@ export const GridDisplay: React.FC<GridDisplayProps> = ({ grid, size }) => {
       aria-label="ぐりっど"
       w={containerSize.w}
       h={containerSize.h}
-      minW={containerSize.minW}
-      minH={containerSize.minH}
+      maxW="100%"
     >
       {grid.cells.map((filled, index) => (
         <GridItem

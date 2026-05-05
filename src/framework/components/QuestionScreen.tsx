@@ -77,66 +77,62 @@ function QuestionScreenInner({ questionType, initialQuestion, initialIndex, rand
     <Container maxW="920px" minH="100dvh" py={0} px={0}>
       <VStack gap={0} align="stretch" minH="100dvh">
 
-        {/* 上部: グラデーション背景エリア */}
+        {/* 上部: グラデーション背景エリア — コンパクト */}
         <Box
           bg={theme.gradient}
-          px={{ base: 5, sm: 6 }}
-          pt={{ base: 4, sm: 6 }}
-          pb={10}
+          px={{ base: 2, sm: 3 }}
+          pt={{ base: 1, sm: 1 }}
+          pb={{ base: 3, sm: 4 }}
           position="relative"
           overflow="hidden"
         >
-          {/* 背景装飾 */}
-          <Box position="absolute" right="-40px" top="-40px" w="160px" h="160px" bg="whiteAlpha.100" borderRadius="full" />
-          <Box position="absolute" left="-20px" bottom="-20px" w="100px" h="100px" bg="whiteAlpha.100" borderRadius="full" />
-
-          <VStack gap={5} align="stretch" position="relative" zIndex={1}>
+          <VStack gap={1} align="stretch" position="relative" zIndex={1}>
             <NavigationBar current={randomMode ? (randomCurrent ?? 1) : (currentQuestionIndex + 1)} total={randomMode ? (randomTotal ?? 10) : totalQuestions} />
 
-            {/* 問題表示エリア */}
+            {/* 問題表示エリア — 大きく */}
             <Flex
               align="center"
               justify="center"
               bg="white"
-              borderRadius="3xl"
-              p={{ base: 6, sm: 8 }}
-              minH="220px"
-              boxShadow="0 2px 12px rgba(0,0,0,0.06)"
+              borderRadius="xl"
+              p={{ base: 3, sm: 4 }}
+              minH={{ base: '140px', sm: '200px' }}
+              boxShadow="0 2px 12px rgba(0,0,0,0.08)"
+              overflow="hidden"
             >
               <QuestionDisplay data={currentQuestion.questionData} />
             </Flex>
           </VStack>
         </Box>
 
-        {/* 下部: 白背景エリア */}
+        {/* 下部: 白背景エリア — 選択肢を大きく */}
         <Box
           flex={1}
           bg="white"
-          borderTopRadius="3xl"
-          mt={-6}
-          px={{ base: 5, sm: 6 }}
-          pt={8}
-          pb={6}
+          borderTopRadius="xl"
+          mt={-2}
+          px={{ base: 2, sm: 3 }}
+          pt={{ base: 2, sm: 2 }}
+          pb={{ base: 1, sm: 2 }}
           position="relative"
           zIndex={2}
-          boxShadow="0 -4px 20px rgba(0,0,0,0.04)"
         >
-          <VStack gap={5} align="stretch">
-            {/* 指示テキスト */}
-            <Box textAlign="center">
+          <VStack gap={2} align="stretch" h="100%">
+            {/* 指示テキスト — 大きく読みやすく */}
+            <Box textAlign="center" py={1}>
               <Text
-                fontSize="lg"
-                color="gray.700"
-                lineHeight="1.7"
+                fontSize={{ base: 'lg', sm: 'xl' }}
+                color="gray.800"
+                lineHeight="1.4"
                 whiteSpace="pre-line"
-                fontWeight="700"
+                fontWeight="800"
               >
                 {currentQuestion.instructionText}
               </Text>
             </Box>
 
-            {/* 選択肢エリア */}
-            <SimpleGrid columns={2} gap={4}>
+            {/* 選択肢エリア — 大きく */}
+            <SimpleGrid columns={2} gap={{ base: 2, sm: 3 }} flex={1}>
               {currentQuestion.choices.map((choice, index) => {
                 const isSelected = selectedIndex === index;
                 const isChoiceCorrect = index === currentQuestion.correctIndex;
@@ -145,26 +141,26 @@ function QuestionScreenInner({ questionType, initialQuestion, initialIndex, rand
 
                 let borderColor = '#e5e7eb';
                 let bgColor = '#fafafa';
-                let shadow = '0 2px 8px rgba(0,0,0,0.04)';
+                let shadow = '0 1px 4px rgba(0,0,0,0.06)';
                 let labelColor = 'gray.500';
 
                 if (isSelected && showResult) {
                   if (isCorrect) {
                     borderColor = '#34d399';
                     bgColor = '#ecfdf5';
-                    shadow = '0 0 0 3px rgba(52, 211, 153, 0.2), 0 4px 12px rgba(52, 211, 153, 0.1)';
+                    shadow = '0 0 0 3px rgba(52, 211, 153, 0.25)';
                     labelColor = 'green.600';
                   } else {
                     borderColor = '#fca5a5';
                     bgColor = '#fef2f2';
-                    shadow = '0 0 0 3px rgba(252, 165, 165, 0.2), 0 4px 12px rgba(252, 165, 165, 0.1)';
+                    shadow = '0 0 0 3px rgba(252, 165, 165, 0.25)';
                     labelColor = 'red.500';
                   }
                 }
                 if (showCorrectHighlight) {
                   borderColor = '#34d399';
                   bgColor = '#ecfdf5';
-                  shadow = '0 0 0 3px rgba(52, 211, 153, 0.2), 0 4px 12px rgba(52, 211, 153, 0.1)';
+                  shadow = '0 0 0 3px rgba(52, 211, 153, 0.25)';
                   labelColor = 'green.600';
                 }
 
@@ -179,29 +175,28 @@ function QuestionScreenInner({ questionType, initialQuestion, initialIndex, rand
                     flexDirection="column"
                     alignItems="center"
                     justifyContent="center"
-                    gap={2}
-                    aspectRatio="1"
-                    p={5}
+                    gap={1}
+                    p={{ base: 2, sm: 3 }}
                     bg={bgColor}
-                    border="2.5px solid"
+                    border="3px solid"
                     borderColor={borderColor}
                     boxShadow={shadow}
                     cursor={isAnswered ? 'default' : 'pointer'}
-                    transition="all 0.2s ease"
-                    borderRadius="2xl"
+                    transition="all 0.15s ease"
+                    borderRadius="xl"
                     _hover={
                       isAnswered
                         ? {}
                         : {
-                            transform: 'translateY(-3px)',
-                            boxShadow: `0 6px 20px rgba(0,0,0,0.08)`,
+                            transform: 'scale(1.02)',
+                            boxShadow: `0 4px 16px rgba(0,0,0,0.1)`,
                             borderColor: theme.accent,
                           }
                     }
                     _active={
-                      isAnswered ? {} : { transform: 'scale(0.96)' }
+                      isAnswered ? {} : { transform: 'scale(0.97)' }
                     }
-                    minH="44px"
+                    minH={{ base: '100px', sm: '120px' }}
                   >
                     <ChoiceDisplay
                       data={choice}
@@ -209,7 +204,7 @@ function QuestionScreenInner({ questionType, initialQuestion, initialIndex, rand
                       isCorrect={isChoiceCorrect}
                       showResult={showResult}
                     />
-                    <Text fontSize="xs" fontWeight="700" color={labelColor}>
+                    <Text fontSize="sm" fontWeight="800" color={labelColor}>
                       {['①', '②', '③', '④'][index]}
                     </Text>
                   </chakra.button>

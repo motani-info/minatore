@@ -1,4 +1,4 @@
-import { Box, Text, VStack } from '@chakra-ui/react';
+import { Box, Text, VStack, Grid, GridItem } from '@chakra-ui/react';
 import type { ShapeCompositionQuestionData } from '../types';
 
 interface Props {
@@ -6,7 +6,7 @@ interface Props {
 }
 
 /**
- * お手本図形の表示
+ * お手本図形の表示（4×4グリッド）
  */
 export const ShapeCompositionQuestionDisplay: React.FC<Props> = ({ data }) => {
   const { model } = data;
@@ -15,28 +15,23 @@ export const ShapeCompositionQuestionDisplay: React.FC<Props> = ({ data }) => {
     <VStack gap={1}>
       <Text fontSize="xs" fontWeight="700" color="gray.500">おてほん</Text>
       <Box
-        w="140px"
-        h="140px"
-        border="2px solid"
+        border="3px solid"
         borderColor="#1a1a1a"
         borderRadius="lg"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
+        p={1}
         bg="white"
       >
-        <svg width="120" height="120" viewBox="0 0 100 100">
-          {model.map((polygon, i) => (
-            <polygon
+        <Grid templateColumns="repeat(4, 1fr)" gap="0px" w="120px" h="120px">
+          {model.map((filled, i) => (
+            <GridItem
               key={i}
-              points={polygon}
-              fill="none"
-              stroke="#1a1a1a"
-              strokeWidth="2"
-              strokeLinejoin="round"
+              bg={filled ? '#4a5568' : '#ffffff'}
+              border="1px solid"
+              borderColor="#cbd5e0"
+              aspectRatio="1"
             />
           ))}
-        </svg>
+        </Grid>
       </Box>
     </VStack>
   );

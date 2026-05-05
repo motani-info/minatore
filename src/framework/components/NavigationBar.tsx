@@ -11,7 +11,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ current, total }) 
   const showProgress = current !== undefined && total !== undefined && total > 0;
 
   return (
-    <Flex as="nav" align="center" gap={3}>
+    <Flex as="nav" align="center" gap={2}>
       {/* 左: ✕ボタン */}
       <chakra.button
         type="button"
@@ -20,9 +20,9 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ current, total }) 
         display="flex"
         alignItems="center"
         justifyContent="center"
-        w="40px"
-        h="40px"
-        fontSize="lg"
+        w="36px"
+        h="36px"
+        fontSize="md"
         color="whiteAlpha.800"
         borderRadius="full"
         bg="whiteAlpha.200"
@@ -37,7 +37,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ current, total }) 
       {/* 中央: プログレスバー */}
       {showProgress && (
         <>
-          <Box flex={1} h="6px" bg="whiteAlpha.300" borderRadius="full" overflow="hidden">
+          <Box flex={1} h="5px" bg="whiteAlpha.300" borderRadius="full" overflow="hidden">
             <Box
               h="100%"
               w={`${Math.min((current / total) * 100, 100)}%`}
@@ -60,10 +60,10 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ current, total }) 
         display="flex"
         alignItems="center"
         gap={1}
-        minH="40px"
-        px={4}
-        py={2}
-        fontSize="sm"
+        minH="36px"
+        px={3}
+        py={1.5}
+        fontSize="xs"
         fontWeight="700"
         color="white"
         bg="rgba(239, 68, 68, 0.7)"

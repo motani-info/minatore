@@ -300,13 +300,18 @@ sequenceDiagram
 |----|--------|---------|---------|---------|--------|------|------|
 | `rotation` | 回転図形（基本） | 🔄 | 図形 | 回転図形 | ランダム生成 | 共通4択 | 2×2グリッドの回転操作に関する4択問題 |
 | `symbol-rotation` | 回転図形（応用） | 🎯 | 図形 | 回転図形 | 固定32問 | 共通4択 | 2×2グリッドにシンボル（丸、三角、四角、矢印、トランプマーク等）を配置した回転問題 |
-| `overlay` | 重ね図形（基本） | 🔲 | 図形 | 重ね図形 | ランダム生成 | 共通4択 | 左列を右列に折り重ねた結果を選ぶ4択問題 |
+| `rotation-sequence` | 回転図形（連続） | 🔄 | 図形 | 回転図形 | 固定問題 | 共通4択 | 連続回転パターンの問題 |
+| `overlay` | 重ね図形（基本） | 🔲 | 図形 | 重ね図形 | 固定16問 | 共通4択 | 左列を右列に折り重ねた結果を選ぶ4択問題 |
 | `overlay-advanced` | 重ね図形（応用） | 🔲 | 図形 | 重ね図形 | 固定8問 | 共通4択 | 3×3グリッドの○重なり問題（AND演算） |
 | `overlay-shape` | 重ね図形（図形） | 🔲 | 図形 | 重ね図形 | 固定4問 | 共通4択 | 白黒パターン（三角形・四角形のSVGポリゴン）を重ねる問題 |
-| `line-overlay` | 重ね図形（線） | 📐 | 図形 | 重ね図形 | ランダム生成 | 共通4択 | 4×4ドットグリッド上の線図形を2つ重ねた結果を答える問題 |
-| `puzzle` | 図形パズル | 🧩 | 図形 | — | ランダム生成 | 共通4択 | 2つのピースを合わせてお手本を作る4択問題 |
-| `overlay-cancel` | 折り重ね（相殺） | 🔲 | 図形 | — | ランダム生成 | 共通4択 | グリッドを折り重ね、○と×が相殺するルール付き4択問題 |
-| `odd-one-out` | 異図形発見 | 🔍 | 図形 | — | ランダム生成 | 共通4択 | 並んだ図形の中から1つだけ違うものを見つける問題 |
+| `line-overlay` | 重ね図形（線） | 📐 | 図形 | 重ね図形 | 固定16問 | 共通4択 | 4×4/5×5ドットグリッド上の線図形を2つ重ねた結果を答える問題 |
+| `line-decompose` | 重ね図形（分解） | 📐 | 図形 | 重ね図形 | 固定問題 | 共通4択 | 完成形から足りない線分を答える分解問題 |
+| `overlay-cancel` | 折り重ね（相殺） | 🔲 | 図形 | 折り重ね | 固定12問 | 共通4択 | 2×2グリッドを折り重ね、○と×が相殺するルール付き4択問題 |
+| `overlay-cancel-3x3` | 折り重ね（相殺 3×3） | 🔲 | 図形 | 折り重ね | 固定10問 | 共通4択 | 3×3グリッドの相殺折り重ね問題 |
+| `overlay-cancel-4x4` | 折り重ね（相殺 4×4） | 🔲 | 図形 | 折り重ね | 固定8問 | 共通4択 | 4×4グリッドの相殺折り重ね問題 |
+| `overlay-compose` | 折り重ね（合成） | 🔲 | 図形 | 折り重ね | 固定12問 | 共通4択 | 2×2グリッドを折り重ね、合成ルール（消えない）の4択問題。○/△/▷/◁対応 |
+| `puzzle` | 図形構成（基本） | 🧩 | 図形 | 図形構成 | ランダム生成 | 共通4択 | 2つのピースを合わせてお手本を作る4択問題 |
+| `shape-composition` | 図形構成（応用） | 🧩 | 図形 | 図形構成 | 固定問題 | 共通4択 | 図形の構成応用問題 |
 | `seesaw` | 比較（重さ） | ⚖️ | 数量・推理 | 比較 | 固定4問 | 専用画面 | シーソーの傾きから重さの関係を推理し、○×マークで回答 |
 | `water-volume` | 比較（水量） | 💧 | 数量・推理 | 比較 | 固定10問 | 専用画面 | コップ/水槽の水量を比較する○×マーク問題 |
 | `compare-length` | 比較（長さ） | 📏 | 数量・推理 | 比較 | 固定4問 | 専用画面 | 線の長さを比較する○×マーク問題 |
@@ -314,16 +319,14 @@ sequenceDiagram
 | `area-compare` | 比較（広さ） | ⬛ | 数量・推理 | 比較 | 固定10問 | 専用画面 | グリッド上の黒い部分の広さを比較する○×マーク問題 |
 | `shape-karta` | 図形と数カルタ | 🎴 | 数量・推理 | — | ランダム生成 | 共通4択 | 複数条件の指示に一致するカードを4択から選ぶ問題 |
 | `syllable-count` | 文字数あつまり | 🔤 | 数量・推理 | — | ランダム生成 | 共通4択 | 単語の文字数（音の数）と同じ人数のグループを選ぶ問題 |
-| `one-to-one` | 1対1対応 | 🐤 | 数量・推理 | — | ランダム生成 | 共通4択 | 2種類のアイテムの過不足を問う問題 |
+| `one-to-one` | 1対1対応 | 🐤 | 数量・推理 | — | 固定10問 | 共通4択 | 2種類のアイテムの過不足を問う問題 |
 
 ### カテゴリ構造
 
 | カテゴリ | ID | 実装済み問題タイプ |
 |---------|----|--------------------|
-| 図形 | `shapes` | rotation, symbol-rotation, overlay, overlay-advanced, overlay-shape, line-overlay, puzzle, overlay-cancel, odd-one-out |
-| 記憶 | `memory` | （未実装） |
+| 図形 | `shapes` | rotation, symbol-rotation, rotation-sequence, overlay, overlay-advanced, overlay-shape, line-overlay, line-decompose, overlay-cancel, overlay-cancel-3x3, overlay-cancel-4x4, overlay-compose, puzzle, shape-composition |
 | 数量・推理 | `math-reasoning` | seesaw, water-volume, compare-length, compare-spring, area-compare, shape-karta, syllable-count, one-to-one |
-| 運筆 | `writing` | （未実装） |
 
 ### グループ化
 
@@ -331,9 +334,11 @@ sequenceDiagram
 
 | グループ名 | 含まれる問題タイプ |
 |-----------|-------------------|
-| 回転図形 | rotation（基本）, symbol-rotation（応用） |
-| 重ね図形 | overlay（基本）, overlay-advanced（応用）, overlay-shape（図形）, line-overlay（線） |
-| 比較 | seesaw（重さ）, water-volume（水量）, compare-length（長さ）, compare-spring（ばね）, area-compare（広さ） |
+| 回転図形 | rotation（基本）, symbol-rotation（応用）, rotation-sequence（連続） |
+| 重ね図形 | overlay（基本）, overlay-advanced（応用）, overlay-shape（図形）, line-overlay（線）, line-decompose（分解） |
+| 折り重ね | overlay-cancel（相殺）, overlay-cancel-3x3（相殺 3×3）, overlay-cancel-4x4（相殺 4×4）, overlay-compose（合成） |
+| 図形構成 | puzzle（基本）, shape-composition（応用） |
+| 比較 | compare-length（長さ）, area-compare（広さ）, water-volume（水量）, seesaw（重さ）, compare-spring（ばね） |
 
 
 ### ディレクトリ構成
@@ -362,10 +367,12 @@ src/
 │   │   ├── NavigationBar.tsx         # ナビゲーションバー
 │   │   ├── TabBar.tsx                # タブバーナビゲーション
 │   │   ├── HistoryScreen.tsx         # 履歴画面（学習記録・グラフ）
+│   │   ├── XpBar.tsx                # 経験値バーコンポーネント
 │   │   └── Ruby.tsx                  # ルビ（ふりがな）コンポーネント
 │   └── hooks/
 │       ├── useProfile.ts             # プロフィールデータ管理フック
 │       ├── useProgress.ts            # 進捗データ管理フック
+│       ├── useLevel.ts              # 経験値・レベル管理フック
 │       └── useQuestionFlow.ts        # 問題出題フロー管理フック
 ├── plugins/
 │   ├── rotation/
@@ -380,6 +387,13 @@ src/
 │   │   │   ├── SymbolQuestionDisplay.tsx  # 応用：問題表示
 │   │   │   └── SymbolChoiceDisplay.tsx    # 応用：選択肢表示
 │   │   └── types.ts                  # 回転図形問題固有の型定義
+│   ├── rotation-sequence/
+│   │   ├── index.ts                  # 回転図形（連続）登録エントリ
+│   │   ├── rotationSequenceQuestion.ts # 連続回転問題データ
+│   │   ├── components/
+│   │   │   ├── QuestionDisplay.tsx    # 問題表示
+│   │   │   └── ChoiceDisplay.tsx      # 選択肢表示
+│   │   └── types.ts                  # 型定義
 │   ├── overlay/
 │   │   ├── index.ts                  # 重ね図形（基本）登録エントリ
 │   │   ├── overlayQuestion.ts        # 問題生成・正解判定ロジック
@@ -404,33 +418,47 @@ src/
 │   │   └── types.ts                  # 型定義
 │   ├── line-overlay/
 │   │   ├── index.ts                  # 重ね図形（線）登録エントリ
-│   │   ├── lineOverlayQuestion.ts    # 問題生成ロジック
+│   │   ├── lineOverlayQuestion.ts    # 固定16問データ（4×4 + 5×5）
 │   │   ├── components/
-│   │   │   ├── DotGrid.tsx            # 4×4ドットグリッド表示
+│   │   │   ├── DotGrid.tsx            # NxNドットグリッド表示（4×4/5×5対応）
+│   │   │   ├── QuestionDisplay.tsx    # 問題表示
+│   │   │   └── ChoiceDisplay.tsx      # 選択肢表示
+│   │   └── types.ts                  # 型定義（gridSize可変対応）
+│   ├── line-decompose/
+│   │   ├── index.ts                  # 重ね図形（分解）登録エントリ
+│   │   ├── lineDecomposeQuestion.ts  # 問題データ
+│   │   ├── components/
 │   │   │   ├── QuestionDisplay.tsx    # 問題表示
 │   │   │   └── ChoiceDisplay.tsx      # 選択肢表示
 │   │   └── types.ts                  # 型定義
 │   ├── puzzle/
-│   │   ├── index.ts                  # 図形パズル登録エントリ
+│   │   ├── index.ts                  # 図形構成（基本）登録エントリ
 │   │   ├── puzzleQuestion.ts         # 問題生成・正解判定ロジック
 │   │   ├── components/
 │   │   │   ├── QuestionDisplay.tsx    # 問題表示
 │   │   │   └── ChoiceDisplay.tsx      # 選択肢表示
 │   │   └── types.ts                  # 型定義
+│   ├── shape-composition/
+│   │   ├── index.ts                  # 図形構成（応用）登録エントリ
+│   │   ├── shapeCompositionQuestion.ts # 問題データ
+│   │   ├── components/
+│   │   │   ├── QuestionDisplay.tsx    # 問題表示
+│   │   │   └── ChoiceDisplay.tsx      # 選択肢表示
+│   │   └── types.ts                  # 型定義
 │   ├── overlay-cancel/
-│   │   ├── index.ts                  # 折り重ね（相殺）登録エントリ
-│   │   ├── overlayCancelQuestion.ts  # 問題生成・正解判定ロジック
+│   │   ├── index.ts                  # 折り重ね（相殺）登録エントリ（2×2/3×3/4×4）
+│   │   ├── overlayCancelQuestion.ts  # 固定問題データ（2×2:12問, 3×3:10問, 4×4:8問）
 │   │   ├── components/
 │   │   │   ├── QuestionDisplay.tsx    # 左右グリッド表示
 │   │   │   └── ChoiceDisplay.tsx      # 選択肢グリッド表示
-│   │   └── types.ts                  # 型定義
-│   ├── odd-one-out/
-│   │   ├── index.ts                  # 異図形発見登録エントリ
-│   │   ├── oddOneOutQuestion.ts      # 問題生成・正解判定ロジック
+│   │   └── types.ts                  # 型定義（NxN対応）
+│   ├── overlay-compose/
+│   │   ├── index.ts                  # 折り重ね（合成）登録エントリ
+│   │   ├── overlayComposeQuestion.ts # 固定12問データ（○/△/▷/◁対応）
 │   │   ├── components/
-│   │   │   ├── QuestionDisplay.tsx    # グリッド表示
-│   │   │   └── ChoiceDisplay.tsx      # 選択肢表示
-│   │   └── types.ts                  # 型定義
+│   │   │   ├── QuestionDisplay.tsx    # 左右グリッド表示
+│   │   │   └── ChoiceDisplay.tsx      # 選択肢グリッド表示
+│   │   └── types.ts                  # 型定義（triangle系セル値対応）
 │   ├── seesaw/
 │   │   ├── index.ts                  # 比較（重さ）登録エントリ
 │   │   ├── seesawQuestion.ts         # 固定4問データ・正解判定ロジック
@@ -1055,15 +1083,29 @@ type OverlayChoiceData = OverlayResult;
 
 ### 重ね図形問題プラグイン（線: line-overlay）
 
-- 4×4ドットグリッド上の線図形を2つ重ねた結果を答える
-- ランダム生成（`getAllQuestions` なし）
-- DotGrid コンポーネントでドットと線を描画
+- 4×4/5×5ドットグリッド上の線図形を2つ重ねた結果を答える
+- 固定16問（4×4: 10問、5×5: 6問）
+- DotGrid コンポーネントでドットと線を描画（gridSize可変対応）
+- 選択肢データは `{ figure: LineFigure, gridSize?: number }` 形式
 
-### 折り重ね（相殺）問題プラグイン（overlay-cancel）
+### 重ね図形問題プラグイン（分解: line-decompose）
 
-- グリッドを折り重ね、○と×が相殺するルール付き4択問題
-- ランダム生成
-- 4択（3択から修正済み）
+- 完成形（おてほん）から1つの部品を引いた残りを答える問題
+- 5×5ドットグリッド対応
+- DotGrid コンポーネントを共有
+
+### 折り重ね問題プラグイン（相殺: overlay-cancel）
+
+- NxNグリッドを左右反転して折り重ね、○と×が相殺するルール付き4択問題
+- 3サイズ対応: 2×2（12問）、3×3（10問）、4×4（8問）
+- 各サイズが独立した問題タイプとして登録される
+
+### 折り重ね問題プラグイン（合成: overlay-compose）
+
+- 2×2グリッドを左右反転して折り重ね、合成ルール（重なっても消えない＝OR演算）の4択問題
+- 固定12問
+- セル値: `circle`（○）、`triangle`（△）、`triangle-right`（▷）、`triangle-left`（◁）、`cross`（×）、`empty`（空白）
+- 折り重ねた側が上に来る（優先表示）
 
 ### 図形パズル問題プラグイン
 
@@ -1161,7 +1203,7 @@ interface SeesawQuestionData {
       "line-overlay": { "totalQuestions": 5, "correctAnswers": 3 },
       "puzzle": { "totalQuestions": 12, "correctAnswers": 9 },
       "overlay-cancel": { "totalQuestions": 6, "correctAnswers": 4 },
-      "odd-one-out": { "totalQuestions": 10, "correctAnswers": 7 },
+      "overlay-compose": { "totalQuestions": 3, "correctAnswers": 2 },
       "seesaw": { "totalQuestions": 4, "correctAnswers": 3 },
       "water-volume": { "totalQuestions": 10, "correctAnswers": 8 },
       "compare-length": { "totalQuestions": 4, "correctAnswers": 4 },
@@ -1180,6 +1222,41 @@ interface SeesawQuestionData {
     ]
   }
 }
+```
+
+### 経験値データ（localStorage）
+
+```json
+{
+  "exam-app-xp": 350
+}
+```
+
+#### 経験値・レベルシステム
+
+| 項目 | 値 |
+|------|-----|
+| 正解時XP | +10 |
+| 不正解時XP | +2（参加賞） |
+| レベル計算 | 累計XPから算出。各レベルに必要なXP = 20 + (level-1) × 10 |
+| Lv1→2 | 30 XP |
+| Lv2→3 | 40 XP |
+| Lv3→4 | 50 XP |
+| 表示場所 | HomeScreen（アバター下にコンパクト表示）、ProfileScreen（フル表示） |
+
+```typescript
+// framework/hooks/useLevel.ts
+
+interface LevelData {
+  totalXp: number;
+  level: number;
+  currentLevelXp: number;   // 現在レベル内の進捗XP
+  nextLevelXp: number;      // 次レベルに必要なXP量
+  progressRatio: number;    // 0〜1
+}
+
+function computeLevel(totalXp: number): LevelData;
+function useLevel(): LevelData & { addXp, rewardCorrect, rewardWrong, reload, reset };
 ```
 
 ### プロフィールデータ（localStorage）

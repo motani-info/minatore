@@ -1,15 +1,15 @@
 /**
  * 線図形の重ね合わせ問題の型定義
  *
- * 4×4のドットグリッド上に線分を描いた2つの図形を重ねたら
+ * ドットグリッド上に線分を描いた2つの図形を重ねたら
  * どんな図形になるかを答える問題
  */
 
-/** ドットグリッド上の座標 (0-3, 0-3) */
+/** ドットグリッド上の座標 */
 export interface DotPosition {
-  /** 列 (0=左端, 3=右端) */
+  /** 列 (0=左端) */
   col: number;
-  /** 行 (0=上端, 3=下端) */
+  /** 行 (0=上端) */
   row: number;
 }
 
@@ -28,7 +28,14 @@ export interface LineOverlayQuestionData {
   figureA: LineFigure;
   /** 右側の線図形 */
   figureB: LineFigure;
+  /** グリッドサイズ（デフォルト4） */
+  gridSize?: number;
 }
 
 /** 選択肢データ: 重ね合わせ結果の線図形 */
-export type LineOverlayChoiceData = LineFigure;
+export interface LineOverlayChoiceData {
+  /** 線図形 */
+  figure: LineFigure;
+  /** グリッドサイズ（デフォルト4） */
+  gridSize?: number;
+}

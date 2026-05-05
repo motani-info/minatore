@@ -8,10 +8,11 @@ interface QuestionDisplayProps {
 
 /**
  * 線図形の重ね合わせ問題の問題表示コンポーネント
- * 2つの線図形を横に並べて表示し、間に矢印を表示しない
- * （問題文で「重ねたら」と説明するため）
+ * 2つの線図形を横に並べて表示し、間に「+」を表示する
  */
 export const LineOverlayQuestionDisplay: React.FC<QuestionDisplayProps> = ({ data }) => {
+  const gridSize = data.gridSize ?? 4;
+
   return (
     <Flex align="center" gap={3} role="img" aria-label="せんずけいのかさねあわせ">
       {/* 図形A */}
@@ -22,7 +23,7 @@ export const LineOverlayQuestionDisplay: React.FC<QuestionDisplayProps> = ({ dat
         bg="white"
         p={1}
       >
-        <DotGrid figure={data.figureA} size={110} />
+        <DotGrid figure={data.figureA} size={110} gridSize={gridSize} />
       </Flex>
 
       {/* 「+」記号 */}
@@ -38,7 +39,7 @@ export const LineOverlayQuestionDisplay: React.FC<QuestionDisplayProps> = ({ dat
         bg="white"
         p={1}
       >
-        <DotGrid figure={data.figureB} size={110} />
+        <DotGrid figure={data.figureB} size={110} gridSize={gridSize} />
       </Flex>
     </Flex>
   );

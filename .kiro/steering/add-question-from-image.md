@@ -145,7 +145,16 @@ registerXxxPlugin();
 ### 4. `src/framework/components/QuestionListScreen.tsx` — TYPE_THEMES に追加
 （QuestionScreen.tsx と同じ形式）
 
-### 5. `src/App.tsx`（カスタムUIの場合のみ）
+### 5. `src/framework/components/HistoryScreen.tsx` — TYPE_NAMES に追加
+```typescript
+'xxx': { name: '日本語名', icon: '🔲', color: '#色1', category: '図形' or '数量・推理' },
+```
+⚠️ **これを忘れると履歴画面で英語IDがそのまま表示される**
+
+### 6. `src/framework/components/HomeScreen.tsx` — TYPE_THUMBNAILS に追加
+サムネイルアイコンを `src/assets/icons/thumbnails.tsx` に作成し、マッピングに追加する。
+
+### 7. `src/App.tsx`（カスタムUIの場合のみ）
 ```tsx
 import { XxxScreen } from './plugins/xxx/components/XxxScreen';
 // :typeId より前に配置
@@ -289,6 +298,8 @@ await browser.close();
 - [ ] src/framework/categoryData.ts — カテゴリ登録 + グラデーション
 - [ ] src/framework/components/QuestionScreen.tsx — TYPE_THEMES
 - [ ] src/framework/components/QuestionListScreen.tsx — TYPE_THEMES
+- [ ] src/framework/components/HistoryScreen.tsx — TYPE_NAMES に日本語名・アイコン・色・カテゴリを追加（**必須: 未登録だと英語IDがそのまま表示される**）
+- [ ] src/framework/components/HomeScreen.tsx — TYPE_THUMBNAILS にサムネイルアイコンを追加
 - [ ] src/App.tsx — ルート追加（カスタムUIの場合）
 - [ ] `npm run build` — ビルド成功
 - [ ] Playwright — 動作確認成功

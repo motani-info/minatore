@@ -108,7 +108,7 @@ export const CompareSpringScreen: React.FC = () => {
 
   return (
     <Container maxW="920px" minH="100dvh" py={0} px={0}>
-      <VStack gap={0} align="stretch" minH="100dvh">
+      <VStack gap={0} align="stretch" minH="100dvh" overflow="hidden">
 
         {/* 上部 */}
         <Box
@@ -208,7 +208,7 @@ export const CompareSpringScreen: React.FC = () => {
                     _active={isAnswered ? {} : { transform: 'scale(0.97)' }}
                     minW="56px"
                   >
-                    <SpringDisplay spring={spring} width={44} height={90} />
+                    <SpringDisplay spring={spring} width={40} height={70} />
                     <Flex
                       align="center"
                       justify="center"

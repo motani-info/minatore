@@ -1,8 +1,8 @@
 import { Flex, SimpleGrid, Text } from '@chakra-ui/react';
-import type { OverlayCancelChoiceData, CellValue } from '../types';
+import type { OverlayComposeChoiceData, CellValue } from '../types';
 
 interface Props {
-  data: OverlayCancelChoiceData;
+  data: OverlayComposeChoiceData;
   isSelected: boolean;
   isCorrect: boolean;
   showResult: boolean;
@@ -44,10 +44,19 @@ const CellDisplay: React.FC<{ value: CellValue; cellSize: number; fontSize: stri
     {value === 'cross' && (
       <Text fontSize={fontSize} lineHeight="1" color="red.500" fontWeight="800">×</Text>
     )}
+    {value === 'triangle' && (
+      <Text fontSize={`calc(${fontSize} * 0.85)`} lineHeight="1" color="gray.700" fontWeight="800">△</Text>
+    )}
+    {value === 'triangle-right' && (
+      <Text fontSize={`calc(${fontSize} * 0.85)`} lineHeight="1" color="gray.700" fontWeight="800">▷</Text>
+    )}
+    {value === 'triangle-left' && (
+      <Text fontSize={`calc(${fontSize} * 0.85)`} lineHeight="1" color="gray.700" fontWeight="800">◁</Text>
+    )}
   </Flex>
 );
 
-export const OverlayCancelChoiceDisplay: React.FC<Props> = ({ data }) => {
+export const OverlayComposeChoiceDisplay: React.FC<Props> = ({ data }) => {
   const cellSize = getCellSize(data.size);
   const fontSize = getFontSize(data.size);
 

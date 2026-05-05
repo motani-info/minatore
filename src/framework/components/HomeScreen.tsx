@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Box, Container, Flex, Heading, Text, VStack, SimpleGrid, chakra } from '@chakra-ui/react';
 import { useProfile } from '../hooks/useProfile';
+import { useLevel } from '../hooks/useLevel';
 import { CATEGORIES, buildTabsForCategory } from '../categoryData';
 import { TabBar } from './TabBar';
 import { R } from './Ruby';
@@ -81,6 +82,7 @@ const TYPE_THEMES: Record<string, { gradient: string; accent: string }> = {
 export const HomeScreen: React.FC = () => {
   const navigate = useNavigate();
   const { profile } = useProfile();
+  const levelData = useLevel();
 
   return (
     <Flex direction="column" minH="100dvh">
@@ -106,39 +108,58 @@ export const HomeScreen: React.FC = () => {
                     : <>国立小学校<R rt="じゅけん">受験</R> <R rt="もんだい">問題</R><R rt="れんしゅう">練習</R></>}
                 </Text>
               </Box>
-              <chakra.button
-                type="button"
-                onClick={() => navigate('/profile')}
-                aria-label="プロフィール"
-                w="44px"
-                h="44px"
-                borderRadius="full"
-                overflow="hidden"
-                bg="gray.100"
-                border="2px solid"
-                borderColor="white"
-                boxShadow="0 2px 8px rgba(0,0,0,0.06)"
-                cursor="pointer"
-                transition="all 0.15s"
-                _hover={{ boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                _active={{ transform: 'scale(0.95)' }}
-                flexShrink={0}
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-              >
-                {profile.avatarUrl ? (
-                  <chakra.img
-                    src={profile.avatarUrl}
-                    alt=""
-                    w="100%"
-                    h="100%"
-                    objectFit="cover"
-                  />
-                ) : (
-                  <ProfileIcon size={24} color="#9ca3af" />
-                )}
-              </chakra.button>
+
+              {/* アバター + レベルバー */}
+              <Flex direction="column" align="center" gap={1.5} flexShrink={0}>
+                <chakra.button
+                  type="button"
+                  onClick={() => navigate('/profile')}
+                  aria-label="プロフィール"
+                  w="80px"
+                  h="80px"
+                  borderRadius="full"
+                  overflow="hidden"
+                  bg="gray.100"
+                  border="3px solid"
+                  borderColor="white"
+                  boxShadow="0 2px 8px rgba(0,0,0,0.06)"
+                  cursor="pointer"
+                  transition="all 0.15s"
+                  _hover={{ boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                  _active={{ transform: 'scale(0.95)' }}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  {profile.avatarUrl ? (
+                    <chakra.img
+                      src={profile.avatarUrl}
+                      alt=""
+                      w="100%"
+                      h="100%"
+                      objectFit="cover"
+                    />
+                  ) : (
+                    <ProfileIcon size={44} color="#9ca3af" />
+                  )}
+                </chakra.button>
+
+                {/* レベル + XPバー（アバター幅に合わせる） */}
+                <Flex direction="column" align="center" w="80px" gap={0.5}>
+                  <Text fontSize="xs" fontWeight="800" color="gray.600" lineHeight="1">
+                    Lv.{levelData.level}
+                  </Text>
+                  <Box w="100%" h="6px" bg="gray.100" borderRadius="full" overflow="hidden">
+                    <Box
+                      h="100%"
+                      w={`${levelData.progressRatio * 100}%`}
+                      bg="linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%)"
+                      borderRadius="full"
+                      transition="width 0.5s ease"
+                    />
+                  </Box>
+                </Flex>
+              </Flex>
             </Flex>
 
             {/* ランダム10問カード */}

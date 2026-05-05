@@ -1,8 +1,8 @@
 import { Box, Flex, SimpleGrid, Text } from '@chakra-ui/react';
-import type { OverlayCancelQuestionData, OverlayCancelGrid, CellValue } from '../types';
+import type { OverlayComposeQuestionData, OverlayComposeGrid, CellValue } from '../types';
 
 interface Props {
-  data: OverlayCancelQuestionData;
+  data: OverlayComposeQuestionData;
 }
 
 const CellDisplay: React.FC<{ value: CellValue; size?: number }> = ({ value, size = 48 }) => (
@@ -21,10 +21,19 @@ const CellDisplay: React.FC<{ value: CellValue; size?: number }> = ({ value, siz
     {value === 'cross' && (
       <Text fontSize={`${size * 0.6}px`} lineHeight="1" color="red.500" fontWeight="800">×</Text>
     )}
+    {value === 'triangle' && (
+      <Text fontSize={`${size * 0.5}px`} lineHeight="1" color="gray.700" fontWeight="800">△</Text>
+    )}
+    {value === 'triangle-right' && (
+      <Text fontSize={`${size * 0.5}px`} lineHeight="1" color="gray.700" fontWeight="800">▷</Text>
+    )}
+    {value === 'triangle-left' && (
+      <Text fontSize={`${size * 0.5}px`} lineHeight="1" color="gray.700" fontWeight="800">◁</Text>
+    )}
   </Flex>
 );
 
-const GridDisplay: React.FC<{ grid: OverlayCancelGrid; cellSize?: number }> = ({ grid, cellSize = 48 }) => (
+const GridDisplay: React.FC<{ grid: OverlayComposeGrid; cellSize?: number }> = ({ grid, cellSize = 48 }) => (
   <SimpleGrid columns={grid.size} gap={0} w="fit-content">
     {grid.cells.map((cell, i) => (
       <CellDisplay key={i} value={cell} size={cellSize} />
@@ -42,7 +51,7 @@ function getCellSize(gridSize: number): number {
   }
 }
 
-export const OverlayCancelQuestionDisplay: React.FC<Props> = ({ data }) => {
+export const OverlayComposeQuestionDisplay: React.FC<Props> = ({ data }) => {
   const cellSize = getCellSize(data.leftGrid.size);
 
   return (

@@ -31,9 +31,13 @@ export const SpringDisplay: React.FC<SpringDisplayProps> = ({
   const ballY = topY + springLength + 8;
   const ballRadius = 10;
 
+  // SVGの実際の必要高さを計算し、viewBoxで収める
+  const contentHeight = ballY + ballRadius + 4;
+  const viewHeight = Math.max(contentHeight, height);
+
   return (
     <Box w={`${width}px`} h={`${height}px`}>
-      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+      <svg width={width} height={height} viewBox={`0 0 ${width} ${viewHeight}`} preserveAspectRatio="xMidYMin meet">
         {/* 上部の固定バー */}
         <line
           x1={cx - 15}

@@ -443,6 +443,7 @@ function pickRandomDirection(): RotationDirection {
 }
 
 /** ランダム問題を生成する */
+// @ts-expect-error reserved for future use
 function generateRandomQuestion(): Question<RotationQuestionData, RotationChoiceData> {
   const size = pickRandomGridSize();
   const direction = pickRandomDirection();
@@ -468,12 +469,6 @@ function generateRandomQuestion(): Question<RotationQuestionData, RotationChoice
 /** 問題を順番に生成する（固定問題プールから） */
 export function generateRotationQuestion(): Question<RotationQuestionData, RotationChoiceData> {
   const allFixed = getAllFixedQuestions();
-
-  // 固定問題プールを使い切ったらランダム生成に切り替え
-  if (currentIndex >= allFixed.length) {
-    return generateRandomQuestion();
-  }
-
   const fixedQ = allFixed[currentIndex % allFixed.length];
   currentIndex++;
 

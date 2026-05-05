@@ -2,13 +2,16 @@ import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Container, Flex, Heading, SimpleGrid, Text, VStack, chakra } from '@chakra-ui/react';
 import { useProfile } from '../hooks/useProfile';
+import { useLevel } from '../hooks/useLevel';
 import { TabBar } from './TabBar';
 import { R } from './Ruby';
+import { XpBar } from './XpBar';
 import { ProfileIcon } from '../../assets/icons';
 
 export const ProfileScreen: React.FC = () => {
   const navigate = useNavigate();
   const { profile, updateName, updateAvatar, removeAvatar, updateAge } = useProfile();
+  const levelData = useLevel();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(profile.name);
@@ -150,6 +153,19 @@ export const ProfileScreen: React.FC = () => {
             </chakra.button>
           )}
         </VStack>
+
+        {/* 名前 */}
+        <Box
+          bg="white"
+          borderRadius="2xl"
+          p={5}
+          boxShadow="0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)"
+        >
+          <Text fontSize="xs" color="gray.400" fontWeight="600" mb={3}>
+            けいけんち
+          </Text>
+          <XpBar levelData={levelData} />
+        </Box>
 
         {/* 名前 */}
         <Box

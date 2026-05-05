@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import type { Question, QuestionType, ChoiceIndex } from '../../types/question';
 import { useProgress } from './useProgress';
+import { useLevel } from './useLevel';
 
 /** 問題画面の状態フェーズ */
 type FlowPhase = 'answering' | 'judging' | 'feedback';
@@ -27,6 +28,7 @@ export interface QuestionFlowState {
  */
 export function useQuestionFlow(questionType: QuestionType, initialQuestion?: Question, initialIndex?: number) {
   const { recordAnswer } = useProgress();
+  const { rewardCorrect, rewardWrong } = useLevel();
 
   // 全問題リストを取得（getAllQuestionsがあればそれを使う）
   const allQuestions = useRef<Question[]>(
@@ -67,6 +69,13 @@ export function useQuestionFlow(questionType: QuestionType, initialQuestion?: Qu
         // 進捗を記録する
         recordAnswer(questionType.id, isCorrect);
 
+        // 経験値を付与する
+        if (isCorrect) {
+          rewardCorrect();
+        } else {
+          rewardWrong();
+        }
+
         return {
           ...prev,
           selectedIndex: index,
@@ -81,7 +90,7 @@ export function useQuestionFlow(questionType: QuestionType, initialQuestion?: Qu
         isProcessingRef.current = false;
       }, 300);
     },
-    [questionType, recordAnswer]
+    [questionType, recordAnswer, rewardCorrect, rewardWrong]
   );
 
   /** 次の問題へ遷移する（番号順） */

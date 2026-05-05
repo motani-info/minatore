@@ -5,9 +5,6 @@ import { registry } from '../../registry/questionTypeRegistry';
 import type { Question, QuestionType } from '../../types/question';
 import { R } from './Ruby';
 
-/** ランダム生成型プラグインで生成する問題数 */
-const GENERATED_COUNT = 20;
-
 /** 問題タイプごとのテーマカラー */
 const TYPE_THEMES: Record<string, { gradient: string; accent: string }> = {
   rotation: { gradient: 'linear-gradient(135deg, #7c6cf0 0%, #a78bfa 100%)', accent: '#7c6cf0' },
@@ -18,7 +15,6 @@ const TYPE_THEMES: Record<string, { gradient: string; accent: string }> = {
   'overlay-cancel': { gradient: 'linear-gradient(135deg, #0891b2 0%, #67e8f9 100%)', accent: '#0891b2' },
   'syllable-count': { gradient: 'linear-gradient(135deg, #7c3aed 0%, #c4b5fd 100%)', accent: '#7c3aed' },
   'one-to-one': { gradient: 'linear-gradient(135deg, #0284c7 0%, #7dd3fc 100%)', accent: '#0284c7' },
-  'odd-one-out': { gradient: 'linear-gradient(135deg, #dc2626 0%, #fca5a5 100%)', accent: '#dc2626' },
   'symbol-rotation': { gradient: 'linear-gradient(135deg, #9333ea 0%, #c084fc 100%)', accent: '#9333ea' },
   'overlay-advanced': { gradient: 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)', accent: '#1d4ed8' },
   'overlay-shape': { gradient: 'linear-gradient(135deg, #1e40af 0%, #2563eb 100%)', accent: '#1e40af' },
@@ -60,7 +56,7 @@ function QuestionListInner({ questionType }: { questionType: QuestionType }) {
     if (questionType.getAllQuestions) {
       return questionType.getAllQuestions();
     }
-    return Array.from({ length: GENERATED_COUNT }, () => questionType.generateQuestion());
+    return [];
   }, [questionType]);
 
   const { QuestionDisplay } = questionType;
@@ -74,7 +70,7 @@ function QuestionListInner({ questionType }: { questionType: QuestionType }) {
       });
     } else {
       navigate(`/question/${questionType.id}`, {
-        state: { selectedQuestion: questions[index] },
+        state: { questionIndex: index },
       });
     }
   };

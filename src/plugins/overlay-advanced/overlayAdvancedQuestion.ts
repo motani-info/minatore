@@ -17,46 +17,6 @@ export function gridsEqual(a: Grid3x3, b: Grid3x3): boolean {
   return a.every((v, i) => v === b[i]);
 }
 
-/** ランダムな3×3グリッドを生成（少なくとも2つのtrue） */
-function randomGrid(): Grid3x3 {
-  let grid: Grid3x3;
-  do {
-    grid = Array.from({ length: 9 }, () => Math.random() < 0.5) as unknown as Grid3x3;
-  } while (grid.filter(Boolean).length < 2);
-  return grid;
-}
-
-/** 正解グリッドの1〜2セルをランダムに反転して不正解を作る */
-function mutateGrid(grid: Grid3x3): Grid3x3 {
-  const result = [...grid] as unknown as Grid3x3;
-  const flips = Math.random() < 0.5 ? 1 : 2;
-  for (let f = 0; f < flips; f++) {
-    const idx = Math.floor(Math.random() * 9);
-    result[idx] = !result[idx];
-  }
-  return result;
-}
-
-/**
- * 不正解の選択肢を生成する
- */
-function generateDistractors(correct: Grid3x3, count: number): Grid3x3[] {
-  const distractors: Grid3x3[] = [];
-  let attempts = 0;
-  while (distractors.length < count && attempts < 200) {
-    attempts++;
-    const candidate = mutateGrid(correct);
-    if (gridsEqual(candidate, correct)) continue;
-    if (distractors.some((d) => gridsEqual(d, candidate))) continue;
-    distractors.push(candidate);
-  }
-  // フォールバック
-  while (distractors.length < count) {
-    distractors.push(randomGrid());
-  }
-  return distractors;
-}
-
 // ─── 固定問題プール（画像の8問） ───
 // true=○あり, false=空
 // グリッド配列: [上左,上中,上右, 中左,中中,中右, 下左,下中,下右]
@@ -164,29 +124,41 @@ const FIXED_QUESTIONS: FixedQ[] = [q1, q2, q3, q4, q5, q6, q7, q8];
 const INSTRUCTION_TEXT =
   'ひだりの2まいのいたをかさねたとき、\n○と○がかさなるところはどれですか？';
 
-/** 固定問題プールからランダムに1問を生成する */
+/** 各問題の固定不正解選択肢（事前計算済み） */
+const FIXED_DISTRACTORS: Grid3x3[][] = [
+  // q1正解: [F,T,F, F,T,F, F,F,F] → 不正解3つ
+  [[F,T,T, F,T,F, F,F,F], [F,T,F, T,T,F, F,F,F], [F,T,F, F,F,F, F,T,F]],
+  // q2正解: [T,F,T, F,T,F, F,T,F] → 不正解3つ
+  [[T,T,T, F,T,F, F,T,F], [T,F,T, F,T,T, F,T,F], [T,F,T, F,T,F, T,T,F]],
+  // q3正解: [T,T,F, T,F,F, F,F,T] → 不正解3つ
+  [[T,T,T, T,F,F, F,F,T], [T,T,F, T,T,F, F,F,T], [T,T,F, T,F,F, F,T,T]],
+  // q4正解: [T,F,F, F,F,T, T,F,F] → 不正解3つ
+  [[T,T,F, F,F,T, T,F,F], [T,F,F, F,T,T, T,F,F], [T,F,F, F,F,T, T,T,F]],
+  // q5正解: [T,F,T, T,F,F, F,T,F] → 不正解3つ
+  [[T,T,T, T,F,F, F,T,F], [T,F,T, T,T,F, F,T,F], [T,F,T, T,F,F, T,T,F]],
+  // q6正解: [F,F,F, T,T,F, F,F,F] → 不正解3つ
+  [[T,F,F, T,T,F, F,F,F], [F,F,F, T,T,T, F,F,F], [F,F,F, T,T,F, F,T,F]],
+  // q7正解: [T,T,F, F,T,F, F,F,F] → 不正解3つ
+  [[T,T,T, F,T,F, F,F,F], [T,T,F, T,T,F, F,F,F], [T,T,F, F,T,F, F,T,F]],
+  // q8正解: [T,F,T, T,F,F, T,F,F] → 不正解3つ
+  [[T,T,T, T,F,F, T,F,F], [T,F,T, T,T,F, T,F,F], [T,F,T, T,F,F, T,T,F]],
+];
+
+/** 各問題の正解位置（固定） */
+const FIXED_CORRECT_INDICES = [0, 1, 2, 3, 0, 1, 2, 3];
+
+/** 現在の出題インデックス */
+let currentIndex = 0;
+
+/** 固定問題プールから順番に1問を生成する */
 export function generateOverlayAdvancedQuestion(): Question<
   OverlayAdvancedQuestionData,
   OverlayAdvancedChoiceData
 > {
-  const fixedQ = FIXED_QUESTIONS[Math.floor(Math.random() * FIXED_QUESTIONS.length)];
-  const correct = computeOverlap(fixedQ.gridA, fixedQ.gridB);
-
-  const distractors = generateDistractors(correct, 3);
-
-  const correctIndex = Math.floor(Math.random() * 4);
-  const choices: OverlayAdvancedChoiceData[] = [...distractors];
-  choices.splice(correctIndex, 0, correct);
-
-  return {
-    questionData: {
-      gridA: fixedQ.gridA,
-      gridB: fixedQ.gridB,
-    },
-    choices,
-    correctIndex,
-    instructionText: INSTRUCTION_TEXT,
-  };
+  const questions = getAllOverlayAdvancedQuestions();
+  const question = questions[currentIndex % questions.length];
+  currentIndex++;
+  return question;
 }
 
 /** 固定問題プールの全問題を返す */
@@ -194,10 +166,10 @@ export function getAllOverlayAdvancedQuestions(): Question<
   OverlayAdvancedQuestionData,
   OverlayAdvancedChoiceData
 >[] {
-  return FIXED_QUESTIONS.map((fixedQ) => {
+  return FIXED_QUESTIONS.map((fixedQ, i) => {
     const correct = computeOverlap(fixedQ.gridA, fixedQ.gridB);
-    const distractors = generateDistractors(correct, 3);
-    const correctIndex = Math.floor(Math.random() * 4);
+    const distractors = FIXED_DISTRACTORS[i];
+    const correctIndex = FIXED_CORRECT_INDICES[i];
     const choices: OverlayAdvancedChoiceData[] = [...distractors];
     choices.splice(correctIndex, 0, correct);
     return {

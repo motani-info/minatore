@@ -1,8 +1,8 @@
 import { Grid, GridItem, Flex } from '@chakra-ui/react';
-import type { SymbolGrid, CellSymbol } from '../types';
+import type { SymbolGridData, CellSymbol } from '../types';
 
 interface SymbolGridDisplayProps {
-  grid: SymbolGrid;
+  grid: SymbolGridData;
   size: 'large' | 'small';
 }
 
@@ -165,26 +165,60 @@ const CellRenderer: React.FC<{ cell: CellSymbol; cellSize: number }> = ({ cell, 
 };
 
 /**
- * シンボルベース2×2グリッド表示コンポーネント
+ * シンボルベースNxNグリッド表示コンポーネント（2×2, 3×3, 4×4対応）
  */
 export const SymbolGridDisplay: React.FC<SymbolGridDisplayProps> = ({ grid, size }) => {
   const isLarge = size === 'large';
-  const cellSize = isLarge ? 80 : 40;
+  const n = grid.size;
+
+  // グリッドサイズに応じてセルサイズを調整
+  const cellSize = (() => {
+    if (isLarge) {
+      switch (n) {
+        case 2: return 80;
+        case 3: return 60;
+        case 4: return 48;
+      }
+    } else {
+      switch (n) {
+        case 2: return 40;
+        case 3: return 30;
+        case 4: return 24;
+      }
+    }
+  })();
+
+  // グリッドサイズに応じてコンテナサイズを調整
+  const containerSize = (() => {
+    if (isLarge) {
+      switch (n) {
+        case 2: return { w: 'min(52vw, 220px)', h: 'min(52vw, 220px)', minW: '160px', minH: '160px' };
+        case 3: return { w: 'min(56vw, 240px)', h: 'min(56vw, 240px)', minW: '180px', minH: '180px' };
+        case 4: return { w: 'min(60vw, 260px)', h: 'min(60vw, 260px)', minW: '192px', minH: '192px' };
+      }
+    } else {
+      switch (n) {
+        case 2: return { w: 'min(28vw, 100px)', h: 'min(28vw, 100px)', minW: '80px', minH: '80px' };
+        case 3: return { w: 'min(30vw, 108px)', h: 'min(30vw, 108px)', minW: '90px', minH: '90px' };
+        case 4: return { w: 'min(32vw, 116px)', h: 'min(32vw, 116px)', minW: '96px', minH: '96px' };
+      }
+    }
+  })();
 
   return (
     <Grid
-      templateColumns="repeat(2, 1fr)"
+      templateColumns={`repeat(${n}, 1fr)`}
       gap="0px"
       border="2px solid"
       borderColor="#1a1a1a"
       role="img"
       aria-label="ぐりっど"
-      w={isLarge ? 'min(52vw, 220px)' : 'min(28vw, 100px)'}
-      h={isLarge ? 'min(52vw, 220px)' : 'min(28vw, 100px)'}
-      minW={isLarge ? '160px' : '80px'}
-      minH={isLarge ? '160px' : '80px'}
+      w={containerSize.w}
+      h={containerSize.h}
+      minW={containerSize.minW}
+      minH={containerSize.minH}
     >
-      {grid.map((cell, index) => (
+      {grid.cells.map((cell, index) => (
         <GridItem
           key={index}
           border="1px solid"

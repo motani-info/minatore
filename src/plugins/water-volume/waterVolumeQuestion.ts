@@ -124,51 +124,15 @@ const QUESTION_POOL: Array<{
   },
 ];
 
-/** 出題済みインデックスを追跡 */
-let usedIndices: number[] = [];
+/** 現在の出題インデックス */
+let currentIndex = 0;
 
-/** 問題を生成する */
+/** 問題を順番に生成する */
 export function generateWaterVolumeQuestion(): Question<WaterVolumeQuestionData, WaterVolumeChoiceData> {
-  if (usedIndices.length >= QUESTION_POOL.length) {
-    usedIndices = [];
-  }
-
-  const availableIndices = QUESTION_POOL
-    .map((_, i) => i)
-    .filter((i) => !usedIndices.includes(i));
-
-  const selectedIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-  usedIndices.push(selectedIndex);
-
-  const problem = QUESTION_POOL[selectedIndex];
-
-  // 容器タイプに応じた問題文
-  const hasOnlyCups = problem.items.every((item) => item.container === 'cup');
-  const hasOnlyTanks = problem.items.every((item) => item.container === 'tank');
-
-  let containerWord: string;
-  if (hasOnlyCups) {
-    containerWord = 'コップ';
-  } else if (hasOnlyTanks) {
-    containerWord = 'すいそう';
-  } else {
-    containerWord = 'いれもの';
-  }
-
-  return {
-    questionData: {
-      items: problem.items,
-    },
-    choices: [
-      {
-        mostIndex: problem.mostIndex,
-        secondIndex: problem.secondIndex,
-      },
-    ],
-    correctIndex: 0,
-    instructionText:
-      `${containerWord}にはいっているみずが\nいちばんおおいものには○、\n2ばんめにおおいものには×をつけましょう。`,
-  };
+  const questions = getAllWaterVolumeQuestions();
+  const question = questions[currentIndex % questions.length];
+  currentIndex++;
+  return question;
 }
 
 /** 固定問題プールの全問題を返す */

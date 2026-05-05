@@ -1,6 +1,6 @@
 import type { QuestionType } from '../../types/question';
 import type { OverlayCancelQuestionData, OverlayCancelChoiceData } from './types';
-import { generateOverlayCancelQuestion, checkOverlayCancelAnswer } from './overlayCancelQuestion';
+import { generateOverlayCancelQuestion, checkOverlayCancelAnswer, getAllOverlayCancelQuestions } from './overlayCancelQuestion';
 import { OverlayCancelQuestionDisplay } from './components/QuestionDisplay';
 import { OverlayCancelChoiceDisplay } from './components/ChoiceDisplay';
 import { registry } from '../../registry/questionTypeRegistry';
@@ -10,6 +10,7 @@ export const overlayCancelQuestionType: QuestionType<OverlayCancelQuestionData, 
   displayName: '折り重ね（相殺）',
   icon: '🔲',
   generateQuestion: generateOverlayCancelQuestion,
+  getAllQuestions: getAllOverlayCancelQuestions,
   QuestionDisplay: OverlayCancelQuestionDisplay,
   ChoiceDisplay: OverlayCancelChoiceDisplay,
   checkAnswer: checkOverlayCancelAnswer,

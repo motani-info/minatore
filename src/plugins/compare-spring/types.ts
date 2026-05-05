@@ -29,5 +29,5 @@ export interface CompareSpringChoiceData {
   lightestIndex: number;
 }
 
-/** ユーザーのマーク（◎=一番重い、△=2番目、×=一番軽い） */
-export type SpringMarkType = 'double-circle' | 'triangle' | 'cross' | null;
+/** ユーザーのマーク（○=一番重い、△=2番目） */
+export type SpringMarkType = 'circle' | 'triangle' | null;

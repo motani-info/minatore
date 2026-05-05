@@ -1,6 +1,6 @@
 import type { QuestionType } from '../../types/question';
 import type { RotationQuestionData, RotationChoiceData } from './types';
-import { generateRotationQuestion, checkAnswer } from './rotationQuestion';
+import { generateRotationQuestion, checkAnswer, getAllRotationQuestions } from './rotationQuestion';
 import { RotationQuestionDisplay } from './components/QuestionDisplay';
 import { RotationChoiceDisplay } from './components/ChoicesDisplay';
 import { registry } from '../../registry/questionTypeRegistry';
@@ -14,6 +14,7 @@ export const rotationQuestionType: QuestionType<RotationQuestionData, RotationCh
   displayName: '回転図形（基本）',
   icon: '🔄',
   generateQuestion: generateRotationQuestion,
+  getAllQuestions: getAllRotationQuestions,
   QuestionDisplay: RotationQuestionDisplay,
   ChoiceDisplay: RotationChoiceDisplay,
   checkAnswer,

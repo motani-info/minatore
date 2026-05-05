@@ -6,15 +6,15 @@ import * as fc from 'fast-check';
 import {
   generateRandomGrid,
   generateRotationQuestion,
-  rotateGrid,
-  gridsEqual,
+  rotateGridData,
+  gridDataEqual,
 } from './rotationQuestion';
 
 /**
  * Property 5: グリッド生成の有効性
  *
- * 任意の generateRandomGrid() の呼び出し結果に対して、返されるグリッドは長さ4の
- * boolean配列であり、少なくとも1つの true と少なくとも1つの false を含む。
+ * 任意の generateRandomGrid() の呼び出し結果に対して、返されるグリッドは
+ * size*size長のboolean配列であり、少なくとも1つの true と少なくとも1つの false を含む。
  *
  * **Validates: Requirements 6.2, 6.3**
  */
@@ -41,23 +41,29 @@ import {
 describe('Rotation Question Generation - Property Tests', () => {
   it('Property 5: generateRandomGrid は有効なグリッドを返す', () => {
     fc.assert(
-      fc.property(fc.constant(null), () => {
-        const grid = generateRandomGrid();
+      fc.property(
+        fc.constantFrom(2 as const, 3 as const, 4 as const),
+        (size) => {
+          const grid = generateRandomGrid(size);
 
-        // 長さ4
-        expect(grid).toHaveLength(4);
+          // 長さは size*size
+          expect(grid.cells).toHaveLength(size * size);
 
-        // 全要素が boolean
-        for (const cell of grid) {
-          expect(typeof cell).toBe('boolean');
-        }
+          // グリッドサイズが正しい
+          expect(grid.size).toBe(size);
 
-        // 少なくとも1つの true
-        expect(grid.some((cell) => cell)).toBe(true);
+          // 全要素が boolean
+          for (const cell of grid.cells) {
+            expect(typeof cell).toBe('boolean');
+          }
 
-        // 少なくとも1つの false
-        expect(grid.some((cell) => !cell)).toBe(true);
-      }),
+          // 少なくとも1つの true
+          expect(grid.cells.some((cell) => cell)).toBe(true);
+
+          // 少なくとも1つの false
+          expect(grid.cells.some((cell) => !cell)).toBe(true);
+        },
+      ),
       { numRuns: 100 },
     );
   });
@@ -100,14 +106,14 @@ describe('Rotation Question Generation - Property Tests', () => {
         // 全選択肢が互いに異なる
         for (let i = 0; i < question.choices.length; i++) {
           for (let j = i + 1; j < question.choices.length; j++) {
-            expect(gridsEqual(question.choices[i], question.choices[j])).toBe(false);
+            expect(gridDataEqual(question.choices[i], question.choices[j])).toBe(false);
           }
         }
 
         // choices[correctIndex] は元のグリッドを指定方向に回転した結果と一致
         const { originalGrid, direction } = question.questionData;
-        const expectedCorrect = rotateGrid(originalGrid, direction);
-        expect(gridsEqual(question.choices[question.correctIndex], expectedCorrect)).toBe(true);
+        const expectedCorrect = rotateGridData(originalGrid, direction);
+        expect(gridDataEqual(question.choices[question.correctIndex], expectedCorrect)).toBe(true);
       }),
       { numRuns: 100 },
     );

@@ -1,6 +1,6 @@
 import type { QuestionType } from '../../types/question';
 import type { ShapeKartaQuestionData, ShapeKartaChoiceData } from './types';
-import { generateShapeKartaQuestion, checkShapeKartaAnswer } from './shapeKartaQuestion';
+import { generateShapeKartaQuestion, checkShapeKartaAnswer, getAllShapeKartaQuestions } from './shapeKartaQuestion';
 import { ShapeKartaQuestionDisplay } from './components/QuestionDisplay';
 import { ShapeKartaChoiceDisplay } from './components/ChoiceDisplay';
 import { registry } from '../../registry/questionTypeRegistry';
@@ -10,6 +10,7 @@ export const shapeKartaQuestionType: QuestionType<ShapeKartaQuestionData, ShapeK
   displayName: '図形と数カルタ',
   icon: '🎴',
   generateQuestion: generateShapeKartaQuestion,
+  getAllQuestions: getAllShapeKartaQuestions,
   QuestionDisplay: ShapeKartaQuestionDisplay,
   ChoiceDisplay: ShapeKartaChoiceDisplay,
   checkAnswer: checkShapeKartaAnswer,

@@ -1,6 +1,6 @@
 import type { QuestionType } from '../../types/question';
 import type { LineOverlayQuestionData, LineOverlayChoiceData } from './types';
-import { generateLineOverlayQuestion, checkLineOverlayAnswer } from './lineOverlayQuestion';
+import { generateLineOverlayQuestion, checkLineOverlayAnswer, getAllLineOverlayQuestions } from './lineOverlayQuestion';
 import { LineOverlayQuestionDisplay } from './components/QuestionDisplay';
 import { LineOverlayChoiceDisplay } from './components/ChoiceDisplay';
 import { registry } from '../../registry/questionTypeRegistry';
@@ -14,6 +14,7 @@ export const lineOverlayQuestionType: QuestionType<LineOverlayQuestionData, Line
   displayName: '重ね図形（線）',
   icon: '📐',
   generateQuestion: generateLineOverlayQuestion,
+  getAllQuestions: getAllLineOverlayQuestions,
   QuestionDisplay: LineOverlayQuestionDisplay,
   ChoiceDisplay: LineOverlayChoiceDisplay,
   checkAnswer: checkLineOverlayAnswer,

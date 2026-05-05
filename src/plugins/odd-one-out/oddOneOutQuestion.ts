@@ -1,124 +1,214 @@
 import type { Question } from '../../types/question';
-import type { OddOneOutQuestionData, OddOneOutChoiceData, FigureDefinition, FigurePart } from './types';
+import type { OddOneOutQuestionData, OddOneOutChoiceData, FigureDefinition } from './types';
 
-function randomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+// ─── 固定問題プール ───
+
+interface FixedOddOneOutQ {
+  baseFigure: FigureDefinition;
+  mutatedFigure: FigureDefinition;
+  gridSize: number;
+  oddIndex: number;
+  choices: number[];
+  correctIndex: number;
 }
 
-function randomItem<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
+const FIXED_QUESTIONS: FixedOddOneOutQ[] = [
+  // Q1: Color change on circle
+  {
+    baseFigure: [
+      { type: 'rect', x: 10, y: 10, width: 80, height: 80, color: '#ef4444' },
+      { type: 'circle', x: 30, y: 30, width: 20, height: 20, color: '#3b82f6' },
+      { type: 'line', x: 25, y: 35, width: 40, height: 2, color: '#22c55e', rotation: 45 },
+    ],
+    mutatedFigure: [
+      { type: 'rect', x: 10, y: 10, width: 80, height: 80, color: '#ef4444' },
+      { type: 'circle', x: 30, y: 30, width: 20, height: 20, color: '#f59e0b' },
+      { type: 'line', x: 25, y: 35, width: 40, height: 2, color: '#22c55e', rotation: 45 },
+    ],
+    gridSize: 3,
+    oddIndex: 4,
+    choices: [1, 4, 6, 8],
+    correctIndex: 1,
+  },
+  // Q2: Rotation on line
+  {
+    baseFigure: [
+      { type: 'rect', x: 10, y: 10, width: 80, height: 80, color: '#3b82f6' },
+      { type: 'circle', x: 40, y: 25, width: 20, height: 20, color: '#ef4444' },
+      { type: 'line', x: 30, y: 50, width: 35, height: 2, color: '#8b5cf6', rotation: -45 },
+    ],
+    mutatedFigure: [
+      { type: 'rect', x: 10, y: 10, width: 80, height: 80, color: '#3b82f6' },
+      { type: 'circle', x: 40, y: 25, width: 20, height: 20, color: '#ef4444' },
+      { type: 'line', x: 30, y: 50, width: 35, height: 2, color: '#8b5cf6', rotation: 45 },
+    ],
+    gridSize: 3,
+    oddIndex: 7,
+    choices: [0, 3, 5, 7],
+    correctIndex: 3,
+  },
+  // Q3: Shift on circle
+  {
+    baseFigure: [
+      { type: 'rect', x: 10, y: 10, width: 80, height: 80, color: '#22c55e' },
+      { type: 'circle', x: 35, y: 40, width: 20, height: 20, color: '#f59e0b' },
+      { type: 'line', x: 20, y: 25, width: 45, height: 2, color: '#ef4444', rotation: 30 },
+    ],
+    mutatedFigure: [
+      { type: 'rect', x: 10, y: 10, width: 80, height: 80, color: '#22c55e' },
+      { type: 'circle', x: 47, y: 52, width: 20, height: 20, color: '#f59e0b' },
+      { type: 'line', x: 20, y: 25, width: 45, height: 2, color: '#ef4444', rotation: 30 },
+    ],
+    gridSize: 3,
+    oddIndex: 2,
+    choices: [0, 2, 5, 7],
+    correctIndex: 1,
+  },
+  // Q4: Flip on circle
+  {
+    baseFigure: [
+      { type: 'rect', x: 10, y: 10, width: 80, height: 80, color: '#8b5cf6' },
+      { type: 'circle', x: 25, y: 30, width: 20, height: 20, color: '#22c55e' },
+      { type: 'line', x: 35, y: 40, width: 30, height: 2, color: '#3b82f6', rotation: -30 },
+    ],
+    mutatedFigure: [
+      { type: 'rect', x: 10, y: 10, width: 80, height: 80, color: '#8b5cf6' },
+      { type: 'circle', x: 45, y: 30, width: 20, height: 20, color: '#22c55e' },
+      { type: 'line', x: 35, y: 40, width: 30, height: 2, color: '#3b82f6', rotation: -30 },
+    ],
+    gridSize: 3,
+    oddIndex: 6,
+    choices: [1, 3, 6, 8],
+    correctIndex: 2,
+  },
+  // Q5: Color change on line
+  {
+    baseFigure: [
+      { type: 'rect', x: 10, y: 10, width: 80, height: 80, color: '#f59e0b' },
+      { type: 'circle', x: 50, y: 50, width: 20, height: 20, color: '#3b82f6' },
+      { type: 'line', x: 20, y: 30, width: 50, height: 2, color: '#ef4444', rotation: 45 },
+    ],
+    mutatedFigure: [
+      { type: 'rect', x: 10, y: 10, width: 80, height: 80, color: '#f59e0b' },
+      { type: 'circle', x: 50, y: 50, width: 20, height: 20, color: '#3b82f6' },
+      { type: 'line', x: 20, y: 30, width: 50, height: 2, color: '#22c55e', rotation: 45 },
+    ],
+    gridSize: 3,
+    oddIndex: 0,
+    choices: [0, 2, 4, 7],
+    correctIndex: 0,
+  },
+  // Q6: Rotation on line (different base)
+  {
+    baseFigure: [
+      { type: 'rect', x: 10, y: 10, width: 80, height: 80, color: '#3b82f6' },
+      { type: 'circle', x: 55, y: 35, width: 20, height: 20, color: '#8b5cf6' },
+      { type: 'line', x: 25, y: 55, width: 40, height: 2, color: '#f59e0b', rotation: -45 },
+    ],
+    mutatedFigure: [
+      { type: 'rect', x: 10, y: 10, width: 80, height: 80, color: '#3b82f6' },
+      { type: 'circle', x: 55, y: 35, width: 20, height: 20, color: '#8b5cf6' },
+      { type: 'line', x: 25, y: 55, width: 40, height: 2, color: '#f59e0b', rotation: 45 },
+    ],
+    gridSize: 3,
+    oddIndex: 3,
+    choices: [0, 3, 5, 8],
+    correctIndex: 1,
+  },
+  // Q7: Shift on line
+  {
+    baseFigure: [
+      { type: 'rect', x: 10, y: 10, width: 80, height: 80, color: '#ef4444' },
+      { type: 'circle', x: 30, y: 55, width: 20, height: 20, color: '#22c55e' },
+      { type: 'line', x: 40, y: 25, width: 30, height: 2, color: '#3b82f6', rotation: 30 },
+    ],
+    mutatedFigure: [
+      { type: 'rect', x: 10, y: 10, width: 80, height: 80, color: '#ef4444' },
+      { type: 'circle', x: 30, y: 55, width: 20, height: 20, color: '#22c55e' },
+      { type: 'line', x: 52, y: 37, width: 30, height: 2, color: '#3b82f6', rotation: 30 },
+    ],
+    gridSize: 3,
+    oddIndex: 5,
+    choices: [1, 4, 5, 7],
+    correctIndex: 2,
+  },
+  // Q8: Color change on rect border
+  {
+    baseFigure: [
+      { type: 'rect', x: 10, y: 10, width: 80, height: 80, color: '#22c55e' },
+      { type: 'circle', x: 45, y: 45, width: 20, height: 20, color: '#ef4444' },
+      { type: 'line', x: 30, y: 20, width: 35, height: 2, color: '#8b5cf6', rotation: -30 },
+    ],
+    mutatedFigure: [
+      { type: 'rect', x: 10, y: 10, width: 80, height: 80, color: '#3b82f6' },
+      { type: 'circle', x: 45, y: 45, width: 20, height: 20, color: '#ef4444' },
+      { type: 'line', x: 30, y: 20, width: 35, height: 2, color: '#8b5cf6', rotation: -30 },
+    ],
+    gridSize: 3,
+    oddIndex: 8,
+    choices: [2, 4, 6, 8],
+    correctIndex: 3,
+  },
+  // Q9: Flip on circle (different position)
+  {
+    baseFigure: [
+      { type: 'rect', x: 10, y: 10, width: 80, height: 80, color: '#8b5cf6' },
+      { type: 'circle', x: 50, y: 25, width: 20, height: 20, color: '#f59e0b' },
+      { type: 'line', x: 20, y: 60, width: 45, height: 2, color: '#ef4444', rotation: -45 },
+    ],
+    mutatedFigure: [
+      { type: 'rect', x: 10, y: 10, width: 80, height: 80, color: '#8b5cf6' },
+      { type: 'circle', x: 20, y: 25, width: 20, height: 20, color: '#f59e0b' },
+      { type: 'line', x: 20, y: 60, width: 45, height: 2, color: '#ef4444', rotation: -45 },
+    ],
+    gridSize: 3,
+    oddIndex: 1,
+    choices: [0, 1, 4, 6],
+    correctIndex: 1,
+  },
+  // Q10: Shift on circle (another variant)
+  {
+    baseFigure: [
+      { type: 'rect', x: 10, y: 10, width: 80, height: 80, color: '#f59e0b' },
+      { type: 'circle', x: 40, y: 40, width: 20, height: 20, color: '#3b82f6' },
+      { type: 'line', x: 25, y: 25, width: 40, height: 2, color: '#22c55e', rotation: 45 },
+    ],
+    mutatedFigure: [
+      { type: 'rect', x: 10, y: 10, width: 80, height: 80, color: '#f59e0b' },
+      { type: 'circle', x: 28, y: 52, width: 20, height: 20, color: '#3b82f6' },
+      { type: 'line', x: 25, y: 25, width: 40, height: 2, color: '#22c55e', rotation: 45 },
+    ],
+    gridSize: 3,
+    oddIndex: 3,
+    choices: [2, 3, 6, 8],
+    correctIndex: 1,
+  },
+];
 
-const COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#8b5cf6', '#f59e0b'];
+/** 現在の出題インデックス */
+let currentIndex = 0;
 
-/** ランダムな複合図形を生成 */
-function generateBaseFigure(): FigureDefinition {
-  const parts: FigurePart[] = [];
-
-  // 外枠（四角）
-  parts.push({
-    type: 'rect',
-    x: 10, y: 10, width: 80, height: 80,
-    color: randomItem(COLORS),
-  });
-
-  // 内部パーツ1（小さな丸）
-  const circleX = randomInt(25, 55);
-  const circleY = randomInt(25, 55);
-  parts.push({
-    type: 'circle',
-    x: circleX, y: circleY, width: 20, height: 20,
-    color: randomItem(COLORS),
-  });
-
-  // 内部パーツ2（斜め線）
-  parts.push({
-    type: 'line',
-    x: randomInt(20, 40), y: randomInt(20, 40),
-    width: randomInt(30, 50), height: 2,
-    color: randomItem(COLORS),
-    rotation: randomItem([45, -45, 30, -30]),
-  });
-
-  return parts;
-}
-
-/** 図形を変異させる */
-function mutateFigure(base: FigureDefinition): FigureDefinition {
-  const mutated = base.map(p => ({ ...p }));
-  const mutationType = randomItem(['flip', 'shift', 'colorChange', 'rotate'] as const);
-  const targetIdx = randomInt(1, mutated.length - 1); // 外枠以外を変異
-
-  switch (mutationType) {
-    case 'flip':
-      mutated[targetIdx] = {
-        ...mutated[targetIdx],
-        x: 90 - mutated[targetIdx].x - mutated[targetIdx].width,
-      };
-      break;
-    case 'shift':
-      mutated[targetIdx] = {
-        ...mutated[targetIdx],
-        x: Math.max(10, Math.min(70, mutated[targetIdx].x + randomItem([12, -12]))),
-        y: Math.max(10, Math.min(70, mutated[targetIdx].y + randomItem([12, -12]))),
-      };
-      break;
-    case 'colorChange': {
-      const otherColors = COLORS.filter(c => c !== mutated[targetIdx].color);
-      mutated[targetIdx] = {
-        ...mutated[targetIdx],
-        color: randomItem(otherColors),
-      };
-      break;
-    }
-    case 'rotate':
-      mutated[targetIdx] = {
-        ...mutated[targetIdx],
-        rotation: (mutated[targetIdx].rotation ?? 0) + randomItem([90, -90]),
-      };
-      break;
-  }
-
-  return mutated;
-}
-
-/** 問題を生成する */
+/** 問題を順番に生成する */
 export function generateOddOneOutQuestion(): Question<OddOneOutQuestionData, OddOneOutChoiceData> {
-  const gridSize = 3; // 3×3固定（シンプルに）
-  const totalCells = gridSize * gridSize;
-  const oddIndex = randomInt(0, totalCells - 1);
+  const questions = getAllOddOneOutQuestions();
+  const question = questions[currentIndex % questions.length];
+  currentIndex++;
+  return question;
+}
 
-  const baseFigure = generateBaseFigure();
-  const mutatedFigure = mutateFigure(baseFigure);
-
-  // 4択: oddIndexを含む4つの位置候補を生成
-  const candidates = new Set<number>();
-  candidates.add(oddIndex);
-
-  while (candidates.size < 4) {
-    candidates.add(randomInt(0, totalCells - 1));
-  }
-
-  const choiceArray = Array.from(candidates);
-  // シャッフル
-  for (let i = choiceArray.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [choiceArray[i], choiceArray[j]] = [choiceArray[j], choiceArray[i]];
-  }
-
-  const correctIndex = choiceArray.indexOf(oddIndex);
-
-  return {
+/** 固定問題プールの全問題を返す */
+export function getAllOddOneOutQuestions(): Question<OddOneOutQuestionData, OddOneOutChoiceData>[] {
+  return FIXED_QUESTIONS.map((q) => ({
     questionData: {
-      baseFigure,
-      mutatedFigure,
-      gridSize,
-      oddIndex,
+      baseFigure: q.baseFigure,
+      mutatedFigure: q.mutatedFigure,
+      gridSize: q.gridSize,
+      oddIndex: q.oddIndex,
     },
-    choices: choiceArray,
-    correctIndex,
+    choices: q.choices,
+    correctIndex: q.correctIndex,
     instructionText: 'ひとつだけちがうものを\nみつけてね',
-  };
+  }));
 }
 
 /** 正解判定 */

@@ -20,16 +20,16 @@ export const SpringDisplay: React.FC<SpringDisplayProps> = ({
   const { stretch } = spring;
 
   // ばねのパラメータ
-  const topY = 10;
-  const coils = 6;
-  const coilWidth = 16;
+  const topY = 8;
+  const coils = 5;
+  const coilWidth = 12;
   const cx = width / 2;
 
   // stretchに応じたコイル間隔（1=短い、5=長い）
-  const coilSpacing = 10 + stretch * 6;
+  const coilSpacing = 8 + stretch * 4;
   const springLength = coils * coilSpacing;
-  const ballY = topY + springLength + 10;
-  const ballRadius = 12;
+  const ballY = topY + springLength + 8;
+  const ballRadius = 10;
 
   return (
     <Box w={`${width}px`} h={`${height}px`}>

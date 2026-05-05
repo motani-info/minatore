@@ -84,27 +84,20 @@ const q4: FixedQ = {
 const FIXED_QUESTIONS: FixedQ[] = [q1, q2, q3, q4];
 
 const INSTRUCTION_TEXT =
-  'いちばんおもいものには◎を、\n2ばんめにおもいものには△を、\nいちばんかるいものには×をつけましょう。';
+  'いちばんおもいものには○を、\n2ばんめにおもいものには△をつけましょう。';
 
-/** 問題を生成する */
+/** 現在の出題インデックス */
+let currentIndex = 0;
+
+/** 問題を順番に生成する */
 export function generateCompareSpringQuestion(): Question<
   CompareSpringQuestionData,
   CompareSpringChoiceData
 > {
-  const fixedQ = FIXED_QUESTIONS[Math.floor(Math.random() * FIXED_QUESTIONS.length)];
-
-  return {
-    questionData: {
-      springs: fixedQ.springs,
-    },
-    choices: [{
-      heaviestIndex: fixedQ.heaviestIndex,
-      secondIndex: fixedQ.secondIndex,
-      lightestIndex: fixedQ.lightestIndex,
-    }],
-    correctIndex: 0,
-    instructionText: INSTRUCTION_TEXT,
-  };
+  const questions = getAllCompareSpringQuestions();
+  const question = questions[currentIndex % questions.length];
+  currentIndex++;
+  return question;
 }
 
 /** 固定問題プールの全問題を返す */
@@ -133,12 +126,11 @@ export function validateSpringMarks(
   marks: SpringMarkType[],
   heaviestIndex: number,
   secondIndex: number,
-  lightestIndex: number,
+  _lightestIndex: number,
 ): boolean {
-  const dcIdx = marks.indexOf('double-circle');
+  const circleIdx = marks.indexOf('circle');
   const triIdx = marks.indexOf('triangle');
-  const crossIdx = marks.indexOf('cross');
-  return dcIdx === heaviestIndex && triIdx === secondIndex && crossIdx === lightestIndex;
+  return circleIdx === heaviestIndex && triIdx === secondIndex;
 }
 
 /** 正解判定関数（QuestionType用） */

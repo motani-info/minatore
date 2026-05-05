@@ -1,86 +1,168 @@
 import type { Question } from '../../types/question';
 import type { OneToOneQuestionData, OneToOneChoiceData } from './types';
 
-function randomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+// ─── 固定問題プール ───
+
+interface FixedOneToOneQ {
+  topEmoji: string;
+  topName: string;
+  topCount: number;
+  bottomEmoji: string;
+  bottomName: string;
+  bottomCount: number;
+  choices: OneToOneChoiceData[];
+  correctIndex: number;
 }
 
-function randomItem<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-const PAIRS = [
-  { topEmoji: '🐤', topName: 'とり', bottomEmoji: '🏠', bottomName: 'おうち' },
-  { topEmoji: '🐶', topName: 'いぬ', bottomEmoji: '🦴', bottomName: 'ほね' },
-  { topEmoji: '🐱', topName: 'ねこ', bottomEmoji: '🐟', bottomName: 'さかな' },
-  { topEmoji: '🧒', topName: 'こども', bottomEmoji: '🎒', bottomName: 'かばん' },
-  { topEmoji: '🐰', topName: 'うさぎ', bottomEmoji: '🥕', bottomName: 'にんじん' },
+const FIXED_QUESTIONS: FixedOneToOneQ[] = [
+  // Q1: とり5 > おうち3 → とりが2あまる
+  {
+    topEmoji: '🐤', topName: 'とり', topCount: 5,
+    bottomEmoji: '🏠', bottomName: 'おうち', bottomCount: 3,
+    choices: [
+      { text: '🐤が2あまる' },
+      { text: '🏠が2あまる' },
+      { text: '🐤が3あまる' },
+      { text: 'ぴったり' },
+    ],
+    correctIndex: 0,
+  },
+  // Q2: いぬ3 < ほね5 → ほねが2あまる
+  {
+    topEmoji: '🐶', topName: 'いぬ', topCount: 3,
+    bottomEmoji: '🦴', bottomName: 'ほね', bottomCount: 5,
+    choices: [
+      { text: '🐶が2あまる' },
+      { text: '🦴が2あまる' },
+      { text: '🦴が3あまる' },
+      { text: 'ぴったり' },
+    ],
+    correctIndex: 1,
+  },
+  // Q3: ねこ6 > さかな4 → ねこが2あまる
+  {
+    topEmoji: '🐱', topName: 'ねこ', topCount: 6,
+    bottomEmoji: '🐟', bottomName: 'さかな', bottomCount: 4,
+    choices: [
+      { text: 'ぴったり' },
+      { text: '🐱が2あまる' },
+      { text: '🐟が2あまる' },
+      { text: '🐱が3あまる' },
+    ],
+    correctIndex: 1,
+  },
+  // Q4: こども4 < かばん7 → かばんが3あまる
+  {
+    topEmoji: '🧒', topName: 'こども', topCount: 4,
+    bottomEmoji: '🎒', bottomName: 'かばん', bottomCount: 7,
+    choices: [
+      { text: '🧒が3あまる' },
+      { text: '🎒が4あまる' },
+      { text: 'ぴったり' },
+      { text: '🎒が3あまる' },
+    ],
+    correctIndex: 3,
+  },
+  // Q5: うさぎ7 > にんじん5 → うさぎが2あまる
+  {
+    topEmoji: '🐰', topName: 'うさぎ', topCount: 7,
+    bottomEmoji: '🥕', bottomName: 'にんじん', bottomCount: 5,
+    choices: [
+      { text: '🥕が2あまる' },
+      { text: '🐰が3あまる' },
+      { text: '🐰が2あまる' },
+      { text: 'ぴったり' },
+    ],
+    correctIndex: 2,
+  },
+  // Q6: とり3 < おうち6 → おうちが3あまる
+  {
+    topEmoji: '🐤', topName: 'とり', topCount: 3,
+    bottomEmoji: '🏠', bottomName: 'おうち', bottomCount: 6,
+    choices: [
+      { text: '🏠が3あまる' },
+      { text: '🐤が3あまる' },
+      { text: '🏠が4あまる' },
+      { text: 'ぴったり' },
+    ],
+    correctIndex: 0,
+  },
+  // Q7: いぬ6 > ほね4 → いぬが2あまる
+  {
+    topEmoji: '🐶', topName: 'いぬ', topCount: 6,
+    bottomEmoji: '🦴', bottomName: 'ほね', bottomCount: 4,
+    choices: [
+      { text: 'ぴったり' },
+      { text: '🦴が2あまる' },
+      { text: '🐶が3あまる' },
+      { text: '🐶が2あまる' },
+    ],
+    correctIndex: 3,
+  },
+  // Q8: ねこ4 < さかな7 → さかなが3あまる
+  {
+    topEmoji: '🐱', topName: 'ねこ', topCount: 4,
+    bottomEmoji: '🐟', bottomName: 'さかな', bottomCount: 7,
+    choices: [
+      { text: '🐱が3あまる' },
+      { text: '🐟が3あまる' },
+      { text: '🐟が4あまる' },
+      { text: 'ぴったり' },
+    ],
+    correctIndex: 1,
+  },
+  // Q9: こども5 > かばん3 → こどもが2あまる
+  {
+    topEmoji: '🧒', topName: 'こども', topCount: 5,
+    bottomEmoji: '🎒', bottomName: 'かばん', bottomCount: 3,
+    choices: [
+      { text: '🧒が2あまる' },
+      { text: '🎒が2あまる' },
+      { text: '🧒が3あまる' },
+      { text: 'ぴったり' },
+    ],
+    correctIndex: 0,
+  },
+  // Q10: うさぎ3 < にんじん6 → にんじんが3あまる
+  {
+    topEmoji: '🐰', topName: 'うさぎ', topCount: 3,
+    bottomEmoji: '🥕', bottomName: 'にんじん', bottomCount: 6,
+    choices: [
+      { text: 'ぴったり' },
+      { text: '🐰が3あまる' },
+      { text: '🥕が4あまる' },
+      { text: '🥕が3あまる' },
+    ],
+    correctIndex: 3,
+  },
 ];
 
-/** 問題を生成する */
+/** 現在の出題インデックス */
+let currentIndex = 0;
+
+/** 問題を順番に生成する */
 export function generateOneToOneQuestion(): Question<OneToOneQuestionData, OneToOneChoiceData> {
-  const pair = randomItem(PAIRS);
-  const topCount = randomInt(3, 7);
-  let bottomCount: number;
-  // 必ず差をつける
-  do {
-    bottomCount = randomInt(3, 7);
-  } while (bottomCount === topCount);
+  const questions = getAllOneToOneQuestions();
+  const question = questions[currentIndex % questions.length];
+  currentIndex++;
+  return question;
+}
 
-  const diff = Math.abs(topCount - bottomCount);
-  const topMore = topCount > bottomCount;
-
-  // 正解テキスト
-  const correctText = topMore
-    ? `${pair.topEmoji}が${diff}あまる`
-    : `${pair.bottomEmoji}が${diff}あまる`;
-
-  // 選択肢を生成
-  const choiceTexts: string[] = [];
-
-  // 正解を追加
-  choiceTexts.push(correctText);
-
-  // ダミー: 逆のアイテムが余る
-  choiceTexts.push(
-    topMore
-      ? `${pair.bottomEmoji}が${diff}あまる`
-      : `${pair.topEmoji}が${diff}あまる`
-  );
-
-  // ダミー: 数が1ずれる
-  choiceTexts.push(
-    topMore
-      ? `${pair.topEmoji}が${diff + 1}あまる`
-      : `${pair.bottomEmoji}が${diff + 1}あまる`
-  );
-
-  // ダミー: ぴったり
-  choiceTexts.push('ぴったり');
-
-  // シャッフル
-  const indices = [0, 1, 2, 3];
-  for (let i = indices.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [indices[i], indices[j]] = [indices[j], indices[i]];
-  }
-
-  const choices: OneToOneChoiceData[] = indices.map(i => ({ text: choiceTexts[i] }));
-  const correctIndex = indices.indexOf(0);
-
-  return {
+/** 固定問題プールの全問題を返す */
+export function getAllOneToOneQuestions(): Question<OneToOneQuestionData, OneToOneChoiceData>[] {
+  return FIXED_QUESTIONS.map((q) => ({
     questionData: {
-      topEmoji: pair.topEmoji,
-      topName: pair.topName,
-      topCount,
-      bottomEmoji: pair.bottomEmoji,
-      bottomName: pair.bottomName,
-      bottomCount,
+      topEmoji: q.topEmoji,
+      topName: q.topName,
+      topCount: q.topCount,
+      bottomEmoji: q.bottomEmoji,
+      bottomName: q.bottomName,
+      bottomCount: q.bottomCount,
     },
-    choices,
-    correctIndex,
-    instructionText: `${pair.topName}さんが1ぴきずつ\n${pair.bottomName}にはいります。\nどうなりますか？`,
-  };
+    choices: q.choices,
+    correctIndex: q.correctIndex,
+    instructionText: `${q.topName}さんが1ぴきずつ\n${q.bottomName}にはいります。\nどうなりますか？`,
+  }));
 }
 
 /** 正解判定 */

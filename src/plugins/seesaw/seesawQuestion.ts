@@ -210,24 +210,13 @@ const QUESTION_POOL: Array<{
   },
 ];
 
-/** 出題済みインデックスを追跡（全問出題したらリセット） */
-let usedIndices: number[] = [];
+/** 現在の出題インデックス */
+let currentIndex = 0;
 
-/** 問題を生成する */
+/** 問題を順番に生成する */
 export function generateSeesawQuestion(): Question<SeesawQuestionData, SeesawChoiceData> {
-  // 未出題の問題からランダムに選択
-  if (usedIndices.length >= QUESTION_POOL.length) {
-    usedIndices = [];
-  }
-
-  const availableIndices = QUESTION_POOL
-    .map((_, i) => i)
-    .filter((i) => !usedIndices.includes(i));
-
-  const selectedIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-  usedIndices.push(selectedIndex);
-
-  const problem = QUESTION_POOL[selectedIndex];
+  const problem = QUESTION_POOL[currentIndex % QUESTION_POOL.length];
+  currentIndex++;
 
   return {
     questionData: {

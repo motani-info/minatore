@@ -75,24 +75,18 @@ const FIXED_QUESTIONS: FixedQ[] = [q1, q2, q3, q4];
 const INSTRUCTION_TEXT =
   'いちばんながいせんには○、\nいちばんみじかいせんには×をつけましょう。';
 
-/** 問題を生成する */
+/** 現在の出題インデックス */
+let currentIndex = 0;
+
+/** 問題を順番に生成する */
 export function generateCompareLengthQuestion(): Question<
   CompareLengthQuestionData,
   CompareLengthChoiceData
 > {
-  const fixedQ = FIXED_QUESTIONS[Math.floor(Math.random() * FIXED_QUESTIONS.length)];
-
-  return {
-    questionData: {
-      lines: fixedQ.lines,
-    },
-    choices: [{
-      longestIndex: fixedQ.longestIndex,
-      shortestIndex: fixedQ.shortestIndex,
-    }],
-    correctIndex: 0,
-    instructionText: INSTRUCTION_TEXT,
-  };
+  const questions = getAllCompareLengthQuestions();
+  const question = questions[currentIndex % questions.length];
+  currentIndex++;
+  return question;
 }
 
 /** 固定問題プールの全問題を返す */

@@ -13,7 +13,7 @@ export const CompareSpringQuestionDisplay: React.FC<QuestionDisplayProps> = ({ d
   return (
     <Flex gap={2} align="flex-start" justify="center" role="img" aria-label="ばねのおもさくらべ">
       {data.springs.map((spring, index) => (
-        <SpringDisplay key={index} spring={spring} width={60} height={180} />
+        <SpringDisplay key={index} spring={spring} width={50} height={120} />
       ))}
     </Flex>
   );

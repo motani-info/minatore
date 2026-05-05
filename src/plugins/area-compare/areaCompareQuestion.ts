@@ -138,38 +138,15 @@ const QUESTION_POOL: Array<{
   },
 ];
 
-/** 出題済みインデックスを追跡 */
-let usedIndices: number[] = [];
+/** 現在の出題インデックス */
+let currentIndex = 0;
 
-/** 問題を生成する */
+/** 問題を順番に生成する */
 export function generateAreaCompareQuestion(): Question<AreaCompareQuestionData, AreaCompareChoiceData> {
-  if (usedIndices.length >= QUESTION_POOL.length) {
-    usedIndices = [];
-  }
-
-  const availableIndices = QUESTION_POOL
-    .map((_, i) => i)
-    .filter((i) => !usedIndices.includes(i));
-
-  const selectedIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-  usedIndices.push(selectedIndex);
-
-  const problem = QUESTION_POOL[selectedIndex];
-
-  return {
-    questionData: {
-      items: problem.items,
-    },
-    choices: [
-      {
-        mostIndex: problem.mostIndex,
-        leastIndex: problem.leastIndex,
-      },
-    ],
-    correctIndex: 0,
-    instructionText:
-      'くろいぶぶんがいちばんひろいものには○、\nいちばんせまいものには×をつけましょう。',
-  };
+  const questions = getAllAreaCompareQuestions();
+  const question = questions[currentIndex % questions.length];
+  currentIndex++;
+  return question;
 }
 
 /** 固定問題プールの全問題を返す */

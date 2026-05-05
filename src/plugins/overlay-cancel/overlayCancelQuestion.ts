@@ -1,24 +1,5 @@
 import type { Question } from '../../types/question';
-import type { OverlayCancelQuestionData, OverlayCancelChoiceData, CellValue, Grid2x2 } from './types';
-
-function randomItem<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function randomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-/** ランダムなグリッドを生成 */
-function generateRandomGrid(): Grid2x2 {
-  const values: CellValue[] = ['circle', 'cross', 'empty'];
-  return [
-    randomItem(values),
-    randomItem(values),
-    randomItem(values),
-    randomItem(values),
-  ];
-}
+import type { OverlayCancelQuestionData, OverlayCancelChoiceData, Grid2x2 } from './types';
 
 /**
  * 左グリッドを右に折り重ねた結果を計算
@@ -53,65 +34,61 @@ export function computeOverlay(leftGrid: Grid2x2, rightGrid: Grid2x2): Grid2x2 {
   return result;
 }
 
-/** 2つのグリッドが同一か */
-function gridsEqual(a: Grid2x2, b: Grid2x2): boolean {
-  return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
+// ─── 固定問題プール ───
+
+interface FixedOverlayCancelQ {
+  leftGrid: Grid2x2;
+  rightGrid: Grid2x2;
+  choices: OverlayCancelChoiceData[];
+  correctIndex: number;
 }
 
-/** ダミーグリッドを生成（正解と異なるもの） */
-function generateDistractor(correct: Grid2x2, existing: Grid2x2[]): Grid2x2 {
-  let attempts = 0;
-  while (attempts < 50) {
-    attempts++;
-    const candidate = generateRandomGrid();
-    if (gridsEqual(candidate, correct)) continue;
-    if (existing.some(e => gridsEqual(e, candidate))) continue;
-    return candidate;
-  }
-  // フォールバック
-  return generateRandomGrid();
-}
+const FIXED_QUESTIONS: FixedOverlayCancelQ[] = [
+  // 問題1: 相殺あり
+  { leftGrid: ['circle', 'cross', 'empty', 'circle'], rightGrid: ['cross', 'circle', 'circle', 'empty'], choices: [['empty', 'empty', 'circle', 'circle'], ['cross', 'circle', 'circle', 'empty'], ['circle', 'cross', 'empty', 'circle'], ['empty', 'circle', 'circle', 'cross']], correctIndex: 0 },
+  // 問題2: 相殺あり
+  { leftGrid: ['cross', 'circle', 'circle', 'cross'], rightGrid: ['circle', 'empty', 'empty', 'circle'], choices: [['circle', 'circle', 'circle', 'empty'], ['empty', 'circle', 'empty', 'empty'], ['circle', 'empty', 'circle', 'circle'], ['empty', 'empty', 'empty', 'empty']], correctIndex: 1 },
+  // 問題3: 相殺あり
+  { leftGrid: ['circle', 'empty', 'cross', 'circle'], rightGrid: ['empty', 'cross', 'circle', 'empty'], choices: [['empty', 'empty', 'circle', 'circle'], ['cross', 'cross', 'circle', 'empty'], ['empty', 'circle', 'empty', 'circle'], ['circle', 'empty', 'empty', 'cross']], correctIndex: 0 },
+  // 問題4: 相殺あり
+  { leftGrid: ['cross', 'cross', 'circle', 'empty'], rightGrid: ['cross', 'circle', 'empty', 'cross'], choices: [['empty', 'cross', 'empty', 'cross'], ['cross', 'cross', 'circle', 'cross'], ['cross', 'empty', 'circle', 'empty'], ['empty', 'circle', 'empty', 'empty']], correctIndex: 0 },
+  // 問題5: 相殺あり
+  { leftGrid: ['empty', 'circle', 'cross', 'empty'], rightGrid: ['circle', 'circle', 'cross', 'cross'], choices: [['circle', 'circle', 'empty', 'cross'], ['empty', 'circle', 'cross', 'cross'], ['circle', 'empty', 'cross', 'empty'], ['circle', 'circle', 'cross', 'cross']], correctIndex: 0 },
+  // 問題6: 相殺あり
+  { leftGrid: ['circle', 'cross', 'empty', 'cross'], rightGrid: ['empty', 'circle', 'cross', 'empty'], choices: [['empty', 'empty', 'cross', 'cross'], ['circle', 'circle', 'cross', 'empty'], ['cross', 'empty', 'empty', 'cross'], ['empty', 'cross', 'cross', 'empty']], correctIndex: 0 },
+  // 問題7: 相殺あり
+  { leftGrid: ['cross', 'empty', 'circle', 'cross'], rightGrid: ['circle', 'cross', 'empty', 'circle'], choices: [['empty', 'empty', 'circle', 'empty'], ['cross', 'cross', 'empty', 'circle'], ['empty', 'cross', 'circle', 'empty'], ['circle', 'empty', 'empty', 'cross']], correctIndex: 0 },
+  // 問題8: 相殺あり
+  { leftGrid: ['empty', 'cross', 'circle', 'empty'], rightGrid: ['cross', 'empty', 'empty', 'circle'], choices: [['empty', 'cross', 'empty', 'circle'], ['cross', 'empty', 'circle', 'empty'], ['empty', 'empty', 'circle', 'circle'], ['cross', 'cross', 'empty', 'empty']], correctIndex: 0 },
+  // 問題9: 相殺あり
+  { leftGrid: ['circle', 'circle', 'cross', 'cross'], rightGrid: ['cross', 'empty', 'circle', 'empty'], choices: [['empty', 'cross', 'empty', 'cross'], ['circle', 'empty', 'cross', 'empty'], ['cross', 'circle', 'circle', 'cross'], ['empty', 'empty', 'circle', 'circle']], correctIndex: 0 },
+  // 問題10: 相殺あり
+  { leftGrid: ['cross', 'circle', 'empty', 'cross'], rightGrid: ['empty', 'cross', 'circle', 'circle'], choices: [['empty', 'empty', 'circle', 'circle'], ['cross', 'cross', 'empty', 'circle'], ['circle', 'empty', 'circle', 'empty'], ['empty', 'cross', 'circle', 'cross']], correctIndex: 0 },
+  // 問題11: 相殺あり
+  { leftGrid: ['circle', 'empty', 'empty', 'circle'], rightGrid: ['cross', 'circle', 'cross', 'empty'], choices: [['cross', 'empty', 'cross', 'circle'], ['empty', 'circle', 'empty', 'circle'], ['cross', 'circle', 'cross', 'circle'], ['empty', 'empty', 'cross', 'empty']], correctIndex: 0 },
+  // 問題12: 相殺あり
+  { leftGrid: ['empty', 'cross', 'cross', 'circle'], rightGrid: ['circle', 'empty', 'cross', 'cross'], choices: [['circle', 'empty', 'empty', 'cross'], ['empty', 'cross', 'cross', 'cross'], ['circle', 'cross', 'cross', 'empty'], ['empty', 'empty', 'cross', 'circle']], correctIndex: 0 },
+];
 
-/** 問題を生成する */
+/** 現在の出題インデックス */
+let currentIndex = 0;
+
+/** 問題を順番に生成する */
 export function generateOverlayCancelQuestion(): Question<OverlayCancelQuestionData, OverlayCancelChoiceData> {
-  let leftGrid: Grid2x2;
-  let rightGrid: Grid2x2;
-  let correctResult: Grid2x2;
+  const questions = getAllOverlayCancelQuestions();
+  const question = questions[currentIndex % questions.length];
+  currentIndex++;
+  return question;
+}
 
-  // 少なくとも1つの相殺が起きる問題を生成
-  let hasCancel = false;
-  let attempts = 0;
-  do {
-    attempts++;
-    leftGrid = generateRandomGrid();
-    rightGrid = generateRandomGrid();
-    correctResult = computeOverlay(leftGrid, rightGrid);
-
-    // 相殺が起きているか確認
-    const flippedLeft: Grid2x2 = [leftGrid[1], leftGrid[0], leftGrid[3], leftGrid[2]];
-    hasCancel = flippedLeft.some((l, i) => {
-      const r = rightGrid[i];
-      return l !== 'empty' && r !== 'empty' && l !== r;
-    });
-  } while (!hasCancel && attempts < 100);
-
-  // ダミー3つを生成（4択）
-  const distractors: Grid2x2[] = [];
-  distractors.push(generateDistractor(correctResult, distractors));
-  distractors.push(generateDistractor(correctResult, distractors));
-  distractors.push(generateDistractor(correctResult, distractors));
-
-  // 正解位置をランダムに配置（4択）
-  const correctIndex = randomInt(0, 3);
-  const choices: OverlayCancelChoiceData[] = [...distractors];
-  choices.splice(correctIndex, 0, correctResult);
-
-  return {
-    questionData: { leftGrid, rightGrid },
-    choices,
-    correctIndex,
+/** 固定問題プールの全問題を返す */
+export function getAllOverlayCancelQuestions(): Question<OverlayCancelQuestionData, OverlayCancelChoiceData>[] {
+  return FIXED_QUESTIONS.map((fixedQ) => ({
+    questionData: { leftGrid: fixedQ.leftGrid, rightGrid: fixedQ.rightGrid },
+    choices: fixedQ.choices,
+    correctIndex: fixedQ.correctIndex,
     instructionText: '左をパタンと右におると\nどうなりますか？\n（○と×がかさなるときえます）',
-  };
+  }));
 }
 
 /** 正解判定 */

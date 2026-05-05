@@ -1,6 +1,6 @@
 import type { QuestionType } from '../../types/question';
 import type { OverlayQuestionData, OverlayChoiceData } from './types';
-import { generateOverlayQuestion, checkOverlayAnswer } from './overlayQuestion';
+import { generateOverlayQuestion, checkOverlayAnswer, getAllOverlayQuestions } from './overlayQuestion';
 import { OverlayQuestionDisplay } from './components/QuestionDisplay';
 import { OverlayChoiceDisplay } from './components/ChoiceDisplay';
 import { registry } from '../../registry/questionTypeRegistry';
@@ -14,6 +14,7 @@ export const overlayQuestionType: QuestionType<OverlayQuestionData, OverlayChoic
   displayName: '重ね図形',
   icon: '🔲',
   generateQuestion: generateOverlayQuestion,
+  getAllQuestions: getAllOverlayQuestions,
   QuestionDisplay: OverlayQuestionDisplay,
   ChoiceDisplay: OverlayChoiceDisplay,
   checkAnswer: checkOverlayAnswer,

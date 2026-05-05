@@ -2,7 +2,18 @@
  * 回転図形問題の型定義
  */
 
-/** 2×2グリッドの型（[上左, 上右, 下左, 下右]） */
+/** グリッドサイズ（2×2, 3×3, 4×4） */
+export type GridSize = 2 | 3 | 4;
+
+/** NxNグリッドのデータ */
+export interface GridData {
+  /** グリッドサイズ（2, 3, or 4） */
+  size: GridSize;
+  /** セルの配列（size*size個、行優先: [上左, 上右, ..., 下左, 下右]） */
+  cells: boolean[];
+}
+
+/** 後方互換性のための2×2グリッド型 */
 export type Grid = [boolean, boolean, boolean, boolean];
 
 /** 回転方向（右/左 × 1回/2回） */
@@ -11,13 +22,13 @@ export type RotationDirection = 'right1' | 'left1' | 'right2' | 'left2';
 /** 回転図形問題の問題データ */
 export interface RotationQuestionData {
   /** 元のグリッドパターン */
-  originalGrid: Grid;
+  originalGrid: GridData;
   /** 回転方向 */
   direction: RotationDirection;
 }
 
 /** 回転図形問題の選択肢データ */
-export type RotationChoiceData = Grid;
+export type RotationChoiceData = GridData;
 
 // ─── シンボルベース回転図形（固定問題用） ───
 
@@ -58,16 +69,36 @@ export interface CellSymbol {
   size?: 'normal' | 'large';
 }
 
-/** シンボルベースの2×2グリッド [上左, 上右, 下左, 下右] */
+/** シンボルグリッドのデータ */
+export interface SymbolGridData {
+  /** グリッドサイズ（2, 3, or 4） */
+  size: GridSize;
+  /** セルの配列（size*size個、行優先） */
+  cells: CellSymbol[];
+}
+
+/** 後方互換性のための2×2シンボルグリッド型 */
 export type SymbolGrid = [CellSymbol, CellSymbol, CellSymbol, CellSymbol];
 
 /** シンボルベース回転図形の問題データ */
 export interface SymbolRotationQuestionData {
   /** 元のグリッドパターン */
-  originalGrid: SymbolGrid;
+  originalGrid: SymbolGridData;
   /** 回転方向 */
   direction: RotationDirection;
 }
 
 /** シンボルベース回転図形の選択肢データ */
-export type SymbolRotationChoiceData = SymbolGrid;
+export type SymbolRotationChoiceData = SymbolGridData;
+
+// ─── ヘルパー関数 ───
+
+/** Grid（2×2タプル）をGridDataに変換する */
+export function gridToGridData(grid: Grid): GridData {
+  return { size: 2, cells: [...grid] };
+}
+
+/** SymbolGrid（2×2タプル）をSymbolGridDataに変換する */
+export function symbolGridToGridData(grid: SymbolGrid): SymbolGridData {
+  return { size: 2, cells: [...grid] };
+}

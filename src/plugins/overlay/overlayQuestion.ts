@@ -7,13 +7,6 @@ import type {
   OverlayChoiceData,
 } from './types';
 
-const CELL_VALUES: CellValue[] = ['circle', 'cross', 'empty'];
-
-/** ランダムなセル値を返す */
-function randomCell(): CellValue {
-  return CELL_VALUES[Math.floor(Math.random() * CELL_VALUES.length)];
-}
-
 /**
  * 2つのセルを重ねた結果を計算する
  * ルール:
@@ -44,75 +37,73 @@ export function resultsEqual(a: OverlayResult, b: OverlayResult): boolean {
   return a[0] === b[0] && a[1] === b[1];
 }
 
-/**
- * 有効なグリッドを生成する
- * 左列に少なくとも1つの非emptyセルを保証する
- */
-export function generateRandomGrid(): OverlayGrid {
-  let grid: OverlayGrid;
-  do {
-    grid = {
-      left: [randomCell(), randomCell()],
-      right: [randomCell(), randomCell()],
-    };
-  } while (grid.left[0] === 'empty' && grid.left[1] === 'empty');
-  return grid;
+// ─── 固定問題プール ───
+
+interface FixedOverlayQ {
+  grid: OverlayGrid;
+  choices: OverlayChoiceData[];
+  correctIndex: number;
 }
 
-/** ランダムな結果を生成する */
-function generateRandomResult(): OverlayResult {
-  return [randomCell(), randomCell()];
-}
+const FIXED_QUESTIONS: FixedOverlayQ[] = [
+  // 問題1: circle+circle=circle, cross+empty=cross
+  { grid: { left: ['circle', 'cross'], right: ['circle', 'empty'] }, choices: [['circle', 'cross'], ['circle', 'circle'], ['empty', 'cross'], ['cross', 'cross']], correctIndex: 0 },
+  // 問題2: cross+circle=empty, circle+cross=empty
+  { grid: { left: ['cross', 'circle'], right: ['circle', 'cross'] }, choices: [['cross', 'cross'], ['circle', 'circle'], ['empty', 'empty'], ['cross', 'circle']], correctIndex: 2 },
+  // 問題3: circle+empty=circle, empty+circle=circle
+  { grid: { left: ['circle', 'empty'], right: ['empty', 'circle'] }, choices: [['circle', 'circle'], ['empty', 'empty'], ['circle', 'empty'], ['empty', 'circle']], correctIndex: 0 },
+  // 問題4: cross+cross=cross, circle+circle=circle
+  { grid: { left: ['cross', 'circle'], right: ['cross', 'circle'] }, choices: [['empty', 'empty'], ['cross', 'circle'], ['circle', 'cross'], ['cross', 'cross']], correctIndex: 1 },
+  // 問題5: cross+empty=cross, cross+circle=empty
+  { grid: { left: ['cross', 'cross'], right: ['empty', 'circle'] }, choices: [['cross', 'empty'], ['cross', 'cross'], ['empty', 'circle'], ['circle', 'cross']], correctIndex: 0 },
+  // 問題6: empty+cross=cross, circle+empty=circle
+  { grid: { left: ['empty', 'circle'], right: ['cross', 'empty'] }, choices: [['cross', 'circle'], ['empty', 'circle'], ['cross', 'empty'], ['circle', 'cross']], correctIndex: 0 },
+  // 問題7: circle+cross=empty, cross+cross=cross
+  { grid: { left: ['circle', 'cross'], right: ['cross', 'cross'] }, choices: [['empty', 'cross'], ['circle', 'cross'], ['cross', 'empty'], ['cross', 'cross']], correctIndex: 0 },
+  // 問題8: cross+cross=cross, empty+empty=empty
+  { grid: { left: ['cross', 'empty'], right: ['cross', 'empty'] }, choices: [['cross', 'empty'], ['empty', 'cross'], ['cross', 'cross'], ['empty', 'empty']], correctIndex: 0 },
+  // 問題9: circle+circle=circle, circle+cross=empty
+  { grid: { left: ['circle', 'circle'], right: ['circle', 'cross'] }, choices: [['circle', 'circle'], ['circle', 'empty'], ['empty', 'cross'], ['cross', 'circle']], correctIndex: 1 },
+  // 問題10: empty+empty=empty, cross+circle=empty
+  { grid: { left: ['empty', 'cross'], right: ['empty', 'circle'] }, choices: [['empty', 'empty'], ['cross', 'circle'], ['empty', 'cross'], ['circle', 'empty']], correctIndex: 0 },
+  // 問題11: cross+circle=empty, empty+cross=cross
+  { grid: { left: ['cross', 'empty'], right: ['circle', 'cross'] }, choices: [['empty', 'cross'], ['cross', 'cross'], ['circle', 'empty'], ['cross', 'circle']], correctIndex: 0 },
+  // 問題12: circle+empty=circle, cross+cross=cross
+  { grid: { left: ['circle', 'cross'], right: ['empty', 'cross'] }, choices: [['circle', 'cross'], ['empty', 'cross'], ['circle', 'circle'], ['cross', 'empty']], correctIndex: 0 },
+  // 問題13: empty+circle=circle, circle+empty=circle
+  { grid: { left: ['empty', 'circle'], right: ['circle', 'empty'] }, choices: [['circle', 'circle'], ['empty', 'empty'], ['circle', 'empty'], ['empty', 'circle']], correctIndex: 0 },
+  // 問題14: cross+empty=cross, circle+circle=circle
+  { grid: { left: ['cross', 'circle'], right: ['empty', 'circle'] }, choices: [['cross', 'circle'], ['cross', 'empty'], ['empty', 'circle'], ['circle', 'circle']], correctIndex: 0 },
+  // 問題15: circle+cross=empty, cross+empty=cross
+  { grid: { left: ['circle', 'cross'], right: ['cross', 'empty'] }, choices: [['empty', 'cross'], ['circle', 'cross'], ['cross', 'cross'], ['empty', 'empty']], correctIndex: 0 },
+  // 問題16: empty+cross=cross, empty+circle=circle
+  { grid: { left: ['empty', 'empty'], right: ['cross', 'circle'] }, choices: [['cross', 'circle'], ['empty', 'empty'], ['circle', 'cross'], ['cross', 'cross']], correctIndex: 0 },
+];
 
-/**
- * 不正解の選択肢を生成する
- * 正解・他の不正解と重複しない
- */
-export function generateDistractors(
-  correctResult: OverlayResult,
-  count: number
-): OverlayResult[] {
-  const distractors: OverlayResult[] = [];
-  let attempts = 0;
-  const maxAttempts = 100;
+/** 現在の出題インデックス */
+let currentIndex = 0;
 
-  while (distractors.length < count && attempts < maxAttempts) {
-    attempts++;
-    const candidate = generateRandomResult();
-
-    if (resultsEqual(candidate, correctResult)) continue;
-
-    const isDuplicate = distractors.some((d) => resultsEqual(d, candidate));
-    if (isDuplicate) continue;
-
-    distractors.push(candidate);
-  }
-
-  // フォールバック
-  while (distractors.length < count) {
-    distractors.push(generateRandomResult());
-  }
-
-  return distractors;
-}
-
-/** 問題を生成する */
+/** 問題を順番に生成する */
 export function generateOverlayQuestion(): Question<OverlayQuestionData, OverlayChoiceData> {
-  const grid = generateRandomGrid();
-  const correctResult = computeOverlayResult(grid);
-
-  const distractors = generateDistractors(correctResult, 3);
-
-  const correctIndex = Math.floor(Math.random() * 4);
-  const choices: OverlayChoiceData[] = [...distractors];
-  choices.splice(correctIndex, 0, correctResult);
+  const fixedQ = FIXED_QUESTIONS[currentIndex % FIXED_QUESTIONS.length];
+  currentIndex++;
 
   return {
-    questionData: { grid },
-    choices,
-    correctIndex,
+    questionData: { grid: fixedQ.grid },
+    choices: fixedQ.choices,
+    correctIndex: fixedQ.correctIndex,
     instructionText: 'パタンと右におると\nどうなりますか？',
   };
+}
+
+/** 固定問題プールの全問題を返す */
+export function getAllOverlayQuestions(): Question<OverlayQuestionData, OverlayChoiceData>[] {
+  return FIXED_QUESTIONS.map((fixedQ) => ({
+    questionData: { grid: fixedQ.grid },
+    choices: fixedQ.choices,
+    correctIndex: fixedQ.correctIndex,
+    instructionText: 'パタンと右におると\nどうなりますか？',
+  }));
 }
 
 /** 正解判定関数 */

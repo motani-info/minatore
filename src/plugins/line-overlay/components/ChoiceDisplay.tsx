@@ -19,8 +19,13 @@ export const LineOverlayChoiceDisplay: React.FC<ChoiceDisplayProps> = ({ data })
       justify="center"
       role="img"
       aria-label="せんたくし"
+      border="2px solid"
+      borderColor="#d1d5db"
+      borderRadius="lg"
+      bg="white"
+      p={1}
     >
-      <DotGrid figure={data} size={100} />
+      <DotGrid figure={data} size={140} />
     </Flex>
   );
 };

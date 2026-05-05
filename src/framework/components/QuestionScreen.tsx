@@ -2,7 +2,6 @@ import { useParams, useLocation, useNavigate, Navigate } from 'react-router-dom'
 import { Box, Container, Flex, SimpleGrid, Text, VStack, chakra } from '@chakra-ui/react';
 import { registry } from '../../registry/questionTypeRegistry';
 import { useQuestionFlow } from '../hooks/useQuestionFlow';
-import { useProgress } from '../hooks/useProgress';
 import { NavigationBar } from './NavigationBar';
 import { FeedbackOverlay } from './FeedbackOverlay';
 import type { Question } from '../../types/question';
@@ -17,7 +16,6 @@ const TYPE_THEMES: Record<string, { gradient: string; accent: string }> = {
   'overlay-cancel': { gradient: 'linear-gradient(135deg, #0891b2 0%, #67e8f9 100%)', accent: '#0891b2' },
   'syllable-count': { gradient: 'linear-gradient(135deg, #7c3aed 0%, #c4b5fd 100%)', accent: '#7c3aed' },
   'one-to-one': { gradient: 'linear-gradient(135deg, #0284c7 0%, #7dd3fc 100%)', accent: '#0284c7' },
-  'odd-one-out': { gradient: 'linear-gradient(135deg, #dc2626 0%, #fca5a5 100%)', accent: '#dc2626' },
   'shape-composition': { gradient: 'linear-gradient(135deg, #7c2d12 0%, #ea580c 100%)', accent: '#ea580c' },
   'symbol-rotation': { gradient: 'linear-gradient(135deg, #9333ea 0%, #c084fc 100%)', accent: '#9333ea' },
   'rotation-sequence': { gradient: 'linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%)', accent: '#6d28d9' },
@@ -41,19 +39,21 @@ export const QuestionScreen: React.FC = () => {
   }
 
   // 一覧画面から選択された問題があれば初期問題として渡す
-  const locationState = location.state as { selectedQuestion?: Question; randomMode?: boolean; randomCurrent?: number; randomTotal?: number } | null;
+  const locationState = location.state as { selectedQuestion?: Question; questionIndex?: number; randomMode?: boolean; randomCurrent?: number; randomTotal?: number } | null;
   const selectedQuestion = locationState?.selectedQuestion;
+  const questionIndex = locationState?.questionIndex;
   const randomMode = locationState?.randomMode ?? false;
   const randomCurrent = locationState?.randomCurrent;
   const randomTotal = locationState?.randomTotal;
 
-  return <QuestionScreenInner questionType={questionType} initialQuestion={selectedQuestion} randomMode={randomMode} randomCurrent={randomCurrent} randomTotal={randomTotal} />;
+  return <QuestionScreenInner questionType={questionType} initialQuestion={selectedQuestion} initialIndex={questionIndex} randomMode={randomMode} randomCurrent={randomCurrent} randomTotal={randomTotal} />;
 };
 
-function QuestionScreenInner({ questionType, initialQuestion, randomMode, randomCurrent, randomTotal }: { questionType: NonNullable<ReturnType<typeof registry.get>>; initialQuestion?: Question; randomMode?: boolean; randomCurrent?: number; randomTotal?: number }) {
+function QuestionScreenInner({ questionType, initialQuestion, initialIndex, randomMode, randomCurrent, randomTotal }: { questionType: NonNullable<ReturnType<typeof registry.get>>; initialQuestion?: Question; initialIndex?: number; randomMode?: boolean; randomCurrent?: number; randomTotal?: number }) {
   const navigate = useNavigate();
   const {
     currentQuestion,
+    currentQuestionIndex,
     selectedIndex,
     isAnswered,
     isCorrect,
@@ -61,11 +61,9 @@ function QuestionScreenInner({ questionType, initialQuestion, randomMode, random
     selectChoice,
     nextQuestion,
     retryQuestion,
-  } = useQuestionFlow(questionType, initialQuestion);
+    totalQuestions,
+  } = useQuestionFlow(questionType, initialQuestion, initialIndex);
 
-  const { progress } = useProgress();
-  const typeProgress = progress?.byType[questionType.id];
-  const totalDone = (typeProgress?.totalQuestions ?? 0) + (isAnswered ? 1 : 0);
   const theme = TYPE_THEMES[questionType.id] ?? DEFAULT_THEME;
 
   const { QuestionDisplay, ChoiceDisplay } = questionType;
@@ -89,7 +87,7 @@ function QuestionScreenInner({ questionType, initialQuestion, randomMode, random
           <Box position="absolute" left="-20px" bottom="-20px" w="100px" h="100px" bg="whiteAlpha.100" borderRadius="full" />
 
           <VStack gap={5} align="stretch" position="relative" zIndex={1}>
-            <NavigationBar current={randomMode ? (randomCurrent ?? 1) : totalDone} total={randomMode ? (randomTotal ?? 10) : 30} />
+            <NavigationBar current={randomMode ? (randomCurrent ?? 1) : (currentQuestionIndex + 1)} total={randomMode ? (randomTotal ?? 10) : totalQuestions} />
 
             {/* 問題表示エリア */}
             <Flex

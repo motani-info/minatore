@@ -24,141 +24,168 @@ export function piecePairsEqual(a: PiecePair, b: PiecePair): boolean {
   );
 }
 
-/** グリッドの塗りつぶしセル数を数える */
-function countFilled(grid: PuzzleGrid): number {
-  return grid.filter(Boolean).length;
+// ─── 固定問題プール ───
+
+interface FixedPuzzleQ {
+  targetGrid: PuzzleGrid;
+  choices: PiecePair[];
+  correctIndex: number;
 }
 
-/**
- * お手本のグリッドを生成する（2〜3マスが塗りつぶし）
- */
-export function generateTargetGrid(): PuzzleGrid {
-  const filledCount = Math.random() < 0.5 ? 2 : 3;
-  const indices = [0, 1, 2, 3];
+const FIXED_QUESTIONS: FixedPuzzleQ[] = [
+  // Q1: target=[T,T,F,F] (top row filled)
+  {
+    targetGrid: [true, true, false, false],
+    choices: [
+      { pieceA: [true, false, false, false], pieceB: [false, true, false, false] },
+      { pieceA: [true, false, false, false], pieceB: [false, false, true, false] },
+      { pieceA: [false, true, false, false], pieceB: [false, false, false, true] },
+      { pieceA: [true, true, false, false], pieceB: [false, false, true, false] },
+    ],
+    correctIndex: 0,
+  },
+  // Q2: target=[T,F,T,F] (left column filled)
+  {
+    targetGrid: [true, false, true, false],
+    choices: [
+      { pieceA: [false, true, false, false], pieceB: [true, false, true, false] },
+      { pieceA: [true, false, false, false], pieceB: [false, false, true, false] },
+      { pieceA: [true, false, true, false], pieceB: [false, true, false, false] },
+      { pieceA: [false, false, true, false], pieceB: [false, true, false, false] },
+    ],
+    correctIndex: 1,
+  },
+  // Q3: target=[F,T,F,T] (right column filled)
+  {
+    targetGrid: [false, true, false, true],
+    choices: [
+      { pieceA: [true, false, false, true], pieceB: [false, true, false, false] },
+      { pieceA: [false, true, false, false], pieceB: [false, false, true, true] },
+      { pieceA: [false, true, false, false], pieceB: [false, false, false, true] },
+      { pieceA: [false, false, false, true], pieceB: [true, true, false, false] },
+    ],
+    correctIndex: 2,
+  },
+  // Q4: target=[F,F,T,T] (bottom row filled)
+  {
+    targetGrid: [false, false, true, true],
+    choices: [
+      { pieceA: [false, false, true, false], pieceB: [true, false, false, true] },
+      { pieceA: [false, false, true, false], pieceB: [false, false, false, true] },
+      { pieceA: [true, false, false, false], pieceB: [false, false, true, true] },
+      { pieceA: [false, true, true, false], pieceB: [false, false, false, true] },
+    ],
+    correctIndex: 1,
+  },
+  // Q5: target=[T,T,T,F] (3 cells)
+  {
+    targetGrid: [true, true, true, false],
+    choices: [
+      { pieceA: [true, true, false, false], pieceB: [false, false, true, false] },
+      { pieceA: [true, false, true, false], pieceB: [false, true, false, true] },
+      { pieceA: [true, true, false, false], pieceB: [false, false, false, true] },
+      { pieceA: [false, true, true, false], pieceB: [true, false, false, true] },
+    ],
+    correctIndex: 0,
+  },
+  // Q6: target=[T,F,T,T] (3 cells)
+  {
+    targetGrid: [true, false, true, true],
+    choices: [
+      { pieceA: [true, false, false, false], pieceB: [false, true, true, true] },
+      { pieceA: [true, false, true, false], pieceB: [false, false, false, true] },
+      { pieceA: [false, false, true, true], pieceB: [true, true, false, false] },
+      { pieceA: [true, false, false, true], pieceB: [false, true, true, false] },
+    ],
+    correctIndex: 1,
+  },
+  // Q7: target=[T,T,F,T] (3 cells)
+  {
+    targetGrid: [true, true, false, true],
+    choices: [
+      { pieceA: [true, false, false, true], pieceB: [false, true, true, false] },
+      { pieceA: [false, true, false, true], pieceB: [true, false, true, false] },
+      { pieceA: [true, false, false, true], pieceB: [false, true, false, false] },
+      { pieceA: [true, true, false, false], pieceB: [false, false, true, true] },
+    ],
+    correctIndex: 2,
+  },
+  // Q8: target=[F,T,T,T] (3 cells)
+  {
+    targetGrid: [false, true, true, true],
+    choices: [
+      { pieceA: [false, true, false, false], pieceB: [false, false, true, true] },
+      { pieceA: [false, true, true, false], pieceB: [true, false, false, true] },
+      { pieceA: [true, true, false, true], pieceB: [false, false, true, false] },
+      { pieceA: [false, false, true, true], pieceB: [true, true, false, false] },
+    ],
+    correctIndex: 0,
+  },
+  // Q9: target=[T,F,F,T] (diagonal)
+  {
+    targetGrid: [true, false, false, true],
+    choices: [
+      { pieceA: [true, false, false, false], pieceB: [false, true, false, true] },
+      { pieceA: [true, false, false, false], pieceB: [false, false, false, true] },
+      { pieceA: [false, false, false, true], pieceB: [false, true, false, false] },
+      { pieceA: [true, true, false, false], pieceB: [false, false, false, true] },
+    ],
+    correctIndex: 1,
+  },
+  // Q10: target=[F,T,T,F] (anti-diagonal)
+  {
+    targetGrid: [false, true, true, false],
+    choices: [
+      { pieceA: [false, true, false, false], pieceB: [false, false, true, false] },
+      { pieceA: [true, true, false, false], pieceB: [false, false, true, false] },
+      { pieceA: [false, true, false, false], pieceB: [true, false, true, false] },
+      { pieceA: [false, false, true, false], pieceB: [false, false, false, true] },
+    ],
+    correctIndex: 0,
+  },
+  // Q11: target=[T,T,T,F] variant
+  {
+    targetGrid: [true, true, true, false],
+    choices: [
+      { pieceA: [false, true, false, false], pieceB: [true, false, true, true] },
+      { pieceA: [true, false, false, false], pieceB: [false, true, true, false] },
+      { pieceA: [false, true, true, false], pieceB: [true, false, false, true] },
+      { pieceA: [true, false, true, false], pieceB: [false, true, false, false] },
+    ],
+    correctIndex: 1,
+  },
+  // Q12: target=[F,T,T,T] variant
+  {
+    targetGrid: [false, true, true, true],
+    choices: [
+      { pieceA: [false, false, true, false], pieceB: [false, true, false, true] },
+      { pieceA: [true, true, false, true], pieceB: [false, false, true, false] },
+      { pieceA: [false, true, false, true], pieceB: [true, false, true, false] },
+      { pieceA: [false, true, true, false], pieceB: [true, false, false, true] },
+    ],
+    correctIndex: 0,
+  },
+];
 
-  // シャッフルして先頭からfilledCount個を選ぶ
-  for (let i = indices.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [indices[i], indices[j]] = [indices[j], indices[i]];
-  }
+/** 現在の出題インデックス */
+let currentIndex = 0;
 
-  const grid: PuzzleGrid = [false, false, false, false];
-  for (let i = 0; i < filledCount; i++) {
-    grid[indices[i]] = true;
-  }
-  return grid;
-}
-
-/**
- * お手本を2つのピースに分割する
- * 各ピースは少なくとも1マスが塗りつぶし
- * ピースは重複しない（同じマスを両方が塗りつぶさない）
- */
-export function splitIntoPieces(target: PuzzleGrid): PiecePair {
-  const filledIndices = target
-    .map((v, i) => (v ? i : -1))
-    .filter((i) => i >= 0);
-
-  // 塗りつぶしセルをランダムに2グループに分ける
-  // 各グループに少なくとも1つ
-  const shuffled = [...filledIndices];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-
-  const splitPoint = Math.floor(Math.random() * (shuffled.length - 1)) + 1;
-  const groupA = shuffled.slice(0, splitPoint);
-  const groupB = shuffled.slice(splitPoint);
-
-  const pieceA: PuzzleGrid = [false, false, false, false];
-  const pieceB: PuzzleGrid = [false, false, false, false];
-
-  for (const idx of groupA) pieceA[idx] = true;
-  for (const idx of groupB) pieceB[idx] = true;
-
-  return { pieceA, pieceB };
-}
-
-/** ランダムなグリッドを生成する（1〜3マス塗りつぶし） */
-function generateRandomPiece(): PuzzleGrid {
-  const filledCount = Math.floor(Math.random() * 3) + 1;
-  const indices = [0, 1, 2, 3];
-  for (let i = indices.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [indices[i], indices[j]] = [indices[j], indices[i]];
-  }
-  const grid: PuzzleGrid = [false, false, false, false];
-  for (let i = 0; i < filledCount; i++) {
-    grid[indices[i]] = true;
-  }
-  return grid;
-}
-
-/**
- * 不正解の選択肢を生成する
- * 合わせてもお手本にならないピースの組み合わせ
- */
-export function generateDistractors(
-  target: PuzzleGrid,
-  correctPair: PiecePair,
-  count: number
-): PiecePair[] {
-  const distractors: PiecePair[] = [];
-  let attempts = 0;
-  const maxAttempts = 200;
-
-  while (distractors.length < count && attempts < maxAttempts) {
-    attempts++;
-    const pieceA = generateRandomPiece();
-    const pieceB = generateRandomPiece();
-    const candidate: PiecePair = { pieceA, pieceB };
-
-    // 合わせた結果がお手本と一致しないことを確認
-    const combined = combinePieces(pieceA, pieceB);
-    if (gridsEqual(combined, target)) continue;
-
-    // 正解と同じ組み合わせでないことを確認
-    if (piecePairsEqual(candidate, correctPair)) continue;
-
-    // 既存の不正解と重複しないことを確認
-    const isDuplicate = distractors.some((d) => piecePairsEqual(d, candidate));
-    if (isDuplicate) continue;
-
-    // 各ピースに少なくとも1マスの塗りつぶしがあることを確認
-    if (countFilled(pieceA) === 0 || countFilled(pieceB) === 0) continue;
-
-    distractors.push(candidate);
-  }
-
-  // フォールバック
-  while (distractors.length < count) {
-    distractors.push({
-      pieceA: generateRandomPiece(),
-      pieceB: generateRandomPiece(),
-    });
-  }
-
-  return distractors;
-}
-
-/** 問題を生成する */
+/** 問題を順番に生成する */
 export function generatePuzzleQuestion(): Question<PuzzleQuestionData, PuzzleChoiceData> {
-  const targetGrid = generateTargetGrid();
-  const correctPair = splitIntoPieces(targetGrid);
+  const questions = getAllPuzzleQuestions();
+  const question = questions[currentIndex % questions.length];
+  currentIndex++;
+  return question;
+}
 
-  const distractors = generateDistractors(targetGrid, correctPair, 3);
-
-  const correctIndex = Math.floor(Math.random() * 4);
-  const choices: PuzzleChoiceData[] = [...distractors];
-  choices.splice(correctIndex, 0, correctPair);
-
-  return {
-    questionData: { targetGrid },
-    choices,
-    correctIndex,
+/** 固定問題プールの全問題を返す */
+export function getAllPuzzleQuestions(): Question<PuzzleQuestionData, PuzzleChoiceData>[] {
+  return FIXED_QUESTIONS.map((q) => ({
+    questionData: { targetGrid: q.targetGrid },
+    choices: q.choices,
+    correctIndex: q.correctIndex,
     instructionText: '2つのピースを合わせると\nお手本になるのはどれ？',
-  };
+  }));
 }
 
 /** 正解判定関数 */

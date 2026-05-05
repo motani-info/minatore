@@ -1,6 +1,6 @@
 import type { QuestionType } from '../../types/question';
 import type { PuzzleQuestionData, PuzzleChoiceData } from './types';
-import { generatePuzzleQuestion, checkPuzzleAnswer } from './puzzleQuestion';
+import { generatePuzzleQuestion, checkPuzzleAnswer, getAllPuzzleQuestions } from './puzzleQuestion';
 import { PuzzleQuestionDisplay } from './components/QuestionDisplay';
 import { PuzzleChoiceDisplay } from './components/ChoiceDisplay';
 import { registry } from '../../registry/questionTypeRegistry';
@@ -14,6 +14,7 @@ export const puzzleQuestionType: QuestionType<PuzzleQuestionData, PuzzleChoiceDa
   displayName: '図形パズル',
   icon: '🧩',
   generateQuestion: generatePuzzleQuestion,
+  getAllQuestions: getAllPuzzleQuestions,
   QuestionDisplay: PuzzleQuestionDisplay,
   ChoiceDisplay: PuzzleChoiceDisplay,
   checkAnswer: checkPuzzleAnswer,

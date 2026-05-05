@@ -191,35 +191,27 @@ const FIXED_QUESTIONS: FixedQ[] = [q1, q2, q3, q4];
 const INSTRUCTION_TEXT =
   'とうめいなシートにかかれた2つのかたちを\nピッタリかさねたら、どんなもようになりますか？';
 
-/** 固定問題プールからランダムに1問を生成する */
+/** 固定問題プールから順番に1問を生成する */
 export function generateOverlayShapeQuestion(): Question<
   OverlayShapeQuestionData,
   OverlayShapeChoiceData
 > {
-  const fixedQ = FIXED_QUESTIONS[Math.floor(Math.random() * FIXED_QUESTIONS.length)];
-
-  const correctIndex = Math.floor(Math.random() * 4);
-  const choices: OverlayShapeChoiceData[] = fixedQ.distractors.map((d) => ({ pattern: d }));
-  choices.splice(correctIndex, 0, { pattern: fixedQ.answer });
-
-  return {
-    questionData: {
-      sheetA: fixedQ.sheetA,
-      sheetB: fixedQ.sheetB,
-    },
-    choices,
-    correctIndex,
-    instructionText: INSTRUCTION_TEXT,
-  };
+  const questions = getAllOverlayShapeQuestions();
+  const question = questions[currentIndex % questions.length];
+  currentIndex++;
+  return question;
 }
+
+/** 現在の出題インデックス */
+let currentIndex = 0;
 
 /** 固定問題プールの全問題を返す */
 export function getAllOverlayShapeQuestions(): Question<
   OverlayShapeQuestionData,
   OverlayShapeChoiceData
 >[] {
-  return FIXED_QUESTIONS.map((fixedQ) => {
-    const correctIndex = Math.floor(Math.random() * 4);
+  return FIXED_QUESTIONS.map((fixedQ, i) => {
+    const correctIndex = i % 4; // 固定位置
     const choices: OverlayShapeChoiceData[] = fixedQ.distractors.map((d) => ({ pattern: d }));
     choices.splice(correctIndex, 0, { pattern: fixedQ.answer });
     return {

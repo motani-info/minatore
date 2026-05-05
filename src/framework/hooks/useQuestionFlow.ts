@@ -17,22 +17,35 @@ export interface QuestionFlowState {
   isCorrect: boolean | null;
   /** 現在のフェーズ */
   phase: FlowPhase;
+  /** 現在の問題インデックス（0始まり） */
+  currentQuestionIndex: number;
 }
 
 /**
  * 問題出題フロー管理フック
- * 問題生成、選択肢選択、回答判定、フィードバック表示、次の問題への遷移を管理する
+ * 問題を番号順に出題し、選択肢選択、回答判定、フィードバック表示、次の問題への遷移を管理する
  */
-export function useQuestionFlow(questionType: QuestionType, initialQuestion?: Question) {
+export function useQuestionFlow(questionType: QuestionType, initialQuestion?: Question, initialIndex?: number) {
   const { recordAnswer } = useProgress();
 
-  const [state, setState] = useState<QuestionFlowState>(() => ({
-    currentQuestion: initialQuestion ?? questionType.generateQuestion(),
-    selectedIndex: null,
-    isAnswered: false,
-    isCorrect: null,
-    phase: 'answering',
-  }));
+  // 全問題リストを取得（getAllQuestionsがあればそれを使う）
+  const allQuestions = useRef<Question[]>(
+    questionType.getAllQuestions ? questionType.getAllQuestions() : []
+  );
+
+  const [state, setState] = useState<QuestionFlowState>(() => {
+    const startIndex = initialIndex ?? 0;
+    const question = initialQuestion
+      ?? (allQuestions.current.length > 0 ? allQuestions.current[startIndex] : questionType.generateQuestion());
+    return {
+      currentQuestion: question,
+      selectedIndex: null,
+      isAnswered: false,
+      isCorrect: null,
+      phase: 'answering',
+      currentQuestionIndex: startIndex,
+    };
+  });
 
   // refで二重タップ防止（stateの更新が反映される前の連打を防ぐ）
   const isProcessingRef = useRef(false);
@@ -71,14 +84,23 @@ export function useQuestionFlow(questionType: QuestionType, initialQuestion?: Qu
     [questionType, recordAnswer]
   );
 
-  /** 次の問題へ遷移する */
+  /** 次の問題へ遷移する（番号順） */
   const nextQuestion = useCallback(() => {
-    setState({
-      currentQuestion: questionType.generateQuestion(),
-      selectedIndex: null,
-      isAnswered: false,
-      isCorrect: null,
-      phase: 'answering',
+    setState((prev) => {
+      const nextIndex = prev.currentQuestionIndex + 1;
+      const questions = allQuestions.current;
+      // 全問題リストがある場合は次の問題を取得（末尾に達したら先頭に戻る）
+      const question = questions.length > 0
+        ? questions[nextIndex % questions.length]
+        : questionType.generateQuestion();
+      return {
+        currentQuestion: question,
+        selectedIndex: null,
+        isAnswered: false,
+        isCorrect: null,
+        phase: 'answering',
+        currentQuestionIndex: nextIndex < questions.length ? nextIndex : nextIndex % questions.length,
+      };
     });
   }, [questionType]);
 
@@ -93,10 +115,18 @@ export function useQuestionFlow(questionType: QuestionType, initialQuestion?: Qu
     }));
   }, []);
 
+  /** 全問題数 */
+  const totalQuestions = allQuestions.current.length;
+
+  /** 最後の問題かどうか */
+  const isLastQuestion = totalQuestions > 0 && state.currentQuestionIndex >= totalQuestions - 1;
+
   return {
     ...state,
     selectChoice,
     nextQuestion,
     retryQuestion,
+    totalQuestions,
+    isLastQuestion,
   };
 }

@@ -15,16 +15,15 @@ const THEME = {
   accent: '#059669',
 };
 
-const MARK_CYCLE: SpringMarkType[] = [null, 'double-circle', 'triangle', 'cross'];
+const MARK_CYCLE: SpringMarkType[] = [null, 'circle', 'triangle'];
 const MARK_LABELS: Record<string, string> = {
-  'double-circle': '◎',
+  'circle': '○',
   'triangle': '△',
-  'cross': '×',
 };
 
 /**
  * 比較（重さ：ばね）問題専用の問題画面
- * 各重りに◎/△/×をつける形式
+ * 各重りに○/△をつける形式
  */
 export const CompareSpringScreen: React.FC = () => {
   const { progress, recordAnswer } = useProgress();
@@ -56,7 +55,7 @@ export const CompareSpringScreen: React.FC = () => {
   const totalDone = (typeProgress?.totalQuestions ?? 0) + questionCount;
   const { heaviestIndex, secondIndex, lightestIndex } = question.choices[0];
 
-  /** マークをサイクル: null → ◎ → △ → × → null */
+  /** マークをサイクル: null → ○ → △ → null */
   const cycleMark = useCallback((index: number) => {
     if (isAnswered) return;
     setMarks((prev) => {
@@ -71,10 +70,9 @@ export const CompareSpringScreen: React.FC = () => {
   /** 回答を確定する */
   const submitAnswer = useCallback(() => {
     if (isAnswered) return;
-    const hasDC = marks.includes('double-circle');
+    const hasCircle = marks.includes('circle');
     const hasTri = marks.includes('triangle');
-    const hasCross = marks.includes('cross');
-    if (!hasDC || !hasTri || !hasCross) return;
+    if (!hasCircle || !hasTri) return;
 
     const correct = validateSpringMarks(marks, heaviestIndex, secondIndex, lightestIndex);
     setIsAnswered(true);
@@ -106,7 +104,7 @@ export const CompareSpringScreen: React.FC = () => {
     setShowFeedback(false);
   }, [question]);
 
-  const canSubmit = marks.includes('double-circle') && marks.includes('triangle') && marks.includes('cross');
+  const canSubmit = marks.includes('circle') && marks.includes('triangle');
 
   return (
     <Container maxW="920px" minH="100dvh" py={0} px={0}>
@@ -115,16 +113,16 @@ export const CompareSpringScreen: React.FC = () => {
         {/* 上部 */}
         <Box
           bg={THEME.gradient}
-          px={{ base: 5, sm: 6 }}
-          pt={{ base: 3, sm: 5 }}
-          pb={8}
+          px={{ base: 4, sm: 6 }}
+          pt={{ base: 2, sm: 4 }}
+          pb={6}
           position="relative"
           overflow="hidden"
         >
           <Box position="absolute" right="-40px" top="-40px" w="160px" h="160px" bg="whiteAlpha.100" borderRadius="full" />
           <Box position="absolute" left="-20px" bottom="-20px" w="100px" h="100px" bg="whiteAlpha.100" borderRadius="full" />
 
-          <VStack gap={5} align="stretch" position="relative" zIndex={1}>
+          <VStack gap={3} align="stretch" position="relative" zIndex={1}>
             <NavigationBar current={randomMode ? (randomCurrent ?? 1) : totalDone} total={randomMode ? (randomTotal ?? 10) : 30} />
 
             <Flex
@@ -132,8 +130,8 @@ export const CompareSpringScreen: React.FC = () => {
               justify="center"
               bg="white"
               borderRadius="3xl"
-              p={{ base: 3, sm: 5 }}
-              minH="200px"
+              p={{ base: 2, sm: 4 }}
+              minH="140px"
               boxShadow="0 2px 12px rgba(0,0,0,0.06)"
             >
               <CompareSpringQuestionDisplay data={question.questionData} />
@@ -146,19 +144,19 @@ export const CompareSpringScreen: React.FC = () => {
           flex={1}
           bg="white"
           borderTopRadius="3xl"
-          mt={-6}
-          px={{ base: 5, sm: 6 }}
-          pt={8}
-          pb={6}
+          mt={-4}
+          px={{ base: 4, sm: 6 }}
+          pt={6}
+          pb={4}
           position="relative"
           zIndex={2}
           boxShadow="0 -4px 20px rgba(0,0,0,0.04)"
         >
-          <VStack gap={5} align="stretch">
+          <VStack gap={4} align="stretch">
             {/* 指示テキスト */}
             <Box textAlign="center">
               <Text
-                fontSize="md"
+                fontSize="sm"
                 color="gray.700"
                 lineHeight="1.7"
                 whiteSpace="pre-line"
@@ -178,10 +176,9 @@ export const CompareSpringScreen: React.FC = () => {
                 if (isAnswered) {
                   const isHeaviest = index === heaviestIndex;
                   const isSecond = index === secondIndex;
-                  const isLightest = index === lightestIndex;
-                  if ((mark === 'double-circle' && isHeaviest) ||
+                  if ((mark === 'circle' && isHeaviest) ||
                       (mark === 'triangle' && isSecond) ||
-                      (mark === 'cross' && isLightest)) {
+                      (mark === null && index !== heaviestIndex && index !== secondIndex)) {
                     borderColor = '#34d399';
                     bgColor = '#ecfdf5';
                   } else if (mark !== null) {
@@ -209,21 +206,21 @@ export const CompareSpringScreen: React.FC = () => {
                     transition="all 0.15s"
                     _hover={isAnswered ? {} : { borderColor: THEME.accent }}
                     _active={isAnswered ? {} : { transform: 'scale(0.97)' }}
-                    minW="60px"
+                    minW="56px"
                   >
-                    <SpringDisplay spring={spring} width={50} height={120} />
+                    <SpringDisplay spring={spring} width={44} height={90} />
                     <Flex
                       align="center"
                       justify="center"
-                      w="32px"
-                      h="32px"
+                      w="28px"
+                      h="28px"
                       borderRadius="full"
                       border="2px solid"
                       borderColor={mark ? '#1a1a1a' : '#d1d5db'}
                       bg="white"
                     >
                       <Text
-                        fontSize="md"
+                        fontSize="sm"
                         fontWeight="800"
                         color={mark ? '#1a1a1a' : '#d1d5db'}
                         lineHeight="1"
@@ -243,7 +240,7 @@ export const CompareSpringScreen: React.FC = () => {
                 onClick={submitAnswer}
                 disabled={!canSubmit}
                 w="100%"
-                py={3.5}
+                py={3}
                 fontSize="md"
                 fontWeight="700"
                 color="white"
@@ -252,7 +249,7 @@ export const CompareSpringScreen: React.FC = () => {
                 transition="all 0.15s"
                 _hover={canSubmit ? { opacity: 0.9 } : {}}
                 _active={canSubmit ? { transform: 'scale(0.98)' } : {}}
-                minH="48px"
+                minH="44px"
                 cursor={canSubmit ? 'pointer' : 'default'}
                 boxShadow={canSubmit ? `0 4px 12px ${THEME.accent}33` : 'none'}
               >

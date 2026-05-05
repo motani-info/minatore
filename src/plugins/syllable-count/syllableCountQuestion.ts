@@ -1,47 +1,68 @@
 import type { Question } from '../../types/question';
 import type { SyllableCountQuestionData, SyllableCountChoiceData } from './types';
 
-/** 単語データベース（文字数＝音の数ごと） */
-const WORD_DB: Record<number, string[]> = {
-  2: ['いぬ', 'ねこ', 'うし', 'さる', 'くま', 'はな', 'やま', 'かわ', 'そら', 'つき', 'ふね', 'まど'],
-  3: ['トマト', 'りんご', 'うさぎ', 'きりん', 'たぬき', 'さくら', 'めだか', 'かえる', 'すずめ', 'みかん', 'バナナ', 'たまご'],
-  4: ['ひまわり', 'おにぎり', 'えんぴつ', 'おりがみ', 'ぶらんこ', 'タンポポ', 'とんぼのめ', 'しんごうき', 'すいとう'],
-  5: ['かたつむり', 'てんとうむし', 'おかあさん', 'しんかんせん', 'おばけやしき', 'ひこうきぐも'],
-};
+// ─── 固定問題プール ───
 
-function randomItem<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
+interface FixedSyllableCountQ {
+  word: string;
+  syllableCount: number;
+  emoji: string;
+  correctIndex: number;
 }
 
-function randomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+// Choices are always [2, 3, 4, 5] with the given emoji
+// correctIndex = syllableCount - 2
 
-const ANIMAL_EMOJIS = ['🐶', '🐱', '🐰', '🐻', '🐸', '🐥', '🐷', '🐵'];
+const FIXED_QUESTIONS: FixedSyllableCountQ[] = [
+  // 2文字 (correctIndex: 0)
+  { word: 'いぬ', syllableCount: 2, emoji: '🐶', correctIndex: 0 },
+  { word: 'ねこ', syllableCount: 2, emoji: '🐱', correctIndex: 0 },
+  { word: 'うし', syllableCount: 2, emoji: '🐻', correctIndex: 0 },
+  { word: 'そら', syllableCount: 2, emoji: '🐸', correctIndex: 0 },
+  // 3文字 (correctIndex: 1)
+  { word: 'トマト', syllableCount: 3, emoji: '🐰', correctIndex: 1 },
+  { word: 'りんご', syllableCount: 3, emoji: '🐥', correctIndex: 1 },
+  { word: 'うさぎ', syllableCount: 3, emoji: '🐷', correctIndex: 1 },
+  { word: 'みかん', syllableCount: 3, emoji: '🐵', correctIndex: 1 },
+  // 4文字 (correctIndex: 2)
+  { word: 'ひまわり', syllableCount: 4, emoji: '🐶', correctIndex: 2 },
+  { word: 'おにぎり', syllableCount: 4, emoji: '🐱', correctIndex: 2 },
+  { word: 'えんぴつ', syllableCount: 4, emoji: '🐰', correctIndex: 2 },
+  { word: 'おりがみ', syllableCount: 4, emoji: '🐻', correctIndex: 2 },
+  // 5文字 (correctIndex: 3)
+  { word: 'かたつむり', syllableCount: 5, emoji: '🐸', correctIndex: 3 },
+  { word: 'てんとうむし', syllableCount: 5, emoji: '🐥', correctIndex: 3 },
+  { word: 'おかあさん', syllableCount: 5, emoji: '🐷', correctIndex: 3 },
+  { word: 'しんかんせん', syllableCount: 5, emoji: '🐵', correctIndex: 3 },
+];
 
-/** 問題を生成する */
+/** 現在の出題インデックス */
+let currentIndex = 0;
+
+/** 問題を順番に生成する */
 export function generateSyllableCountQuestion(): Question<SyllableCountQuestionData, SyllableCountChoiceData> {
-  // 出題する文字数を選択（2〜5）
-  const targetCount = randomInt(2, 5);
-  const words = WORD_DB[targetCount];
-  const word = randomItem(words);
-  const emoji = randomItem(ANIMAL_EMOJIS);
+  const questions = getAllSyllableCountQuestions();
+  const question = questions[currentIndex % questions.length];
+  currentIndex++;
+  return question;
+}
 
-  // 選択肢: 2, 3, 4, 5 のグループ
-  const allCounts = [2, 3, 4, 5];
-  const correctIndex = allCounts.indexOf(targetCount);
+/** 固定問題プールの全問題を返す */
+export function getAllSyllableCountQuestions(): Question<SyllableCountQuestionData, SyllableCountChoiceData>[] {
+  return FIXED_QUESTIONS.map((q) => {
+    const allCounts = [2, 3, 4, 5];
+    const choices: SyllableCountChoiceData[] = allCounts.map((count) => ({
+      count,
+      emoji: q.emoji,
+    }));
 
-  const choices: SyllableCountChoiceData[] = allCounts.map(count => ({
-    count,
-    emoji,
-  }));
-
-  return {
-    questionData: { word, syllableCount: targetCount },
-    choices,
-    correctIndex,
-    instructionText: `「${word}」とおなじかずの\nなかまはどれ？`,
-  };
+    return {
+      questionData: { word: q.word, syllableCount: q.syllableCount },
+      choices,
+      correctIndex: q.correctIndex,
+      instructionText: `「${q.word}」とおなじかずの\nなかまはどれ？`,
+    };
+  });
 }
 
 /** 正解判定 */

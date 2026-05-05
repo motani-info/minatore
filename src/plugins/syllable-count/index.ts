@@ -1,6 +1,6 @@
 import type { QuestionType } from '../../types/question';
 import type { SyllableCountQuestionData, SyllableCountChoiceData } from './types';
-import { generateSyllableCountQuestion, checkSyllableCountAnswer } from './syllableCountQuestion';
+import { generateSyllableCountQuestion, checkSyllableCountAnswer, getAllSyllableCountQuestions } from './syllableCountQuestion';
 import { SyllableCountQuestionDisplay } from './components/QuestionDisplay';
 import { SyllableCountChoiceDisplay } from './components/ChoiceDisplay';
 import { registry } from '../../registry/questionTypeRegistry';
@@ -10,6 +10,7 @@ export const syllableCountQuestionType: QuestionType<SyllableCountQuestionData, 
   displayName: '文字数あつまり',
   icon: '🔤',
   generateQuestion: generateSyllableCountQuestion,
+  getAllQuestions: getAllSyllableCountQuestions,
   QuestionDisplay: SyllableCountQuestionDisplay,
   ChoiceDisplay: SyllableCountChoiceDisplay,
   checkAnswer: checkSyllableCountAnswer,

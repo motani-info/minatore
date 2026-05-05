@@ -4,105 +4,140 @@ import type {
   RotationSequenceChoiceData,
   PictureType,
   RotationAngle,
-  SequenceFrame,
+  RotationDirection,
 } from './types';
 
 // ─── ヘルパー ───
 
-function randomItem<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-/** 角度を正規化（0-359） */
+/** 角度を正規化（0, 90, 180, 270） */
 function normalizeAngle(angle: number): RotationAngle {
   return ((angle % 360 + 360) % 360) as RotationAngle;
 }
 
-/** 正しい回転シーケンスを生成 */
-function generateCorrectSequence(startAngle: RotationAngle, step: 90 | -90): SequenceFrame[] {
-  const frames: SequenceFrame[] = [];
-  let current = startAngle;
-  for (let i = 0; i < 5; i++) {
-    frames.push({ angle: current });
-    current = normalizeAngle(current + step);
+/** 指定方向に回転した結果の角度を返す */
+function applyRotation(originalAngle: RotationAngle, direction: RotationDirection): RotationAngle {
+  switch (direction) {
+    case 'right1':
+      return normalizeAngle(originalAngle + 90);
+    case 'left1':
+      return normalizeAngle(originalAngle - 90);
+    case 'right2':
+      return normalizeAngle(originalAngle + 180);
+    case 'left2':
+      return normalizeAngle(originalAngle + 180);
   }
-  return frames;
+}
+
+/** 回転方向に対応する指示テキストを生成する */
+function getInstructionText(direction: RotationDirection): string {
+  switch (direction) {
+    case 'right1':
+      return 'みぎに1かいまわしたとき、どれになりますか。\nそのえにまるをつけましょう';
+    case 'left1':
+      return 'ひだりに1かいまわしたとき、どれになりますか。\nそのえにまるをつけましょう';
+    case 'right2':
+      return 'みぎに2かいまわしたとき、どれになりますか。\nそのえにまるをつけましょう';
+    case 'left2':
+      return 'ひだりに2かいまわしたとき、どれになりますか。\nそのえにまるをつけましょう';
+  }
+}
+
+/** 配列をシャッフルする（Fisher-Yates） */
+function shuffle<T>(arr: T[]): T[] {
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
 }
 
 // ─── 固定問題プール ───
 
-interface FixedSequenceQuestion {
+interface FixedQuestion {
   pictureType: PictureType;
-  startAngle: RotationAngle;
-  rotationStep: 90 | -90;
-  /** 間違いフレームの位置（0-4、ただし0は最初なので1-4が自然） */
-  wrongIndex: number;
-  /** 間違いフレームの角度 */
-  wrongAngle: RotationAngle;
+  originalAngle: RotationAngle;
+  direction: RotationDirection;
 }
 
-const FIXED_QUESTIONS: FixedSequenceQuestion[] = [
-  // (1) カエル - 右回転、3番目が間違い
-  { pictureType: 'frog', startAngle: 0, rotationStep: 90, wrongIndex: 2, wrongAngle: 180 },
-  // (2) ゾウ - 右回転、4番目が間違い
-  { pictureType: 'elephant', startAngle: 0, rotationStep: 90, wrongIndex: 3, wrongAngle: 0 },
-  // (3) ゾウ - 右回転、2番目が間違い
-  { pictureType: 'elephant', startAngle: 90, rotationStep: 90, wrongIndex: 1, wrongAngle: 0 },
-  // (4) リス - 右回転、4番目が間違い
-  { pictureType: 'squirrel', startAngle: 0, rotationStep: 90, wrongIndex: 3, wrongAngle: 180 },
-  // (5) ドット - 右回転、3番目が間違い
-  { pictureType: 'dots', startAngle: 0, rotationStep: 90, wrongIndex: 2, wrongAngle: 0 },
-  // (6) 傘 - 右回転、4番目が間違い
-  { pictureType: 'umbrella', startAngle: 0, rotationStep: 90, wrongIndex: 3, wrongAngle: 90 },
-  // (7) 傘 - 右回転、2番目が間違い
-  { pictureType: 'umbrella', startAngle: 90, rotationStep: 90, wrongIndex: 1, wrongAngle: 270 },
-  // (8) 船 - 右回転、3番目が間違い
-  { pictureType: 'boat', startAngle: 0, rotationStep: 90, wrongIndex: 2, wrongAngle: 270 },
-  // (9) 鉛筆 - 右回転、4番目が間違い
-  { pictureType: 'pencil', startAngle: 0, rotationStep: 90, wrongIndex: 3, wrongAngle: 0 },
-  // (10) 星と花 - 右回転、2番目が間違い
-  { pictureType: 'star-flower', startAngle: 0, rotationStep: 90, wrongIndex: 1, wrongAngle: 180 },
-  // 追加問題: 左回転バリエーション
-  { pictureType: 'frog', startAngle: 0, rotationStep: -90, wrongIndex: 2, wrongAngle: 90 },
-  { pictureType: 'boat', startAngle: 90, rotationStep: -90, wrongIndex: 3, wrongAngle: 180 },
-  { pictureType: 'pencil', startAngle: 270, rotationStep: -90, wrongIndex: 1, wrongAngle: 0 },
-  { pictureType: 'dots', startAngle: 180, rotationStep: -90, wrongIndex: 2, wrongAngle: 180 },
-  { pictureType: 'star-flower', startAngle: 90, rotationStep: -90, wrongIndex: 3, wrongAngle: 0 },
-  { pictureType: 'squirrel', startAngle: 270, rotationStep: 90, wrongIndex: 1, wrongAngle: 0 },
-  { pictureType: 'elephant', startAngle: 180, rotationStep: -90, wrongIndex: 2, wrongAngle: 0 },
-  { pictureType: 'umbrella', startAngle: 270, rotationStep: 90, wrongIndex: 4, wrongAngle: 0 },
-  { pictureType: 'frog', startAngle: 90, rotationStep: 90, wrongIndex: 3, wrongAngle: 90 },
-  { pictureType: 'boat', startAngle: 0, rotationStep: 90, wrongIndex: 4, wrongAngle: 0 },
+const FIXED_QUESTIONS: FixedQuestion[] = [
+  // カエル
+  { pictureType: 'frog', originalAngle: 0, direction: 'right1' },
+  { pictureType: 'frog', originalAngle: 0, direction: 'left1' },
+  { pictureType: 'frog', originalAngle: 90, direction: 'right1' },
+  { pictureType: 'frog', originalAngle: 270, direction: 'left1' },
+  // ゾウ
+  { pictureType: 'elephant', originalAngle: 0, direction: 'right1' },
+  { pictureType: 'elephant', originalAngle: 0, direction: 'left1' },
+  { pictureType: 'elephant', originalAngle: 90, direction: 'left1' },
+  { pictureType: 'elephant', originalAngle: 180, direction: 'right1' },
+  // リス
+  { pictureType: 'squirrel', originalAngle: 0, direction: 'right1' },
+  { pictureType: 'squirrel', originalAngle: 0, direction: 'left1' },
+  { pictureType: 'squirrel', originalAngle: 270, direction: 'right1' },
+  // ドット
+  { pictureType: 'dots', originalAngle: 0, direction: 'right1' },
+  { pictureType: 'dots', originalAngle: 0, direction: 'left1' },
+  { pictureType: 'dots', originalAngle: 90, direction: 'right1' },
+  // 傘
+  { pictureType: 'umbrella', originalAngle: 0, direction: 'right1' },
+  { pictureType: 'umbrella', originalAngle: 0, direction: 'left1' },
+  { pictureType: 'umbrella', originalAngle: 90, direction: 'left1' },
+  { pictureType: 'umbrella', originalAngle: 180, direction: 'right1' },
+  // 船
+  { pictureType: 'boat', originalAngle: 0, direction: 'right1' },
+  { pictureType: 'boat', originalAngle: 0, direction: 'left1' },
+  { pictureType: 'boat', originalAngle: 90, direction: 'right1' },
+  { pictureType: 'boat', originalAngle: 270, direction: 'left1' },
+  // 鉛筆
+  { pictureType: 'pencil', originalAngle: 0, direction: 'right1' },
+  { pictureType: 'pencil', originalAngle: 0, direction: 'left1' },
+  { pictureType: 'pencil', originalAngle: 180, direction: 'left1' },
+  // 星と花
+  { pictureType: 'star-flower', originalAngle: 0, direction: 'right1' },
+  { pictureType: 'star-flower', originalAngle: 0, direction: 'left1' },
+  { pictureType: 'star-flower', originalAngle: 90, direction: 'left1' },
+  // 2回転バリエーション
+  { pictureType: 'frog', originalAngle: 0, direction: 'right2' },
+  { pictureType: 'elephant', originalAngle: 0, direction: 'right2' },
 ];
 
 /** 固定問題を Question 形式に変換 */
-function buildQuestion(fixed: FixedSequenceQuestion): Question<RotationSequenceQuestionData, RotationSequenceChoiceData> {
-  const correctFrames = generateCorrectSequence(fixed.startAngle, fixed.rotationStep);
+function buildQuestion(fixed: FixedQuestion): Question<RotationSequenceQuestionData, RotationSequenceChoiceData> {
+  const correctAngle = applyRotation(fixed.originalAngle, fixed.direction);
 
-  // 間違いフレームを差し替え
-  const frames = [...correctFrames];
-  frames[fixed.wrongIndex] = { angle: fixed.wrongAngle };
+  // 4つの選択肢: 0°, 90°, 180°, 270° をシャッフル
+  const allAngles: RotationAngle[] = [0, 90, 180, 270];
+  const shuffledAngles = shuffle(allAngles);
 
-  // 選択肢: 0〜4（5つのフレーム位置）
-  const choices: RotationSequenceChoiceData[] = [0, 1, 2, 3, 4];
-  const correctIndex = fixed.wrongIndex;
+  // 選択肢データを生成（各選択肢に pictureType を含める）
+  const choices: RotationSequenceChoiceData[] = shuffledAngles.map((angle) => ({
+    pictureType: fixed.pictureType,
+    angle,
+  }));
+
+  // 正解のインデックスを見つける
+  const correctIndex = shuffledAngles.indexOf(correctAngle);
 
   return {
     questionData: {
       pictureType: fixed.pictureType,
-      frames,
-      wrongIndex: fixed.wrongIndex,
-      rotationStep: fixed.rotationStep,
+      originalAngle: fixed.originalAngle,
+      direction: fixed.direction,
     },
     choices,
     correctIndex,
-    instructionText: 'まちがっている えに\n×をつけましょう',
+    instructionText: getInstructionText(fixed.direction),
   };
 }
 
-/** ランダムに1問生成 */
+/** 現在の出題インデックス */
+let currentIndex = 0;
+
+/** 問題を順番に生成する */
 export function generateRotationSequenceQuestion(): Question<RotationSequenceQuestionData, RotationSequenceChoiceData> {
-  const fixed = randomItem(FIXED_QUESTIONS);
+  const fixed = FIXED_QUESTIONS[currentIndex % FIXED_QUESTIONS.length];
+  currentIndex++;
   return buildQuestion(fixed);
 }
 

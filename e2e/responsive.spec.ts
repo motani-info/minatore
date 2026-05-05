@@ -28,8 +28,8 @@ for (const vp of viewports) {
     test('テーマ画面が表示される', async ({ page }) => {
       await page.goto('/#/theme/shapes');
       await expect(page.locator('body')).not.toBeEmpty();
-      // テーマ画面のコンテンツが表示されること
-      await expect(page.getByText('図形', { exact: true }).first()).toBeVisible();
+      // テーマ画面のコンテンツが表示されること（最初のグループ名がヘッダーに表示）
+      await expect(page.getByText('回転図形', { exact: true }).first()).toBeVisible();
       // 水平スクロールが発生していないこと
       const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
       expect(scrollWidth).toBeLessThanOrEqual(vp.width + 1);
@@ -38,7 +38,7 @@ for (const vp of viewports) {
     test('テーマ画面（数量・推理）が表示される', async ({ page }) => {
       await page.goto('/#/theme/math-reasoning');
       await expect(page.locator('body')).not.toBeEmpty();
-      await expect(page.getByText('数量・推理', { exact: true }).first()).toBeVisible();
+      await expect(page.getByText('比較', { exact: true }).first()).toBeVisible();
       const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
       expect(scrollWidth).toBeLessThanOrEqual(vp.width + 1);
     });

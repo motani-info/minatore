@@ -6,6 +6,7 @@ import { getCategoryById, buildTabsForCategory } from '../categoryData';
 import type { TabDef } from '../categoryData';
 import type { Question } from '../../types/question';
 import { R } from './Ruby';
+import { TabBar } from './TabBar';
 
 /** 1ページあたりの問題数 */
 const PAGE_SIZE = 10;
@@ -60,10 +61,11 @@ export const ThemeScreen: React.FC = () => {
     return <Navigate to="/" replace />;
   }
 
-  // HomeScreen からの初期タブ指定を受け取る（URLパラメータ優先、次にstate、デフォルト0）
+  // HomeScreen からの初期タブ指定を受け取る
   const [searchParams] = useSearchParams();
   const state = location.state as { initialTab?: string; initialSubIndex?: number } | null;
 
+  // initialTab はグループ名（tab.label）— そのグループ内のサブタブを表示する
   let initialTabIndex = 0;
   let initialSubIndex = 0;
 
@@ -83,51 +85,46 @@ export const ThemeScreen: React.FC = () => {
     initialSubIndex = state.initialSubIndex;
   }
 
-  return <ThemeScreenInner category={category} tabs={tabs} initialTabIndex={initialTabIndex} initialSubIndex={initialSubIndex} />;
+  // 選択されたタブ（グループ）を取得
+  const selectedTab = tabs[initialTabIndex];
+
+  return <ThemeScreenInner category={category} tab={selectedTab} initialSubIndex={initialSubIndex} />;
 };
 
 function ThemeScreenInner({
   category,
-  tabs,
-  initialTabIndex,
+  tab,
   initialSubIndex,
 }: {
   category: ReturnType<typeof getCategoryById> & {};
-  tabs: TabDef[];
-  initialTabIndex: number;
+  tab: TabDef;
   initialSubIndex: number;
 }) {
   const navigate = useNavigate();
-  const [, setSearchParams] = useSearchParams();
-  const [activeTabIndex, setActiveTabIndex] = useState(initialTabIndex);
-  const activeTab = tabs[activeTabIndex];
 
-  // グループ内にサブタイプがある場合のサブタブ
-  const hasSubTabs = activeTab.units.length > 1;
-  const [activeSubIndex, setActiveSubIndex] = useState(initialSubIndex);
-  const activeUnit = activeTab.units[Math.min(activeSubIndex, activeTab.units.length - 1)];
+  // タブ = サブラベル（基本/応用/連続 etc.）
+  const units = tab.units;
+  const [activeUnitIndex, setActiveUnitIndex] = useState(initialSubIndex);
+  const activeUnit = units[Math.min(activeUnitIndex, units.length - 1)];
 
   // ページング
   const [currentPage, setCurrentPage] = useState(0);
 
-  // タブ切り替え時にサブタブとページをリセット、URLも更新
+  // タブ切り替え時にページをリセット
   const handleTabChange = (index: number) => {
-    setActiveTabIndex(index);
-    setActiveSubIndex(0);
+    setActiveUnitIndex(index);
     setCurrentPage(0);
-    setSearchParams({ tab: tabs[index].label }, { replace: true });
   };
 
-  // 問題取得: getAllQuestions があれば全問表示、なければ生成
+  // 問題取得
   const questionType = registry.get(activeUnit.id);
 
-  // 問題リストをキャッシュして不要な再生成を防ぐ
+  // 問題リストをキャッシュ
   const questionsCache = useRef<{ key: string; questions: Question[] }>({ key: '', questions: [] });
-  const cacheKey = `${activeUnit.id}-${activeTabIndex}-${activeSubIndex}`;
+  const cacheKey = `${activeUnit.id}-${activeUnitIndex}`;
 
   const allQuestions: Question[] = useMemo(() => {
     if (!questionType) return [];
-    // キャッシュが有効ならそのまま返す
     if (questionsCache.current.key === cacheKey) {
       return questionsCache.current.questions;
     }
@@ -135,8 +132,7 @@ function ThemeScreenInner({
     if (questionType.getAllQuestions) {
       questions = questionType.getAllQuestions();
     } else {
-      // アルゴリズム生成型: 一定数生成
-      questions = Array.from({ length: 20 }, () => questionType.generateQuestion());
+      questions = [];
     }
     questionsCache.current = { key: cacheKey, questions };
     return questions;
@@ -154,7 +150,7 @@ function ThemeScreenInner({
     if (!questionType) return;
     const globalIndex = pageStartIndex + pageIndex;
     navigate(`/question/${questionType.id}`, {
-      state: { selectedQuestion: allQuestions[globalIndex] },
+      state: { questionIndex: globalIndex },
     });
   };
 
@@ -163,10 +159,11 @@ function ThemeScreenInner({
     : { gradient: `linear-gradient(135deg, ${category.color}, ${category.color}88)`, accent: category.color };
 
   return (
-    <Container maxW="920px" minH="100dvh" py={0} px={0}>
+    <Flex direction="column" minH="100dvh">
+    <Container maxW="920px" flex={1} py={0} px={0}>
       <VStack gap={0} align="stretch" minH="100dvh">
 
-        {/* ヘッダー */}
+        {/* ヘッダー — テーマ名を表示 */}
         <Box
           bg={theme.gradient}
           px={{ base: 4, sm: 6 }}
@@ -197,25 +194,25 @@ function ThemeScreenInner({
               ←
             </chakra.button>
             <Text fontSize="lg" fontWeight="800" color="white" lineHeight="1.3">
-              {category.title}
+              {tab.label}
             </Text>
           </Flex>
         </Box>
 
-        {/* タブ */}
+        {/* タブ — サブラベル（基本/応用/連続 etc.） */}
         <Box bg="white" px={{ base: 4, sm: 6 }} pt={3} pb={0} borderBottom="1px solid" borderColor="gray.100">
           <Flex gap={1} overflowX="auto" css={{ '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none' }}>
-            {tabs.map((tab, index) => {
-              const isActive = index === activeTabIndex;
+            {units.map((unit, index) => {
+              const isActive = index === activeUnitIndex;
               const tabColor = TAB_COLORS[index % TAB_COLORS.length];
               return (
                 <chakra.button
-                  key={tab.label}
+                  key={unit.id}
                   type="button"
                   onClick={() => handleTabChange(index)}
-                  px={3}
+                  px={4}
                   py={2}
-                  fontSize="xs"
+                  fontSize="sm"
                   fontWeight={isActive ? '800' : '600'}
                   color={isActive ? tabColor.text : 'gray.400'}
                   bg="transparent"
@@ -229,7 +226,7 @@ function ThemeScreenInner({
                   flexShrink={0}
                   whiteSpace="nowrap"
                 >
-                  {tab.label}
+                  {unit.subLabel ?? unit.name}
                 </chakra.button>
               );
             })}
@@ -245,41 +242,6 @@ function ThemeScreenInner({
           pb={6}
         >
           <VStack gap={5} align="stretch">
-
-            {/* サブタブ */}
-            {hasSubTabs && (
-              <Flex gap={2} overflowX="auto" pb={1}>
-                {activeTab.units.map((unit, i) => {
-                  const isActive = i === activeSubIndex;
-                  return (
-                    <chakra.button
-                      key={unit.id}
-                      type="button"
-                      onClick={() => {
-                        setActiveSubIndex(i);
-                        setCurrentPage(0);
-                      }}
-                      px={4}
-                      py={2}
-                      fontSize="sm"
-                      fontWeight="700"
-                      borderRadius="full"
-                      bg={isActive ? theme.gradient : 'gray.100'}
-                      color={isActive ? 'white' : 'gray.500'}
-                      transition="all 0.2s"
-                      _hover={isActive ? {} : { bg: 'gray.200' }}
-                      _active={{ transform: 'scale(0.95)' }}
-                      cursor="pointer"
-                      flexShrink={0}
-                      minH="36px"
-                      boxShadow={isActive ? `0 2px 8px ${theme.accent}33` : 'none'}
-                    >
-                      {unit.subLabel ?? unit.name}
-                    </chakra.button>
-                  );
-                })}
-              </Flex>
-            )}
 
             {/* ページング（上部） */}
             {needsPaging && (
@@ -403,6 +365,8 @@ function ThemeScreenInner({
         </Box>
       </VStack>
     </Container>
+    <TabBar />
+    </Flex>
   );
 }
 

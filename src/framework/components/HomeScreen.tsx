@@ -2,10 +2,53 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Container, Flex, Heading, Text, VStack, SimpleGrid, chakra } from '@chakra-ui/react';
 import { useProfile } from '../hooks/useProfile';
 import { CATEGORIES, buildTabsForCategory } from '../categoryData';
-import { registry } from '../../registry/questionTypeRegistry';
 import { TabBar } from './TabBar';
 import { R } from './Ruby';
 import { DiceIcon, ProfileIcon } from '../../assets/icons';
+import {
+  RotationThumbnail,
+  SymbolRotationThumbnail,
+  RotationSequenceThumbnail,
+  OverlayThumbnail,
+  OverlayAdvancedThumbnail,
+  OverlayShapeThumbnail,
+  LineOverlayThumbnail,
+  PuzzleThumbnail,
+  OverlayCancelThumbnail,
+  OddOneOutThumbnail,
+  ShapeCompositionThumbnail,
+  SeesawThumbnail,
+  WaterVolumeThumbnail,
+  CompareLengthThumbnail,
+  CompareSpringThumbnail,
+  AreaCompareThumbnail,
+  ShapeKartaThumbnail,
+  SyllableCountThumbnail,
+  OneToOneThumbnail,
+} from '../../assets/icons/thumbnails';
+
+/** 問題タイプ別サムネイルコンポーネントのマッピング */
+const TYPE_THUMBNAILS: Record<string, React.FC<{ size?: number }>> = {
+  rotation: RotationThumbnail,
+  'symbol-rotation': SymbolRotationThumbnail,
+  'rotation-sequence': RotationSequenceThumbnail,
+  overlay: OverlayThumbnail,
+  'overlay-advanced': OverlayAdvancedThumbnail,
+  'overlay-shape': OverlayShapeThumbnail,
+  'line-overlay': LineOverlayThumbnail,
+  puzzle: PuzzleThumbnail,
+  'overlay-cancel': OverlayCancelThumbnail,
+  'odd-one-out': OddOneOutThumbnail,
+  'shape-composition': ShapeCompositionThumbnail,
+  seesaw: SeesawThumbnail,
+  'water-volume': WaterVolumeThumbnail,
+  'compare-length': CompareLengthThumbnail,
+  'compare-spring': CompareSpringThumbnail,
+  'area-compare': AreaCompareThumbnail,
+  'shape-karta': ShapeKartaThumbnail,
+  'syllable-count': SyllableCountThumbnail,
+  'one-to-one': OneToOneThumbnail,
+};
 
 /** カテゴリのアイコン */
 const CATEGORY_ICONS: Record<string, string> = {
@@ -181,13 +224,13 @@ export const HomeScreen: React.FC = () => {
                 <VStack key={cat.id} gap={3} align="stretch">
                   {/* カテゴリ見出し */}
                   <Flex align="center" gap={2}>
-                    <Text fontSize="lg" lineHeight="1">{CATEGORY_ICONS[cat.id] ?? '📚'}</Text>
-                    <Text fontSize="sm" fontWeight="700" color="gray.600">
+                    <Text fontSize="xl" lineHeight="1">{CATEGORY_ICONS[cat.id] ?? '📚'}</Text>
+                    <Text fontSize="md" fontWeight="700" color="gray.600">
                       {cat.title}
                     </Text>
                     {!hasImplemented && (
                       <Box bg={`${cat.unimplementedTextColor}15`} borderRadius="full" px={2} py={0.5}>
-                        <Text fontSize="2xs" fontWeight="600" color={cat.unimplementedTextColor} opacity={0.6}>
+                        <Text fontSize="xs" fontWeight="600" color={cat.unimplementedTextColor} opacity={0.6}>
                           <R rt="じゅんび">準備</R>中
                         </Text>
                       </Box>
@@ -202,10 +245,8 @@ export const HomeScreen: React.FC = () => {
                           ?? { gradient: `linear-gradient(135deg, ${cat.color} 0%, ${cat.color}88 100%)`, accent: cat.color };
                         const subCount = tab.units.length;
 
-                        // 例題プレビュー用: 最初のユニットのQuestionDisplayを取得
-                        const previewQt = registry.get(firstUnit.id);
-                        const PreviewDisplay = previewQt?.QuestionDisplay;
-                        const previewQuestion = previewQt?.generateQuestion();
+                        // サムネイルアイコンを取得
+                        const ThumbnailIcon = TYPE_THUMBNAILS[firstUnit.id];
 
                         return (
                           <chakra.button
@@ -233,7 +274,12 @@ export const HomeScreen: React.FC = () => {
                             {/* 背景装飾 */}
                             <Box position="absolute" right="-6px" top="-6px" w="32px" h="32px" bg="whiteAlpha.200" borderRadius="full" />
 
-                            {/* 例題プレビュー */}
+                            {/* タイトル（上） */}
+                            <Text fontSize="sm" fontWeight="800" color="white" lineHeight="1.3" w="100%">
+                              {tab.label}
+                            </Text>
+
+                            {/* サムネイルアイコン（中央） */}
                             <Flex
                               flex={1}
                               align="center"
@@ -241,30 +287,22 @@ export const HomeScreen: React.FC = () => {
                               w="100%"
                               overflow="hidden"
                               pointerEvents="none"
-                              transform="scale(0.45)"
-                              transformOrigin="center center"
-                              bg="whiteAlpha.300"
-                              borderRadius="lg"
-                              p={1}
                             >
-                              {PreviewDisplay && previewQuestion ? (
-                                <PreviewDisplay data={previewQuestion.questionData} />
+                              {ThumbnailIcon ? (
+                                <ThumbnailIcon size={72} />
                               ) : (
                                 <Text fontSize="28px" lineHeight="1">{firstUnit.icon}</Text>
                               )}
                             </Flex>
 
-                            {/* ラベル */}
-                            <Box w="100%" mt={1}>
-                              <Text fontSize="2xs" fontWeight="800" color="white" lineHeight="1.2">
-                                {tab.label}
+                            {/* 分類（下） — サブタイプがある場合のみ */}
+                            {subCount > 1 ? (
+                              <Text fontSize="xs" fontWeight="500" color="whiteAlpha.700" lineHeight="1.3" w="100%">
+                                {tab.units.map(u => u.subLabel ?? u.name).join('・')}
                               </Text>
-                              {subCount > 1 && (
-                                <Text fontSize="2xs" fontWeight="500" color="whiteAlpha.700" lineHeight="1.2">
-                                  {tab.units.map(u => u.subLabel ?? u.name).join('・')}
-                                </Text>
-                              )}
-                            </Box>
+                            ) : (
+                              <Box h="1em" />
+                            )}
                           </chakra.button>
                         );
                       })}
@@ -278,7 +316,7 @@ export const HomeScreen: React.FC = () => {
                       p={3}
                       opacity={0.85}
                     >
-                      <Text fontSize="xs" fontWeight="600" color={cat.unimplementedTextColor} opacity={0.6}>
+                      <Text fontSize="sm" fontWeight="600" color={cat.unimplementedTextColor} opacity={0.6}>
                         <R rt="じゅんび">準備</R>中です
                       </Text>
                     </Box>

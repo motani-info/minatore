@@ -74,29 +74,29 @@ function QuestionScreenInner({ questionType, initialQuestion, initialIndex, rand
   const showFeedback = phase === 'feedback' && isCorrect !== null;
 
   return (
-    <Container maxW="920px" minH="100dvh" py={0} px={0}>
-      <VStack gap={0} align="stretch" minH="100dvh">
+    <Container maxW="920px" h="100dvh" py={0} px={0} overflow="hidden">
+      <Flex direction="column" h="100dvh">
 
-        {/* 上部: グラデーション背景エリア — コンパクト */}
+        {/* 上部: グラデーション背景エリア */}
         <Box
           bg={theme.gradient}
           px={{ base: 2, sm: 3 }}
           pt={{ base: 1, sm: 1 }}
-          pb={{ base: 3, sm: 4 }}
+          pb={{ base: 2, sm: 3 }}
           position="relative"
           overflow="hidden"
+          flexShrink={0}
         >
           <VStack gap={1} align="stretch" position="relative" zIndex={1}>
             <NavigationBar current={randomMode ? (randomCurrent ?? 1) : (currentQuestionIndex + 1)} total={randomMode ? (randomTotal ?? 10) : totalQuestions} />
 
-            {/* 問題表示エリア — 大きく */}
+            {/* 問題表示エリア */}
             <Flex
               align="center"
               justify="center"
               bg="white"
               borderRadius="xl"
-              p={{ base: 3, sm: 4 }}
-              minH={{ base: '140px', sm: '200px' }}
+              p={{ base: 2, sm: 3 }}
               boxShadow="0 2px 12px rgba(0,0,0,0.08)"
               overflow="hidden"
             >
@@ -105,115 +105,120 @@ function QuestionScreenInner({ questionType, initialQuestion, initialIndex, rand
           </VStack>
         </Box>
 
-        {/* 下部: 白背景エリア — 選択肢を大きく */}
-        <Box
+        {/* 下部: 白背景エリア — 残りの高さを全て使う */}
+        <Flex
+          direction="column"
           flex={1}
           bg="white"
           borderTopRadius="xl"
           mt={-2}
           px={{ base: 2, sm: 3 }}
-          pt={{ base: 2, sm: 2 }}
+          pt={{ base: 1, sm: 2 }}
           pb={{ base: 1, sm: 2 }}
           position="relative"
           zIndex={2}
+          overflow="hidden"
+          minH={0}
         >
-          <VStack gap={2} align="stretch" h="100%">
-            {/* 指示テキスト — 大きく読みやすく */}
-            <Box textAlign="center" py={1}>
-              <Text
-                fontSize={{ base: 'lg', sm: 'xl' }}
-                color="gray.800"
-                lineHeight="1.4"
-                whiteSpace="pre-line"
-                fontWeight="800"
-              >
-                {currentQuestion.instructionText}
-              </Text>
-            </Box>
+          {/* 指示テキスト */}
+          <Box textAlign="center" py={0.5} flexShrink={0}>
+            <Text
+              fontSize={{ base: 'md', sm: 'lg' }}
+              color="gray.800"
+              lineHeight="1.3"
+              whiteSpace="pre-line"
+              fontWeight="800"
+            >
+              {currentQuestion.instructionText}
+            </Text>
+          </Box>
 
-            {/* 選択肢エリア — 大きく */}
-            <SimpleGrid columns={2} gap={{ base: 2, sm: 3 }} flex={1}>
-              {currentQuestion.choices.map((choice, index) => {
-                const isSelected = selectedIndex === index;
-                const isChoiceCorrect = index === currentQuestion.correctIndex;
-                const showResult = isAnswered;
-                const showCorrectHighlight = showResult && !isCorrect && isChoiceCorrect;
+          {/* 選択肢エリア — 残りスペースを埋める */}
+          <SimpleGrid columns={2} gap={{ base: 1.5, sm: 2 }} flex={1} minH={0}>
+            {currentQuestion.choices.map((choice, index) => {
+              const isSelected = selectedIndex === index;
+              const isChoiceCorrect = index === currentQuestion.correctIndex;
+              const showResult = isAnswered;
+              const showCorrectHighlight = showResult && !isCorrect && isChoiceCorrect;
 
-                let borderColor = '#e5e7eb';
-                let bgColor = '#fafafa';
-                let shadow = '0 1px 4px rgba(0,0,0,0.06)';
-                let labelColor = 'gray.500';
+              let borderColor = '#e5e7eb';
+              let bgColor = '#fafafa';
+              let shadow = '0 1px 4px rgba(0,0,0,0.06)';
+              let labelColor = 'gray.500';
 
-                if (isSelected && showResult) {
-                  if (isCorrect) {
-                    borderColor = '#34d399';
-                    bgColor = '#ecfdf5';
-                    shadow = '0 0 0 3px rgba(52, 211, 153, 0.25)';
-                    labelColor = 'green.600';
-                  } else {
-                    borderColor = '#fca5a5';
-                    bgColor = '#fef2f2';
-                    shadow = '0 0 0 3px rgba(252, 165, 165, 0.25)';
-                    labelColor = 'red.500';
-                  }
-                }
-                if (showCorrectHighlight) {
+              if (isSelected && showResult) {
+                if (isCorrect) {
                   borderColor = '#34d399';
                   bgColor = '#ecfdf5';
                   shadow = '0 0 0 3px rgba(52, 211, 153, 0.25)';
                   labelColor = 'green.600';
+                } else {
+                  borderColor = '#fca5a5';
+                  bgColor = '#fef2f2';
+                  shadow = '0 0 0 3px rgba(252, 165, 165, 0.25)';
+                  labelColor = 'red.500';
                 }
+              }
+              if (showCorrectHighlight) {
+                borderColor = '#34d399';
+                bgColor = '#ecfdf5';
+                shadow = '0 0 0 3px rgba(52, 211, 153, 0.25)';
+                labelColor = 'green.600';
+              }
 
-                return (
-                  <chakra.button
-                    key={index}
-                    type="button"
-                    onClick={() => selectChoice(index)}
-                    disabled={isAnswered}
-                    aria-label={`せんたくし ${index + 1}`}
-                    display="flex"
-                    flexDirection="column"
-                    alignItems="center"
-                    justifyContent="center"
-                    gap={1}
-                    p={{ base: 2, sm: 3 }}
-                    bg={bgColor}
-                    border="3px solid"
-                    borderColor={borderColor}
-                    boxShadow={shadow}
-                    cursor={isAnswered ? 'default' : 'pointer'}
-                    transition="all 0.15s ease"
-                    borderRadius="xl"
-                    _hover={
-                      isAnswered
-                        ? {}
-                        : {
-                            transform: 'scale(1.02)',
-                            boxShadow: `0 4px 16px rgba(0,0,0,0.1)`,
-                            borderColor: theme.accent,
-                          }
-                    }
-                    _active={
-                      isAnswered ? {} : { transform: 'scale(0.97)' }
-                    }
-                    minH={{ base: '100px', sm: '120px' }}
-                  >
+              return (
+                <chakra.button
+                  key={index}
+                  type="button"
+                  onClick={() => selectChoice(index)}
+                  disabled={isAnswered}
+                  aria-label={`せんたくし ${index + 1}`}
+                  display="flex"
+                  flexDirection="column"
+                  alignItems="center"
+                  justifyContent="center"
+                  gap={0.5}
+                  p={{ base: 1.5, sm: 2 }}
+                  bg={bgColor}
+                  border="3px solid"
+                  borderColor={borderColor}
+                  boxShadow={shadow}
+                  cursor={isAnswered ? 'default' : 'pointer'}
+                  transition="all 0.15s ease"
+                  borderRadius="xl"
+                  _hover={
+                    isAnswered
+                      ? {}
+                      : {
+                          transform: 'scale(1.02)',
+                          boxShadow: `0 4px 16px rgba(0,0,0,0.1)`,
+                          borderColor: theme.accent,
+                        }
+                  }
+                  _active={
+                    isAnswered ? {} : { transform: 'scale(0.97)' }
+                  }
+                  minH={0}
+                  h="100%"
+                  overflow="hidden"
+                >
+                  <Box flex={1} display="flex" alignItems="center" justifyContent="center" overflow="hidden" w="100%">
                     <ChoiceDisplay
                       data={choice}
                       isSelected={isSelected}
                       isCorrect={isChoiceCorrect}
                       showResult={showResult}
                     />
-                    <Text fontSize="sm" fontWeight="800" color={labelColor}>
-                      {['①', '②', '③', '④'][index]}
-                    </Text>
-                  </chakra.button>
-                );
-              })}
-            </SimpleGrid>
-          </VStack>
-        </Box>
-      </VStack>
+                  </Box>
+                  <Text fontSize="xs" fontWeight="800" color={labelColor} flexShrink={0}>
+                    {['①', '②', '③', '④'][index]}
+                  </Text>
+                </chakra.button>
+              );
+            })}
+          </SimpleGrid>
+        </Flex>
+      </Flex>
 
       <FeedbackOverlay
         isCorrect={isCorrect ?? false}

@@ -1,4 +1,5 @@
 import { useParams, useLocation, useNavigate, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Box, Container, Flex, SimpleGrid, Text, VStack, chakra } from '@chakra-ui/react';
 import { registry } from '../../registry/questionTypeRegistry';
 import { useQuestionFlow } from '../hooks/useQuestionFlow';
@@ -55,6 +56,16 @@ export const QuestionScreen: React.FC = () => {
 
 function QuestionScreenInner({ questionType, initialQuestion, initialIndex, randomMode, randomCurrent, randomTotal }: { questionType: NonNullable<ReturnType<typeof registry.get>>; initialQuestion?: Question; initialIndex?: number; randomMode?: boolean; randomCurrent?: number; randomTotal?: number }) {
   const navigate = useNavigate();
+
+  // 問題画面ではbodyスクロールを無効化
+  useEffect(() => {
+    document.body.classList.add('no-scroll');
+    document.documentElement.classList.add('no-scroll');
+    return () => {
+      document.body.classList.remove('no-scroll');
+      document.documentElement.classList.remove('no-scroll');
+    };
+  }, []);
   const {
     currentQuestion,
     currentQuestionIndex,
@@ -74,7 +85,7 @@ function QuestionScreenInner({ questionType, initialQuestion, initialIndex, rand
   const showFeedback = phase === 'feedback' && isCorrect !== null;
 
   return (
-    <Container maxW="920px" h="100dvh" py={0} px={0} overflow="hidden">
+    <Container maxW="920px" h="100dvh" py={0} px={0} overflow="hidden" position="relative">
       <Flex direction="column" h="100dvh">
 
         {/* 上部: グラデーション背景エリア */}
@@ -90,17 +101,20 @@ function QuestionScreenInner({ questionType, initialQuestion, initialIndex, rand
           <VStack gap={1} align="stretch" position="relative" zIndex={1}>
             <NavigationBar current={randomMode ? (randomCurrent ?? 1) : (currentQuestionIndex + 1)} total={randomMode ? (randomTotal ?? 10) : totalQuestions} />
 
-            {/* 問題表示エリア */}
+            {/* 問題表示エリア — 高さを35dvhに制限 */}
             <Flex
               align="center"
               justify="center"
               bg="white"
               borderRadius="xl"
               p={{ base: 2, sm: 3 }}
+              maxH="35dvh"
               boxShadow="0 2px 12px rgba(0,0,0,0.08)"
               overflow="hidden"
             >
-              <QuestionDisplay data={currentQuestion.questionData} />
+              <Box maxW="100%" maxH="100%" overflow="hidden" display="flex" alignItems="center" justifyContent="center">
+                <QuestionDisplay data={currentQuestion.questionData} />
+              </Box>
             </Flex>
           </VStack>
         </Box>

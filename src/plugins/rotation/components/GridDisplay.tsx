@@ -18,15 +18,15 @@ export const GridDisplay: React.FC<GridDisplayProps> = ({ grid, size }) => {
   const containerSize = (() => {
     if (isLarge) {
       switch (n) {
-        case 2: return { w: 'min(44vw, 200px)', h: 'min(44vw, 200px)' };
-        case 3: return { w: 'min(48vw, 220px)', h: 'min(48vw, 220px)' };
-        case 4: return { w: 'min(52vw, 240px)', h: 'min(52vw, 240px)' };
+        case 2: return { w: 'min(36vw, 160px)', h: 'min(36vw, 160px)' };
+        case 3: return { w: 'min(40vw, 180px)', h: 'min(40vw, 180px)' };
+        case 4: return { w: 'min(44vw, 200px)', h: 'min(44vw, 200px)' };
       }
     } else {
       switch (n) {
-        case 2: return { w: 'min(34vw, 130px)', h: 'min(34vw, 130px)' };
-        case 3: return { w: 'min(36vw, 140px)', h: 'min(36vw, 140px)' };
-        case 4: return { w: 'min(38vw, 150px)', h: 'min(38vw, 150px)' };
+        case 2: return { w: 'min(28vw, 110px)', h: 'min(28vw, 110px)' };
+        case 3: return { w: 'min(30vw, 120px)', h: 'min(30vw, 120px)' };
+        case 4: return { w: 'min(32vw, 130px)', h: 'min(32vw, 130px)' };
       }
     }
   })();

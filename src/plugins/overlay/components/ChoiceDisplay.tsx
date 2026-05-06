@@ -14,19 +14,19 @@ const CellDisplay: React.FC<{ value: CellValue }> = ({ value }) => {
     <Flex
       align="center"
       justify="center"
-      w="42px"
-      h="42px"
+      w="min(10vw, 42px)"
+      h="min(10vw, 42px)"
       bg="white"
       border="1px solid"
       borderColor="#1a1a1a"
     >
       {value === 'circle' && (
-        <Text fontSize="lg" fontWeight="800" color="#1a1a1a" lineHeight="1">
+        <Text fontSize="clamp(12px, 4vw, 18px)" fontWeight="800" color="#1a1a1a" lineHeight="1">
           ◯
         </Text>
       )}
       {value === 'cross' && (
-        <Text fontSize="lg" fontWeight="800" color="#1a1a1a" lineHeight="1">
+        <Text fontSize="clamp(12px, 4vw, 18px)" fontWeight="800" color="#1a1a1a" lineHeight="1">
           ✕
         </Text>
       )}

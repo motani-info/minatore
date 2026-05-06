@@ -12,13 +12,12 @@ interface Props {
  */
 export const RotationSequenceQuestionDisplay: React.FC<Props> = ({ data }) => {
   const { pictureType, originalAngle } = data;
-  const displaySize = 160;
 
   return (
-    <Flex direction="column" align="center" justify="center">
+    <Flex direction="column" align="center" justify="center" maxW="100%" maxH="100%">
       <Box
-        w={`${displaySize + 20}px`}
-        h={`${displaySize + 20}px`}
+        w="min(35vw, 160px)"
+        h="min(35vw, 160px)"
         border="3px solid"
         borderColor="#1a1a1a"
         borderRadius="xl"
@@ -27,8 +26,8 @@ export const RotationSequenceQuestionDisplay: React.FC<Props> = ({ data }) => {
         justifyContent="center"
         bg="white"
       >
-        <Box transform={`rotate(${originalAngle}deg)`}>
-          <PictureRenderer pictureType={pictureType} size={displaySize} />
+        <Box transform={`rotate(${originalAngle}deg)`} w="85%" h="85%" display="flex" alignItems="center" justifyContent="center">
+          <PictureRenderer pictureType={pictureType} size="100%" />
         </Box>
       </Box>
     </Flex>

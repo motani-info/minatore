@@ -8,8 +8,8 @@ import type { LineFigure } from '../types';
 
 interface DotGridProps {
   figure: LineFigure;
-  /** SVGの幅・高さ (px) */
-  size?: number;
+  /** SVGの幅・高さ (px) or CSS value */
+  size?: number | string;
   /** グリッドサイズ（デフォルト4） */
   gridSize?: number;
 }
@@ -33,21 +33,24 @@ function toSvgCoord(gridPos: number, totalSize: number, gridSize: number): numbe
 }
 
 export const DotGrid: React.FC<DotGridProps> = ({ figure, size = 120, gridSize = 4 }) => {
+  // Use a fixed internal coordinate system for SVG calculations
+  const svgSize = typeof size === 'number' ? size : 120;
   return (
     <svg
       width={size}
       height={size}
-      viewBox={`0 0 ${size} ${size}`}
+      viewBox={`0 0 ${svgSize} ${svgSize}`}
       aria-label="どっとぐりっど"
+      style={{ maxWidth: '100%', maxHeight: '100%' }}
     >
       {/* 線分を描画（ドットの下に描画するため先に描く） */}
       {figure.map((seg, i) => (
         <line
           key={`line-${i}`}
-          x1={toSvgCoord(seg.from.col, size, gridSize)}
-          y1={toSvgCoord(seg.from.row, size, gridSize)}
-          x2={toSvgCoord(seg.to.col, size, gridSize)}
-          y2={toSvgCoord(seg.to.row, size, gridSize)}
+          x1={toSvgCoord(seg.from.col, svgSize, gridSize)}
+          y1={toSvgCoord(seg.from.row, svgSize, gridSize)}
+          x2={toSvgCoord(seg.to.col, svgSize, gridSize)}
+          y2={toSvgCoord(seg.to.row, svgSize, gridSize)}
           stroke={LINE_COLOR}
           strokeWidth={LINE_WIDTH}
           strokeLinecap="round"
@@ -59,8 +62,8 @@ export const DotGrid: React.FC<DotGridProps> = ({ figure, size = 120, gridSize =
         Array.from({ length: gridSize }, (_, col) => (
           <circle
             key={`dot-${row}-${col}`}
-            cx={toSvgCoord(col, size, gridSize)}
-            cy={toSvgCoord(row, size, gridSize)}
+            cx={toSvgCoord(col, svgSize, gridSize)}
+            cy={toSvgCoord(row, svgSize, gridSize)}
             r={DOT_RADIUS}
             fill={DOT_COLOR}
           />

@@ -14,7 +14,7 @@ export const LineOverlayQuestionDisplay: React.FC<QuestionDisplayProps> = ({ dat
   const gridSize = data.gridSize ?? 4;
 
   return (
-    <Flex align="center" gap={3} role="img" aria-label="せんずけいのかさねあわせ">
+    <Flex align="center" gap={2} role="img" aria-label="せんずけいのかさねあわせ">
       {/* 図形A */}
       <Flex
         border="2px solid"
@@ -23,11 +23,11 @@ export const LineOverlayQuestionDisplay: React.FC<QuestionDisplayProps> = ({ dat
         bg="white"
         p={1}
       >
-        <DotGrid figure={data.figureA} size={110} gridSize={gridSize} />
+        <DotGrid figure={data.figureA} size="min(22vw, 110px)" gridSize={gridSize} />
       </Flex>
 
       {/* 「+」記号 */}
-      <Text fontSize="2xl" fontWeight="800" color="#6b7280" lineHeight="1">
+      <Text fontSize="xl" fontWeight="800" color="#6b7280" lineHeight="1">
         +
       </Text>
 
@@ -39,7 +39,7 @@ export const LineOverlayQuestionDisplay: React.FC<QuestionDisplayProps> = ({ dat
         bg="white"
         p={1}
       >
-        <DotGrid figure={data.figureB} size={110} gridSize={gridSize} />
+        <DotGrid figure={data.figureB} size="min(22vw, 110px)" gridSize={gridSize} />
       </Flex>
     </Flex>
   );

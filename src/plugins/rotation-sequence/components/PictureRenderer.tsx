@@ -2,7 +2,7 @@ import type { PictureType } from '../types';
 
 interface Props {
   pictureType: PictureType;
-  size: number;
+  size: number | string;
 }
 
 /**
@@ -31,7 +31,7 @@ export const PictureRenderer: React.FC<Props> = ({ pictureType, size }) => {
 };
 
 /** カエル: 上向きに座っている */
-const FrogPicture: React.FC<{ size: number }> = ({ size }) => (
+const FrogPicture: React.FC<{ size: number | string }> = ({ size }) => (
   <svg width={size} height={size} viewBox="0 0 60 60">
     {/* 体 */}
     <ellipse cx="30" cy="35" rx="14" ry="12" fill="#4ade80" stroke="#1a1a1a" strokeWidth="1.5" />
@@ -52,7 +52,7 @@ const FrogPicture: React.FC<{ size: number }> = ({ size }) => (
 );
 
 /** ゾウ: 右向き */
-const ElephantPicture: React.FC<{ size: number }> = ({ size }) => (
+const ElephantPicture: React.FC<{ size: number | string }> = ({ size }) => (
   <svg width={size} height={size} viewBox="0 0 60 60">
     {/* 体 */}
     <ellipse cx="28" cy="32" rx="16" ry="12" fill="#9ca3af" stroke="#1a1a1a" strokeWidth="1.5" />
@@ -74,7 +74,7 @@ const ElephantPicture: React.FC<{ size: number }> = ({ size }) => (
 );
 
 /** リス: 右向き、大きなしっぽ */
-const SquirrelPicture: React.FC<{ size: number }> = ({ size }) => (
+const SquirrelPicture: React.FC<{ size: number | string }> = ({ size }) => (
   <svg width={size} height={size} viewBox="0 0 60 60">
     {/* しっぽ（大きい） */}
     <path d="M 15 20 Q 5 10 10 25 Q 8 35 15 40 Q 20 42 22 38" fill="#d97706" stroke="#1a1a1a" strokeWidth="1.5" />
@@ -96,7 +96,7 @@ const SquirrelPicture: React.FC<{ size: number }> = ({ size }) => (
 );
 
 /** ドット: 非対称な配置（左上に3つ、右下に1つ） */
-const DotsPicture: React.FC<{ size: number }> = ({ size }) => (
+const DotsPicture: React.FC<{ size: number | string }> = ({ size }) => (
   <svg width={size} height={size} viewBox="0 0 60 60">
     {/* 左上エリアに3つの黒丸 */}
     <circle cx="18" cy="18" r="6" fill="#1a1a1a" />
@@ -108,7 +108,7 @@ const DotsPicture: React.FC<{ size: number }> = ({ size }) => (
 );
 
 /** 傘: 上向き */
-const UmbrellaPicture: React.FC<{ size: number }> = ({ size }) => (
+const UmbrellaPicture: React.FC<{ size: number | string }> = ({ size }) => (
   <svg width={size} height={size} viewBox="0 0 60 60">
     {/* 傘の部分 */}
     <path d="M 10 30 Q 10 10 30 10 Q 50 10 50 30 Z" fill="#3b82f6" stroke="#1a1a1a" strokeWidth="1.5" />
@@ -123,7 +123,7 @@ const UmbrellaPicture: React.FC<{ size: number }> = ({ size }) => (
 );
 
 /** 船: 右向き */
-const BoatPicture: React.FC<{ size: number }> = ({ size }) => (
+const BoatPicture: React.FC<{ size: number | string }> = ({ size }) => (
   <svg width={size} height={size} viewBox="0 0 60 60">
     {/* 帆 */}
     <polygon points="30,10 30,38 48,38" fill="white" stroke="#1a1a1a" strokeWidth="1.5" />
@@ -137,7 +137,7 @@ const BoatPicture: React.FC<{ size: number }> = ({ size }) => (
 );
 
 /** 鉛筆: 右上向き */
-const PencilPicture: React.FC<{ size: number }> = ({ size }) => (
+const PencilPicture: React.FC<{ size: number | string }> = ({ size }) => (
   <svg width={size} height={size} viewBox="0 0 60 60">
     {/* 鉛筆本体（斜め） */}
     <rect x="18" y="26" width="32" height="8" rx="1" fill="#fbbf24" stroke="#1a1a1a" strokeWidth="1.5" transform="rotate(-30 34 30)" />
@@ -151,7 +151,7 @@ const PencilPicture: React.FC<{ size: number }> = ({ size }) => (
 );
 
 /** 星と花: 左上に星、右下に花 */
-const StarFlowerPicture: React.FC<{ size: number }> = ({ size }) => (
+const StarFlowerPicture: React.FC<{ size: number | string }> = ({ size }) => (
   <svg width={size} height={size} viewBox="0 0 60 60">
     {/* 星（左上） */}
     <polygon

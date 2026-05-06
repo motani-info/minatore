@@ -13,7 +13,7 @@ interface QuestionDisplayProps {
  */
 export const LineDecomposeQuestionDisplay: React.FC<QuestionDisplayProps> = ({ data }) => {
   return (
-    <Flex align="center" gap={3} role="img" aria-label="せんずけいのぶんかい">
+    <Flex align="center" gap={2} role="img" aria-label="せんずけいのぶんかい">
       {/* お手本（完成形） */}
       <Flex
         border="3px solid"
@@ -23,11 +23,11 @@ export const LineDecomposeQuestionDisplay: React.FC<QuestionDisplayProps> = ({ d
         p={1}
         position="relative"
       >
-        <DotGrid figure={data.completeFigure} size={110} />
+        <DotGrid figure={data.completeFigure} size="min(20vw, 100px)" />
       </Flex>
 
       {/* 「＝」記号 */}
-      <Text fontSize="xl" fontWeight="800" color="#6b7280" lineHeight="1">
+      <Text fontSize="lg" fontWeight="800" color="#6b7280" lineHeight="1">
         ＝
       </Text>
 
@@ -39,11 +39,11 @@ export const LineDecomposeQuestionDisplay: React.FC<QuestionDisplayProps> = ({ d
         bg="white"
         p={1}
       >
-        <DotGrid figure={data.givenFigure} size={110} />
+        <DotGrid figure={data.givenFigure} size="min(20vw, 100px)" />
       </Flex>
 
       {/* 「＋？」記号 */}
-      <Text fontSize="xl" fontWeight="800" color="#6b7280" lineHeight="1">
+      <Text fontSize="lg" fontWeight="800" color="#6b7280" lineHeight="1">
         ＋？
       </Text>
     </Flex>

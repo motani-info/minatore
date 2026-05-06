@@ -56,11 +56,11 @@ const PartRenderer: React.FC<{ part: FigurePart; cellSize: number }> = ({ part, 
 };
 
 /** 1つのセル（図形）を描画 */
-const FigureCell: React.FC<{ figure: FigureDefinition; size: number }> = ({ figure, size }) => (
+const FigureCell: React.FC<{ figure: FigureDefinition; size: string }> = ({ figure, size }) => (
   <Box
     position="relative"
-    w={`${size}px`}
-    h={`${size}px`}
+    w={size}
+    h={size}
     bg="white"
     border="1px solid"
     borderColor="gray.200"
@@ -68,17 +68,17 @@ const FigureCell: React.FC<{ figure: FigureDefinition; size: number }> = ({ figu
     overflow="hidden"
   >
     {figure.map((part, i) => (
-      <PartRenderer key={i} part={part} cellSize={size} />
+      <PartRenderer key={i} part={part} cellSize={0} />
     ))}
   </Box>
 );
 
 export const OddOneOutQuestionDisplay: React.FC<Props> = ({ data }) => {
   const { baseFigure, mutatedFigure, gridSize, oddIndex } = data;
-  const cellSize = gridSize === 3 ? 72 : 56;
+  const cellSize = gridSize === 3 ? 'min(8vw, 52px)' : 'min(6vw, 40px)';
 
   return (
-    <SimpleGrid columns={gridSize} gap={1} w="fit-content" mx="auto">
+    <SimpleGrid columns={gridSize} gap={0.5} w="fit-content" mx="auto">
       {Array.from({ length: gridSize * gridSize }).map((_, i) => (
         <FigureCell
           key={i}

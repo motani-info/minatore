@@ -105,3 +105,12 @@ button {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
 }
+
+/* 問題画面でスクロールを完全に無効化 */
+html.no-scroll,
+body.no-scroll {
+  overflow: hidden !important;
+  height: 100dvh !important;
+  position: fixed;
+  width: 100%;
+}

@@ -23,9 +23,11 @@ export const LineDecomposeChoiceDisplay: React.FC<ChoiceDisplayProps> = ({ data 
       borderColor="#d1d5db"
       borderRadius="lg"
       bg="white"
-      p={1}
+      p={0.5}
+      maxW="100%"
+      maxH="100%"
     >
-      <DotGrid figure={data} size={140} />
+      <DotGrid figure={data} size="min(18vw, 100px)" />
     </Flex>
   );
 };

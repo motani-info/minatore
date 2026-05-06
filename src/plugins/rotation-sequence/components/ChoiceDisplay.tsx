@@ -14,19 +14,18 @@ interface Props {
  */
 export const RotationSequenceChoiceDisplay: React.FC<Props> = ({ data }) => {
   const { pictureType, angle } = data;
-  const choiceSize = 80;
 
   return (
-    <Flex align="center" justify="center">
+    <Flex align="center" justify="center" w="100%" h="100%">
       <Box
-        w={`${choiceSize + 8}px`}
-        h={`${choiceSize + 8}px`}
+        w="min(18vw, 80px)"
+        h="min(18vw, 80px)"
         display="flex"
         alignItems="center"
         justifyContent="center"
       >
-        <Box transform={`rotate(${angle}deg)`}>
-          <PictureRenderer pictureType={pictureType} size={choiceSize} />
+        <Box transform={`rotate(${angle}deg)`} w="100%" h="100%" display="flex" alignItems="center" justifyContent="center">
+          <PictureRenderer pictureType={pictureType} size="100%" />
         </Box>
       </Box>
     </Flex>

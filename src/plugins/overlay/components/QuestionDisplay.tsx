@@ -8,7 +8,7 @@ interface QuestionDisplayProps {
 /** 白黒のセル表示 */
 const CellDisplay: React.FC<{ value: CellValue; size?: string }> = ({
   value,
-  size = '64px',
+  size = 'min(14vw, 64px)',
 }) => {
   return (
     <Flex
@@ -21,12 +21,12 @@ const CellDisplay: React.FC<{ value: CellValue; size?: string }> = ({
       borderColor="#1a1a1a"
     >
       {value === 'circle' && (
-        <Text fontSize="3xl" fontWeight="800" color="#1a1a1a" lineHeight="1">
+        <Text fontSize="clamp(16px, 5vw, 30px)" fontWeight="800" color="#1a1a1a" lineHeight="1">
           ◯
         </Text>
       )}
       {value === 'cross' && (
-        <Text fontSize="3xl" fontWeight="800" color="#1a1a1a" lineHeight="1">
+        <Text fontSize="clamp(16px, 5vw, 30px)" fontWeight="800" color="#1a1a1a" lineHeight="1">
           ✕
         </Text>
       )}
